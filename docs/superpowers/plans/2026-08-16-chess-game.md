@@ -826,6 +826,8 @@ git commit -m "feat: add useChessGame hook"
 
 This task has no automated tests: it drives a real browser `Worker` running a real WASM engine, which `jsdom`/Vitest cannot execute. Correctness is checked with `tsc` here and with a full manual run once it's wired into the game page in Task 10.
 
+**Concurrency requirement:** Task 10's page code calls `getBestMove()` (for the AI's own move) and `evaluate()` (for move-quality classification, twice per human move) on the *same* `StockfishClient` instance, and these calls can legitimately overlap in time (a human move triggers both the quality check and, once state updates, the AI-turn effect). The implementation below serializes all requests through an internal queue so only one UCI exchange is ever in flight on the shared worker — this is required, not optional: without it, responses can cross-resolve between concurrent callers.
+
 - [ ] **Step 1: Install the engine package**
 
 ```bash
@@ -855,6 +857,22 @@ export interface StockfishClient {
 export function createStockfishClient(): StockfishClient {
   const worker = new Worker('/stockfish/stockfish-18-lite-single.js');
   let readyPromise: Promise<void> | null = null;
+  // Serializes every UCI exchange through this shared worker: only one
+  // request's message listener is ever active at a time, so a response
+  // can never be delivered to the wrong caller. Without this, concurrent
+  // getBestMove()/evaluate() calls (e.g. the AI's own-move request racing
+  // the human move-quality check) can cross-resolve, handing the wrong
+  // caller an answer meant for someone else.
+  let queue: Promise<unknown> = Promise.resolve();
+
+  function enqueue<T>(task: () => Promise<T>): Promise<T> {
+    const result = queue.then(task, task);
+    queue = result.then(
+      () => undefined,
+      () => undefined
+    );
+    return result;
+  }
 
   function waitForReady(): Promise<void> {
     if (readyPromise) return readyPromise;
@@ -873,39 +891,43 @@ export function createStockfishClient(): StockfishClient {
   }
 
   async function getBestMove(fen: string, options: EngineOptions): Promise<string> {
-    await waitForReady();
-    return new Promise((resolve) => {
-      const onMessage = (event: MessageEvent<string>) => {
-        const move = parseBestMove(event.data);
-        if (move) {
-          worker.removeEventListener('message', onMessage);
-          resolve(move);
-        }
-      };
-      worker.addEventListener('message', onMessage);
-      worker.postMessage(`setoption name Skill Level value ${options.skillLevel}`);
-      worker.postMessage('ucinewgame');
-      worker.postMessage(`position fen ${fen}`);
-      worker.postMessage(`go depth ${options.depth} movetime ${options.moveTimeMs}`);
+    return enqueue(async () => {
+      await waitForReady();
+      return new Promise<string>((resolve) => {
+        const onMessage = (event: MessageEvent<string>) => {
+          const move = parseBestMove(event.data);
+          if (move) {
+            worker.removeEventListener('message', onMessage);
+            resolve(move);
+          }
+        };
+        worker.addEventListener('message', onMessage);
+        worker.postMessage(`setoption name Skill Level value ${options.skillLevel}`);
+        worker.postMessage('ucinewgame');
+        worker.postMessage(`position fen ${fen}`);
+        worker.postMessage(`go depth ${options.depth} movetime ${options.moveTimeMs}`);
+      });
     });
   }
 
   async function evaluate(fen: string, depth: number): Promise<number> {
-    await waitForReady();
-    return new Promise((resolve) => {
-      let lastScore = 0;
-      const onMessage = (event: MessageEvent<string>) => {
-        const score = parseScoreCp(event.data);
-        if (score !== null) lastScore = score;
-        if (parseBestMove(event.data)) {
-          worker.removeEventListener('message', onMessage);
-          resolve(lastScore);
-        }
-      };
-      worker.addEventListener('message', onMessage);
-      worker.postMessage('ucinewgame');
-      worker.postMessage(`position fen ${fen}`);
-      worker.postMessage(`go depth ${depth}`);
+    return enqueue(async () => {
+      await waitForReady();
+      return new Promise<number>((resolve) => {
+        let lastScore = 0;
+        const onMessage = (event: MessageEvent<string>) => {
+          const score = parseScoreCp(event.data);
+          if (score !== null) lastScore = score;
+          if (parseBestMove(event.data)) {
+            worker.removeEventListener('message', onMessage);
+            resolve(lastScore);
+          }
+        };
+        worker.addEventListener('message', onMessage);
+        worker.postMessage('ucinewgame');
+        worker.postMessage(`position fen ${fen}`);
+        worker.postMessage(`go depth ${depth}`);
+      });
     });
   }
 
