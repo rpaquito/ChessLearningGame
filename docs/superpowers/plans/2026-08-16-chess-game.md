@@ -46,8 +46,8 @@ lib/
   chess/useChessGame.ts               # game state hook, wraps chess.js (Task 5)
   chess/stockfishClient.ts            # Worker wrapper, UCI I/O (Task 6)
 public/
-  stockfish/stockfish-18-single.js    # vendored engine (Task 6)
-  stockfish/stockfish-18-single.wasm  # vendored engine binary (Task 6)
+  stockfish/stockfish-18-lite-single.js    # vendored engine (Task 6)
+  stockfish/stockfish-18-lite-single.wasm  # vendored engine binary (Task 6)
 Dockerfile                            # multi-stage build (Task 12)
 .dockerignore                         # (Task 12)
 vitest.config.ts                      # (Task 1)
@@ -807,8 +807,8 @@ git commit -m "feat: add useChessGame hook"
 ### Task 6: Stockfish engine client
 
 **Files:**
-- Create: `public/stockfish/stockfish-18-single.js` (vendored, copied not authored)
-- Create: `public/stockfish/stockfish-18-single.wasm` (vendored, copied not authored)
+- Create: `public/stockfish/stockfish-18-lite-single.js` (vendored, copied not authored)
+- Create: `public/stockfish/stockfish-18-lite-single.wasm` (vendored, copied not authored)
 - Create: `lib/chess/stockfishClient.ts`
 
 **Interfaces:**
@@ -832,12 +832,12 @@ This task has no automated tests: it drives a real browser `Worker` running a re
 npm install stockfish
 ```
 
-- [ ] **Step 2: Vendor the single-threaded build (no cross-origin-isolation headers required) into `public/`**
+- [ ] **Step 2: Vendor the single-threaded "lite" build (no cross-origin-isolation headers required; ~7MB, vs. ~108MB for the full net — plenty strong for this app's difficulty range) into `public/`**
 
 ```bash
 mkdir -p public/stockfish
-cp node_modules/stockfish/bin/stockfish-18-single.js public/stockfish/
-cp node_modules/stockfish/bin/stockfish-18-single.wasm public/stockfish/
+cp node_modules/stockfish/bin/stockfish-18-lite-single.js public/stockfish/
+cp node_modules/stockfish/bin/stockfish-18-lite-single.wasm public/stockfish/
 ```
 
 - [ ] **Step 3: Implement `lib/chess/stockfishClient.ts`**
@@ -853,7 +853,7 @@ export interface StockfishClient {
 }
 
 export function createStockfishClient(): StockfishClient {
-  const worker = new Worker('/stockfish/stockfish-18-single.js');
+  const worker = new Worker('/stockfish/stockfish-18-lite-single.js');
   let readyPromise: Promise<void> | null = null;
 
   function waitForReady(): Promise<void> {
