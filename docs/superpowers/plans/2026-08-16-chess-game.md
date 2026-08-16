@@ -506,6 +506,7 @@ export function findThreatenedSquares(fen: string, color: Color): Square[] {
   const parts = fen.split(' ');
   const opponent: Color = color === 'w' ? 'b' : 'w';
   parts[1] = opponent;
+  parts[3] = '-'; // remove en passant target — invalid once the side to move is flipped
   const chess = new Chess(parts.join(' '));
 
   const board = chess.board();
