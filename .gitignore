@@ -16,6 +16,10 @@
 # next.js
 /.next/
 /out/
+# regenerated automatically by `next dev`/`next build`; intentionally not
+# tracked (see final-review fix: removed as stock scaffold boilerplate)
+/AGENTS.md
+/CLAUDE.md
 
 # production
 /build
