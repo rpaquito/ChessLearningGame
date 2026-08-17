@@ -31,6 +31,14 @@ docker run --rm -p 3000:3000 xadrez-aprendizado
 
 Conecte o repositório no Vercel — não há variáveis de ambiente obrigatórias.
 
+## PWA (instalável, funciona offline)
+
+O app é um Progressive Web App: pode ser instalado pelo navegador (ícone na
+tela inicial / barra de endereço) e, depois da primeira visita a cada
+página, continua funcionando sem internet — incluindo jogar contra o
+computador, já que o motor de xadrez também fica em cache. Detalhes técnicos
+em `public/sw.js`.
+
 ## Motor de xadrez
 
 O modo contra o computador e as dicas do modo aprendizado usam o
