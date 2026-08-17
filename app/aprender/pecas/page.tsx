@@ -15,7 +15,7 @@ const DEMOS: PieceDemo[] = [
   {
     title: 'Peão',
     description: 'Anda uma casa para frente (duas no primeiro lance) e captura na diagonal.',
-    fen: '4k3/8/8/8/8/8/4P3/4K3 w - - 0 1',
+    fen: '4k3/8/8/8/8/3p4/4P3/4K3 w - - 0 1',
     square: 'e2',
   },
   {
