@@ -16,10 +16,13 @@
 # next.js
 /.next/
 /out/
-# regenerated automatically by `next dev`/`next build`; intentionally not
-# tracked (see final-review fix: removed as stock scaffold boilerplate)
+# regenerated automatically by `next dev`/`next build` (only the
+# <!-- BEGIN/END:nextjs-agent-rules --> block; see
+# node_modules/next/dist/server/lib/generate-agent-files.js) — intentionally
+# not tracked as stock scaffold boilerplate. CLAUDE.md is NOT auto-rewritten
+# as long as AGENTS.md exists, and now carries real project documentation,
+# so it's tracked deliberately — see CLAUDE.md itself.
 /AGENTS.md
-/CLAUDE.md
 
 # production
 /build
