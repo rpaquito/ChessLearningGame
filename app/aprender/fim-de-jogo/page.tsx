@@ -15,7 +15,7 @@ export default function FimDeJogoPage() {
 
       <section className="flex flex-col sm:flex-row gap-4 items-center">
         <div className="w-full sm:w-64">
-          <ChessBoard fen="6k1/8/6K1/8/8/8/8/7R w - - 0 1" interactive={false} />
+          <ChessBoard fen="4k3/8/8/8/8/8/8/4R2K b - - 0 1" checkSquare="e8" interactive={false} />
         </div>
         <div>
           <h2 className="text-xl font-semibold">Xeque</h2>
@@ -28,7 +28,7 @@ export default function FimDeJogoPage() {
 
       <section className="flex flex-col sm:flex-row gap-4 items-center">
         <div className="w-full sm:w-64">
-          <ChessBoard fen="6k1/8/6K1/8/8/8/8/6R1 w - - 0 1" interactive={false} />
+          <ChessBoard fen="4R1k1/5ppp/8/8/8/8/8/6K1 b - - 0 1" checkSquare="g8" interactive={false} />
         </div>
         <div>
           <h2 className="text-xl font-semibold">Xeque-mate</h2>
