@@ -30,3 +30,10 @@ docker run --rm -p 3000:3000 xadrez-aprendizado
 ## Deploy no Vercel
 
 Conecte o repositório no Vercel — não há variáveis de ambiente obrigatórias.
+
+## Motor de xadrez
+
+O modo contra o computador e as dicas do modo aprendizado usam o
+[Stockfish](https://stockfishchess.org/) (via [stockfish.js](https://github.com/nmrugg/stockfish.js)),
+licenciado sob GPLv3. O binário WASM vendorizado em `public/stockfish/` não é
+modificado; o código-fonte do motor está disponível no repositório oficial.

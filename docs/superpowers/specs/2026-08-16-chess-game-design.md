@@ -170,3 +170,7 @@ next.config.ts
 - Multiplayer online (rede)
 - Relatório de análise completo de partida
 - Contas de usuário / histórico de partidas salvas
+- Modo aprendizado (dicas, ameaças, sugestões, avaliação de lance) disponível
+  também no modo Dois jogadores — hoje é exclusivo do modo contra o
+  computador, já que depende do motor Stockfish para gerar sugestões e
+  avaliações; o modo Dois jogadores é "xadrez de verdade" sem nenhuma ajuda.
