@@ -79,7 +79,7 @@ export function ModeSelector() {
           </fieldset>
 
           <fieldset className="flex flex-col gap-2">
-            <legend className="font-medium mb-1">Suas peças</legend>
+            <legend className="font-medium mb-1">As tuas peças</legend>
             <div className="flex gap-2">
               {(
                 [

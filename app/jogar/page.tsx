@@ -6,6 +6,7 @@ import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
+import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
 import { findThreatenedSquares } from '@/lib/chess/threats';
@@ -22,7 +23,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 export default function JogarPage() {
   return (
-    <Suspense fallback={<p className="p-8">Carregando…</p>}>
+    <Suspense fallback={<p className="p-8">A carregar…</p>}>
       <JogarContent />
     </Suspense>
   );
@@ -46,6 +47,7 @@ function JogarContent() {
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [lastMoveQuality, setLastMoveQuality] = useState<MoveQuality | null>(null);
   const [engineUnavailable, setEngineUnavailable] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
 
   const engineRef = useRef<StockfishClient | null>(null);
   useEffect(() => {
@@ -148,7 +150,7 @@ function JogarContent() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col md:flex-row items-center md:items-start justify-center gap-8 p-8">
+    <main className="min-h-dvh flex flex-col md:flex-row items-center md:items-start justify-start md:justify-center gap-4 sm:gap-8 p-4 sm:p-8">
       <div className="flex flex-col items-center gap-4">
         <p className="font-medium">{STATUS_LABEL[state.status]}</p>
         <ChessBoard
@@ -163,12 +165,17 @@ function JogarContent() {
           interactive={isHumanTurn && !state.isGameOver}
           onSquareClick={handleSquareClick}
         />
-        <button type="button" onClick={handleReset} className="text-sm underline text-stone-600">
-          Reiniciar partida
-        </button>
+        <div className="flex items-center gap-4 text-sm">
+          <button type="button" onClick={handleReset} className="underline text-stone-600">
+            Reiniciar partida
+          </button>
+          <button type="button" onClick={() => setRulesOpen(true)} className="underline text-stone-600">
+            Regras
+          </button>
+        </div>
         {mode === 'ai' && engineUnavailable && (
           <p className="max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-            O motor de xadrez não pôde ser carregado. Tente novamente mais tarde, ou jogue no
+            O motor de xadrez não pôde ser carregado. Tenta novamente mais tarde, ou joga no
             modo Dois jogadores.
           </p>
         )}
@@ -184,6 +191,8 @@ function JogarContent() {
           lastMoveQuality={lastMoveQuality}
         />
       )}
+
+      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
     </main>
   );
 }

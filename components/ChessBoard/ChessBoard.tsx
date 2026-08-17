@@ -39,7 +39,7 @@ export function ChessBoard({
     <div
       role="grid"
       aria-label="Tabuleiro de xadrez"
-      className="grid grid-cols-8 aspect-square w-full max-w-[560px] select-none border-4 border-stone-800 rounded-md overflow-hidden"
+      className="grid grid-cols-8 aspect-square w-full max-w-[min(92vw,62dvh,560px)] select-none border-4 border-stone-800 rounded-md overflow-hidden"
     >
       {ranks.map((rank, rankIdx) =>
         files.map((file, fileIdx) => {

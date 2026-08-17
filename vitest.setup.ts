@@ -1,4 +1,11 @@
 import '@testing-library/jest-dom/vitest';
+import { afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
+
+// @testing-library/react only auto-registers its afterEach(cleanup) hook in
+// a Jest environment; under Vitest it must be wired up explicitly, or DOM
+// from one test in a file leaks into the next.
+afterEach(cleanup);
 
 // Node 22+ ships an experimental global `localStorage`/`sessionStorage` that,
 // without --localstorage-file, resolves to `undefined`. Vitest's jsdom

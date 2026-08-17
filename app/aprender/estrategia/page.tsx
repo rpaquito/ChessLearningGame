@@ -2,24 +2,24 @@ import Link from 'next/link';
 
 const PRINCIPLES = [
   {
-    title: 'Controle o centro',
-    text: 'As casas centrais (d4, e4, d5, e5) dão às suas peças mais mobilidade e influência sobre o tabuleiro. Ocupe ou controle o centro logo nos primeiros lances.',
+    title: 'Controlar o centro',
+    text: 'As casas centrais (d4, e4, d5, e5) dão às tuas peças mais mobilidade e influência sobre o tabuleiro. Ocupar ou controlar o centro logo nos primeiros lances.',
   },
   {
-    title: 'Desenvolva suas peças',
-    text: 'Tire cavalos e bispos de suas casas iniciais cedo, antes de mover a mesma peça várias vezes ou sair caçando peões sem necessidade.',
+    title: 'Desenvolver as peças',
+    text: 'Tirar cavalos e bispos das casas iniciais cedo, antes de mover a mesma peça várias vezes ou sair a caçar peões sem necessidade.',
   },
   {
-    title: 'Proteja o rei',
-    text: 'Roque cedo para colocar o rei a salvo atrás de uma fileira de peões, especialmente antes de abrir o jogo no centro.',
+    title: 'Proteger o rei',
+    text: 'Fazer o roque cedo para colocar o rei a salvo atrás de uma fileira de peões, especialmente antes de abrir o jogo no centro.',
   },
   {
-    title: 'Não perca material de graça',
-    text: 'Antes de cada lance, confirme que nenhuma peça sua ficou pendurada (atacada e sem defesa suficiente).',
+    title: 'Não perder material de graça',
+    text: 'Antes de cada lance, confirmar que nenhuma peça tua ficou pendurada (atacada e sem defesa suficiente).',
   },
   {
-    title: 'Pense em ameaças antes de atacar',
-    text: 'Pergunte-se o que o adversário quer fazer no próximo lance antes de decidir o seu — muitas peças são perdidas por ignorar a resposta do oponente.',
+    title: 'Pensar em ameaças antes de atacar',
+    text: 'Perguntar-se o que o adversário quer fazer no próximo lance antes de decidir o teu — muitas peças perdem-se por ignorar a resposta do oponente.',
   },
 ];
 

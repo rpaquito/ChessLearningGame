@@ -21,7 +21,7 @@ const DEMOS: PieceDemo[] = [
   {
     title: 'Cavalo',
     description:
-      'Move-se em "L": duas casas em uma direção e uma casa perpendicular. É a única peça que pula por cima de outras.',
+      'Move-se em "L": duas casas numa direção e uma casa perpendicular. É a única peça que salta por cima de outras.',
     fen: '4k3/8/8/8/4N3/8/8/4K3 w - - 0 1',
     square: 'e4',
   },
@@ -46,7 +46,7 @@ const DEMOS: PieceDemo[] = [
   {
     title: 'Rei',
     description:
-      'Move-se uma casa em qualquer direção. Nunca pode se mover para uma casa atacada pelo adversário.',
+      'Move-se uma casa em qualquer direção. Nunca se pode mover para uma casa atacada pelo adversário.',
     fen: '8/8/8/4k3/8/4K3/8/8 w - - 0 1',
     square: 'e3',
   },

@@ -35,9 +35,9 @@ export default function RegrasEspeciaisPage() {
         <div>
           <h2 className="text-xl font-semibold">En passant</h2>
           <p className="text-stone-600 mt-1">
-            Se um peão adversário anda duas casas de uma vez e termina do lado de um peão seu,
-            você pode capturá-lo como se ele tivesse andado apenas uma casa — mas só no lance
-            imediatamente seguinte.
+            Se um peão adversário andar duas casas de uma vez e ficar ao lado de um peão teu,
+            podes capturá-lo como se ele tivesse andado apenas uma casa — mas só no lance
+            imediatamente a seguir.
           </p>
         </div>
       </section>
@@ -49,8 +49,8 @@ export default function RegrasEspeciaisPage() {
         <div>
           <h2 className="text-xl font-semibold">Promoção</h2>
           <p className="text-stone-600 mt-1">
-            Quando um peão chega até a última fileira, ele é promovido a qualquer outra peça
-            (menos rei) — na grande maioria dos casos, a dama, por ser a peça mais forte.
+            Quando um peão chega à última fileira, é promovido a qualquer outra peça (menos rei) —
+            na grande maioria dos casos, a dama, por ser a peça mais forte.
           </p>
         </div>
       </section>

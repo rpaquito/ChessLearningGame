@@ -34,7 +34,7 @@ export function LearningPanel({
   return (
     <aside className="flex flex-col gap-4 w-full max-w-xs border border-stone-200 rounded-md p-4">
       <label className="flex items-center justify-between gap-2 font-medium">
-        Modo aprendizado
+        Modo de aprendizagem
         <input
           type="checkbox"
           checked={enabled}
@@ -54,7 +54,7 @@ export function LearningPanel({
             disabled={suggestionLoading}
             className="rounded-md bg-sky-600 text-white px-3 py-2 disabled:opacity-50"
           >
-            {suggestionLoading ? 'Pensando…' : 'Sugerir jogada'}
+            {suggestionLoading ? 'A pensar…' : 'Sugerir jogada'}
           </button>
           {hasSuggestion && (
             <p className="text-sm text-stone-600">
@@ -63,7 +63,7 @@ export function LearningPanel({
           )}
           {lastMoveQuality && (
             <p className={`text-sm rounded-md px-3 py-2 ${QUALITY_CLASS[lastMoveQuality]}`}>
-              Seu último lance: {QUALITY_LABEL[lastMoveQuality]}
+              O teu último lance: {QUALITY_LABEL[lastMoveQuality]}
             </p>
           )}
         </>
