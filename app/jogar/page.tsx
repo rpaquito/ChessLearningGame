@@ -1,6 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
@@ -166,6 +167,9 @@ function JogarContent() {
           onSquareClick={handleSquareClick}
         />
         <div className="flex items-center gap-4 text-sm">
+          <Link href="/" className="underline text-stone-600">
+            Menu inicial
+          </Link>
           <button type="button" onClick={handleReset} className="underline text-stone-600">
             Reiniciar partida
           </button>
