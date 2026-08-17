@@ -51,7 +51,10 @@ public/
 da querystring, usa `useChessGame` para o estado, cria o `StockfishClient`
 quando `mode === 'ai'`, e passa tudo a `ChessBoard` + `LearningPanel`. O
 `ChessBoard` em si é "burro" — recebe `fen` e arrays de squares a destacar,
-nunca decide regras sozinho.
+nunca decide regras sozinho. Por baixo do tabuleiro há sempre uma fila com
+três ações: "Menu inicial" (`next/link` para `/`), "Reiniciar partida" e
+"Regras" (abre o `RulesModal`) — ao acrescentar uma nova ação de nível de
+página, é aqui que ela entra.
 
 ## Convenções que não são óbvias a partir do código
 
