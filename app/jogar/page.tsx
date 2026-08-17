@@ -45,11 +45,22 @@ function JogarContent() {
   const [suggestion, setSuggestion] = useState<{ from: Square; to: Square } | null>(null);
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [lastMoveQuality, setLastMoveQuality] = useState<MoveQuality | null>(null);
+  const [engineUnavailable, setEngineUnavailable] = useState(false);
 
   const engineRef = useRef<StockfishClient | null>(null);
   useEffect(() => {
     if (mode !== 'ai') return;
-    engineRef.current = createStockfishClient();
+    try {
+      engineRef.current = createStockfishClient();
+    } catch {
+      // Worker construction almost never throws synchronously for a
+      // same-origin script — real load failures arrive asynchronously via
+      // the worker's 'error' event (handled inside stockfishClient.ts and
+      // surfaced through the getBestMove()/evaluate() .catch() handlers
+      // below). This guards only the rare synchronous-throw case.
+      queueMicrotask(() => setEngineUnavailable(true));
+      return;
+    }
     return () => engineRef.current?.terminate();
   }, [mode]);
 
@@ -73,12 +84,14 @@ function JogarContent() {
         if (moved && previewMove && mode === 'ai' && learningEnabled && engineRef.current) {
           const engine = engineRef.current;
           const fenAfter = preview.fen();
-          Promise.all([engine.evaluate(fenBefore, 10), engine.evaluate(fenAfter, 10)]).then(
-            ([bestEval, replyEval]) => {
+          Promise.all([engine.evaluate(fenBefore, 10), engine.evaluate(fenAfter, 10)])
+            .then(([bestEval, replyEval]) => {
               const playedEval = -replyEval;
               setLastMoveQuality(classifyMove(centipawnLoss(bestEval, playedEval)));
-            }
-          );
+            })
+            .catch(() => {
+              setEngineUnavailable(true);
+            });
         }
         return;
       }
@@ -94,11 +107,17 @@ function JogarContent() {
     if (!engine) return;
 
     let cancelled = false;
-    engine.getBestMove(state.fen, difficultyToEngineOptions(difficulty)).then((uci) => {
-      if (cancelled) return;
-      const { from, to, promotion } = parseUciMove(uci);
-      makeMove(from as Square, to as Square, promotion as Parameters<typeof makeMove>[2]);
-    });
+    engine
+      .getBestMove(state.fen, difficultyToEngineOptions(difficulty))
+      .then((uci) => {
+        if (cancelled) return;
+        const { from, to, promotion } = parseUciMove(uci);
+        makeMove(from as Square, to as Square, promotion as Parameters<typeof makeMove>[2]);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEngineUnavailable(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -108,11 +127,17 @@ function JogarContent() {
     const engine = engineRef.current;
     if (!engine) return;
     setSuggestionLoading(true);
-    engine.getBestMove(state.fen, difficultyToEngineOptions('dificil')).then((uci) => {
-      const { from, to } = parseUciMove(uci);
-      setSuggestion({ from: from as Square, to: to as Square });
-      setSuggestionLoading(false);
-    });
+    engine
+      .getBestMove(state.fen, difficultyToEngineOptions('dificil'))
+      .then((uci) => {
+        const { from, to } = parseUciMove(uci);
+        setSuggestion({ from: from as Square, to: to as Square });
+        setSuggestionLoading(false);
+      })
+      .catch(() => {
+        setSuggestionLoading(false);
+        setEngineUnavailable(true);
+      });
   }, [state.fen]);
 
   function handleReset() {
@@ -141,9 +166,15 @@ function JogarContent() {
         <button type="button" onClick={handleReset} className="text-sm underline text-stone-600">
           Reiniciar partida
         </button>
+        {mode === 'ai' && engineUnavailable && (
+          <p className="max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            O motor de xadrez não pôde ser carregado. Tente novamente mais tarde, ou jogue no
+            modo Dois jogadores.
+          </p>
+        )}
       </div>
 
-      {mode === 'ai' && (
+      {mode === 'ai' && !engineUnavailable && (
         <LearningPanel
           enabled={learningEnabled}
           onToggle={setLearningEnabled}
