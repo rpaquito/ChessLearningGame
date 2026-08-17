@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseBestMove, parseScoreCp, isReadyLine, parseUciMove } from './uciParser';
+import { parseBestMove, parseScoreCp, parseScoreMate, isReadyLine, parseUciMove } from './uciParser';
 
 describe('parseBestMove', () => {
   it('extracts the move from a bestmove line', () => {
@@ -22,6 +22,20 @@ describe('parseScoreCp', () => {
 
   it('returns null when there is no score', () => {
     expect(parseScoreCp('bestmove e2e4')).toBeNull();
+  });
+});
+
+describe('parseScoreMate', () => {
+  it('extracts a positive mate-in-N score', () => {
+    expect(parseScoreMate('info depth 12 score mate 3 nodes 1000')).toBe(3);
+  });
+
+  it('extracts a negative (being mated) score', () => {
+    expect(parseScoreMate('info depth 12 score mate -2 nodes 1000')).toBe(-2);
+  });
+
+  it('returns null when there is no mate score', () => {
+    expect(parseScoreMate('info depth 12 score cp 34')).toBeNull();
   });
 });
 

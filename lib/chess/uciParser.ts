@@ -8,6 +8,11 @@ export function parseScoreCp(line: string): number | null {
   return match ? parseInt(match[1], 10) : null;
 }
 
+export function parseScoreMate(line: string): number | null {
+  const match = /score mate (-?\d+)/.exec(line);
+  return match ? parseInt(match[1], 10) : null;
+}
+
 export function isReadyLine(line: string): boolean {
   return line === 'readyok';
 }
