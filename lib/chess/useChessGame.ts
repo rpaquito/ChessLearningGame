@@ -20,7 +20,7 @@ export interface UseChessGameResult {
   reset: () => void;
 }
 
-const STORAGE_KEY = 'chess-learning-game-fen';
+export const STORAGE_KEY = 'chess-learning-game-fen';
 
 function statusFromChess(chess: Chess): GameStatus {
   if (chess.isCheckmate()) return 'checkmate';

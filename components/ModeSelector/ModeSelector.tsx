@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Difficulty } from '@/lib/chess/difficulty';
+import { STORAGE_KEY } from '@/lib/chess/useChessGame';
 
 type Mode = 'ai' | 'local';
 type PlayerColor = 'white' | 'black' | 'random';
@@ -14,6 +15,13 @@ export function ModeSelector() {
   const [color, setColor] = useState<PlayerColor>('white');
 
   function handleStart() {
+    if (typeof window !== 'undefined') {
+      try {
+        window.localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // localStorage indisponível — nada para limpar, segue em frente
+      }
+    }
     const params = new URLSearchParams({ mode });
     if (mode === 'ai') {
       params.set('difficulty', difficulty);
