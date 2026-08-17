@@ -37,26 +37,30 @@ export function createStockfishClient(): StockfishClient {
     return result;
   }
 
-  // Created eagerly (not lazily on first use) so that a worker that fails to
-  // load — before anyone ever calls getBestMove()/evaluate() — is still
-  // observed: the 'error' listener below is wired up from the start.
+  // The 'error' listener is wired up eagerly (not lazily on first use) so
+  // that a worker that fails to load — before anyone ever calls
+  // getBestMove()/evaluate() — is still observed. The READY_TIMEOUT_MS
+  // countdown, however, must NOT start eagerly: it starts only once
+  // waitForReady() actually sends 'uci'/'isready' (see below). Starting it
+  // at construction time instead would race against however long the user
+  // takes before their first engine call (e.g. thinking time before their
+  // first move) and could reject a perfectly healthy engine that was simply
+  // never asked "isready" yet within 10s of the page loading.
   let readyReject: ((reason: unknown) => void) | null = null;
+  let readyResolve: (() => void) | null = null;
   let readyRequested = false;
   const readyPromise: Promise<void> = new Promise((resolve, reject) => {
+    readyResolve = resolve;
     readyReject = reject;
-    const timeoutId = setTimeout(() => {
-      worker.removeEventListener('message', onMessage);
-      reject(new Error('Tempo esgotado ao inicializar o motor de xadrez (Stockfish).'));
-    }, READY_TIMEOUT_MS);
-    function onMessage(event: MessageEvent<string>) {
-      if (isReadyLine(event.data)) {
-        clearTimeout(timeoutId);
-        worker.removeEventListener('message', onMessage);
-        resolve();
-      }
-    }
-    worker.addEventListener('message', onMessage);
   });
+
+  function handleReadyMessage(event: MessageEvent<string>) {
+    if (isReadyLine(event.data)) {
+      worker.removeEventListener('message', handleReadyMessage);
+      readyResolve?.();
+    }
+  }
+  worker.addEventListener('message', handleReadyMessage);
 
   worker.addEventListener('error', () => {
     // No-op if readyPromise already settled (resolve/reject on a settled
@@ -70,6 +74,9 @@ export function createStockfishClient(): StockfishClient {
       readyRequested = true;
       worker.postMessage('uci');
       worker.postMessage('isready');
+      setTimeout(() => {
+        readyReject?.(new Error('Tempo esgotado ao inicializar o motor de xadrez (Stockfish).'));
+      }, READY_TIMEOUT_MS);
     }
     return readyPromise;
   }
