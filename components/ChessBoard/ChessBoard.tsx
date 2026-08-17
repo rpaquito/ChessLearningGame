@@ -80,7 +80,7 @@ export function ChessBoard({
                       : 'text-black'
                   }
                 >
-                  {pieceGlyph(piece.type, piece.color)}
+                  {pieceGlyph(piece.type)}
                 </span>
               )}
               {isLegalTarget && !piece && (

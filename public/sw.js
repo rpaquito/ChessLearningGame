@@ -8,29 +8,36 @@
 // depending on what's being requested:
 //
 // 1. Next.js App Router's client-side navigation issues its own internal
-//    "flight" data fetches (marked with an `RSC: 1` request header) to move
-//    between pages without a full reload. These must go NETWORK-FIRST: if
-//    we served a cached copy while the network was actually available, an
-//    older payload can be served with no way for Next's router to detect
-//    it, silently breaking in-app navigation (this was reproduced: serving
-//    a stale flight response instead of an available network response made
-//    "Começar" stop navigating to /jogar, even online). Network-first
-//    avoids that: online, we always defer to the real request, matching
-//    Next's own behavior exactly; offline, we fall back to whatever was
-//    last cached for that route.
+//    "flight" data fetches (marked with an `RSC: 1` request header), and a
+//    full-page HTML navigation (`request.mode === 'navigate'`: a hard
+//    load/reload, or opening the installed PWA from the home screen) is the
+//    entry point for every visit. Both go NETWORK-FIRST: if we served a
+//    cached copy while the network was actually available, an older
+//    payload can be served with no way for the page to detect it — for
+//    flight requests this silently broke in-app navigation (reproduced:
+//    "Começar" stopped navigating to /jogar); for full-page navigations it
+//    means a fixed bug (like a layout or rendering fix) stays invisible
+//    indefinitely because the stale HTML/script references keep being
+//    served first, with the real fetch only warming the cache "for next
+//    time". Network-first avoids both: online, we always defer to the real
+//    request; offline, we fall back to whatever was last cached.
 // 2. Everything else — static assets (`/_next/static/...`, the vendored
-//    Stockfish engine, icons, manifest) and real full-page HTML navigations
-//    (hard loads/reloads, e.g. opening the installed app from the home
-//    screen) — is CACHE-FIRST. These URLs are either content-hashed or
-//    genuinely static, so a cached copy is always safe to serve
-//    immediately, and we refresh the cache in the background for next time.
+//    Stockfish engine, icons, manifest) — is CACHE-FIRST. These URLs are
+//    either content-hashed or genuinely static, so a cached copy is always
+//    safe to serve immediately, and we refresh the cache in the background
+//    for next time.
 //
 // We deliberately do NOT try to precache the hashed Next.js build chunks by
 // URL: their filenames change every deploy, so a hardcoded list would go
 // stale immediately. Runtime caching sidesteps that entirely — whatever the
 // browser actually requests gets cached, whatever the current build's real
 // filenames are.
-const CACHE_NAME = 'xadrez-cache-v1';
+//
+// Bump CACHE_NAME on any change to this file's caching behavior: `activate`
+// deletes every cache that isn't the current name, so this is what makes a
+// deployed change actually take effect for previously-installed clients
+// instead of quietly reusing whatever was already on disk.
+const CACHE_NAME = 'xadrez-cache-v2';
 
 self.addEventListener('install', () => {
   // Activate this version as soon as it finishes installing, without
@@ -53,8 +60,8 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-function isRouterDataRequest(request) {
-  return request.headers.get('RSC') === '1';
+function isNetworkFirstRequest(request) {
+  return request.headers.get('RSC') === '1' || request.mode === 'navigate';
 }
 
 async function networkFirst(cache, request) {
@@ -113,7 +120,7 @@ self.addEventListener('fetch', (event) => {
     caches
       .open(CACHE_NAME)
       .then((cache) =>
-        isRouterDataRequest(request)
+        isNetworkFirstRequest(request)
           ? networkFirst(cache, request)
           : cacheFirst(cache, request, event)
       )
