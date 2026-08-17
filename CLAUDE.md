@@ -20,8 +20,9 @@ app/
                              # não-interativos
 components/
   ChessBoard/                # grelha 8x8 pura: recebe FEN + props de destaque, não
-                              # sabe nada de regras — só desenha. pieceGlyphs.ts mapeia
-                              # tipo de peça -> glifo Unicode
+                              # sabe nada de regras — só desenha. PieceIcon.tsx desenha
+                              # cada peça como SVG inline (não glifos Unicode — ver secção
+                              # própria abaixo)
   LearningPanel/              # painel lateral do modo de aprendizagem (toggle, botão
                                # "sugerir jogada", badge de qualidade do lance)
   ModeSelector/                 # ecrã inicial: modo/dificuldade/cor -> navega para
@@ -69,15 +70,25 @@ copy nova. Regras concretas já aplicadas no código:
 - `<html lang="pt-PT">` (`app/layout.tsx`) e `"lang": "pt-PT"`
   (`public/manifest.json`) devem manter-se assim
 
-### Peças do tabuleiro: um único conjunto de glifos Unicode
+### Peças do tabuleiro: SVG inline, nunca glifos Unicode
 
-`components/ChessBoard/pieceGlyphs.ts` usa **só** o bloco Unicode "branco"
-(♔♕♖♗♘♙, U+2654-2659) para as duas cores — a cor vem do CSS
-(`text-white`/`text-black` em `ChessBoard.tsx`), não do glifo. **Não
-reintroduzir** o bloco separado de peças pretas (♚♛♜♝♞♟, U+265A-265F): tem
-cobertura de fontes inconsistente em browsers/SOs móveis, sobretudo o peão
-preto (♟ U+265F), o que fazia as peças pretas parecerem visualmente
-diferentes das brancas em telemóveis reais.
+`components/ChessBoard/PieceIcon.tsx` desenha cada peça como um SVG
+desenhado à mão (formas simples: `rect`/`circle`/`path`/`polygon`), com
+`fill="currentColor"` — a cor continua a vir só do CSS
+(`text-white`/`text-black` em `ChessBoard.tsx`), tal como antes.
+
+**Não voltar a usar caracteres Unicode de xadrez** (♔♕♖♗♘♙ / ♚♛♜♝♞♟,
+U+2654-265F) — foram tentados duas vezes e falharam de duas formas
+diferentes em telemóveis reais: (1) o bloco "preto" tem cobertura de fontes
+inconsistente, sobretudo o peão (♟ U+265F), fazendo peças pretas parecerem
+diferentes das brancas; (2) ao unificar para um só bloco, esse bloco
+renderizou em modo emoji/tamanho fixo maior que a célula do tabuleiro nalgum
+telemóvel, deformando a grelha inteira. Nenhum dos dois blocos Unicode é
+fiável entre dispositivos — só SVG garante forma e tamanho idênticos em
+qualquer browser/SO. A grelha em si também tem `grid-rows-8` explícito e
+cada célula `min-h-0 min-w-0 overflow-hidden` como defesa adicional: mesmo
+que algum conteúdo futuro tente ficar maior que a célula, não volta a
+deformar o tabuleiro.
 
 ### O tabuleiro tem de caber sempre no ecrã visível (browser e PWA)
 

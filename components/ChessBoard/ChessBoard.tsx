@@ -1,7 +1,7 @@
 'use client';
 
 import { Chess, type Square } from 'chess.js';
-import { pieceGlyph } from './pieceGlyphs';
+import { PieceIcon } from './PieceIcon';
 
 export interface ChessBoardProps {
   fen: string;
@@ -39,7 +39,7 @@ export function ChessBoard({
     <div
       role="grid"
       aria-label="Tabuleiro de xadrez"
-      className="grid grid-cols-8 aspect-square w-full max-w-[min(92vw,62dvh,560px)] select-none border-4 border-stone-800 rounded-md overflow-hidden"
+      className="grid grid-cols-8 grid-rows-8 aspect-square w-full max-w-[min(92vw,62dvh,560px)] select-none border-4 border-stone-800 rounded-md overflow-hidden"
     >
       {ranks.map((rank, rankIdx) =>
         files.map((file, fileIdx) => {
@@ -63,7 +63,7 @@ export function ChessBoard({
               disabled={!interactive}
               onClick={() => onSquareClick?.(square)}
               className={[
-                'relative flex items-center justify-center text-3xl sm:text-4xl aspect-square',
+                'relative flex items-center justify-center overflow-hidden aspect-square min-h-0 min-w-0',
                 isLight ? 'bg-amber-100' : 'bg-amber-700',
                 isCheck ? 'bg-red-400' : '',
                 isLastMove ? 'ring-4 ring-yellow-400 ring-inset' : '',
@@ -74,13 +74,14 @@ export function ChessBoard({
             >
               {piece && (
                 <span
-                  className={
+                  className={[
+                    'flex h-full w-full items-center justify-center',
                     piece.color === 'w'
                       ? 'text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]'
-                      : 'text-black'
-                  }
+                      : 'text-black',
+                  ].join(' ')}
                 >
-                  {pieceGlyph(piece.type)}
+                  <PieceIcon type={piece.type} />
                 </span>
               )}
               {isLegalTarget && !piece && (
