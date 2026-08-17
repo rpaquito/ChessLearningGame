@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Vendored third-party file (see Fix 6 / README) — not our code to lint.
+    "public/stockfish/**",
   ]),
 ]);
 
