@@ -1,11 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import type { MoveQuality } from '@/lib/chess/moveClassification';
 
 export interface LearningPanelProps {
   enabled: boolean;
   onToggle: (enabled: boolean) => void;
   onRequestSuggestion: () => void;
+  isPremium: boolean;
   suggestionLoading?: boolean;
   hasSuggestion?: boolean;
   suggestionExplanation?: string | null;
@@ -25,10 +27,44 @@ const QUALITY_CLASS: Record<MoveQuality, string> = {
   erro: 'bg-red-100 text-red-800',
 };
 
+// Mostra a explicação em si a quem é premium, ou uma chamada para
+// se tornar premium a quem não é — usado tanto para a jogada sugerida
+// como para a qualidade do último lance, daí ser um componente à parte
+// em vez de duplicar a condição nos dois sítios.
+function ExplanationOrUpsell({
+  text,
+  isPremium,
+  separator,
+}: {
+  text: string | null | undefined;
+  isPremium: boolean;
+  separator: string;
+}) {
+  if (!text) return null;
+  if (isPremium) {
+    return (
+      <>
+        {separator}
+        {text}
+      </>
+    );
+  }
+  return (
+    <>
+      {separator}
+      <Link href="/entrar" className="underline">
+        Torna-te premium
+      </Link>{' '}
+      para veres a explicação deste lance.
+    </>
+  );
+}
+
 export function LearningPanel({
   enabled,
   onToggle,
   onRequestSuggestion,
+  isPremium,
   suggestionLoading = false,
   hasSuggestion = false,
   suggestionExplanation = null,
@@ -63,13 +99,21 @@ export function LearningPanel({
           {hasSuggestion && (
             <p className="text-sm text-stone-600">
               Jogada sugerida destacada em verde no tabuleiro.
-              {suggestionExplanation && ` ${suggestionExplanation}`}
+              <ExplanationOrUpsell
+                text={suggestionExplanation}
+                isPremium={isPremium}
+                separator=" "
+              />
             </p>
           )}
           {lastMoveQuality && (
             <p className={`text-sm rounded-md px-3 py-2 ${QUALITY_CLASS[lastMoveQuality]}`}>
               O teu último lance: {QUALITY_LABEL[lastMoveQuality]}
-              {lastMoveExplanation && ` — ${lastMoveExplanation}`}
+              <ExplanationOrUpsell
+                text={lastMoveExplanation}
+                isPremium={isPremium}
+                separator=" — "
+              />
             </p>
           )}
         </>
