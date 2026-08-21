@@ -20,16 +20,20 @@ Abra http://localhost:3000.
 npm test
 ```
 
-## Docker
-
-```bash
-docker build -t xadrez-aprendizado .
-docker run --rm -p 3000:3000 xadrez-aprendizado
-```
-
 ## Deploy no Vercel
 
-Conecte o repositório no Vercel — não há variáveis de ambiente obrigatórias.
+Vercel é o único alvo de deploy suportado (o self-host via Docker foi
+descontinuado quando a autenticação foi introduzida — ver abaixo). Conecte
+o repositório no Vercel e instale a integração Clerk (Vercel Marketplace),
+que provisiona automaticamente as variáveis de ambiente necessárias
+(`CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`).
+
+## Autenticação
+
+Login usa o [Clerk](https://clerk.com/). Algumas funcionalidades do modo de
+aprendizagem (as explicações de lances) são premium — ativado manualmente
+por agora via `publicMetadata.premium` na Clerk Dashboard, sem pagamentos
+ainda.
 
 ## PWA (instalável, funciona offline)
 

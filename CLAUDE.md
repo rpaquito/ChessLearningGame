@@ -203,9 +203,15 @@ npx tsc --noEmit  # typecheck (sem script próprio no package.json)
 Vercel (projeto `chess-learning-game`, equipa `algorithm-cloud`) faz deploy
 automático a cada push para `main` via integração com o GitHub
 (`rpaquito/ChessLearningGame`) — não é preciso correr `vercel deploy` à mão.
-Sem variáveis de ambiente obrigatórias. `next.config.ts` desliga
-`output: "standalone"` quando `process.env.VERCEL` está definido (esse modo
-é só para o self-host via Docker; conflitua com o build da própria Vercel).
+Vercel é o único alvo de deploy suportado: o self-host via Docker (e o
+`output: "standalone"` em `next.config.ts` que existia só para isso) foi
+descontinuado quando a autenticação (Clerk) foi introduzida — o Dockerfile
+não tinha forma de receber as variáveis de ambiente do Clerk. As variáveis
+`CLERK_SECRET_KEY`/`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` são provisionadas
+automaticamente pela integração Clerk do Vercel Marketplace (ver secção
+"Autenticação e funcionalidades premium" acima) — não há passo manual de
+configuração de ambiente para um novo deploy, desde que essa integração
+esteja instalada no projeto.
 
 ## Ficheiros de contexto de agentes
 
