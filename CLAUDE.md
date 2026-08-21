@@ -4,17 +4,24 @@
 
 App Next.js (App Router) de xadrez: jogar contra o Stockfish (3 níveis) ou a
 dois no mesmo dispositivo, um "modo de aprendizagem" (lances legais, peças
-ameaçadas, sugestão de jogada, avaliação do último lance) e um tutorial em
-`/aprender`. Instalável como PWA, funciona offline. Sem backend/API routes —
-tudo corre no browser.
+ameaçadas, sugestão de jogada, avaliação do último lance, com explicação de
+lances premium) e um tutorial em `/aprender`. Instalável como PWA, funciona
+offline. Sem backend/API routes próprias — tudo corre no browser, com uma
+exceção: autenticação (Clerk), usada só para gate de funcionalidades premium
+(ver secção própria abaixo).
 
 ## Estrutura
 
 ```
+middleware.ts              # clerkMiddleware() — só sincroniza sessão, sem auth.protect()
 app/
   layout.tsx              # <html lang="pt-PT">, metadata/PWA, monta ServiceWorkerRegistration
-  page.tsx                 # menu inicial: ModeSelector + link "Regras do jogo"
-  jogar/page.tsx            # a partida em si — client component "grande", liga tudo
+                           # e ClerkProvider
+  page.tsx                 # menu inicial: link "Entrar"/<UserButton/>, ModeSelector,
+                            # link "Regras do jogo"
+  entrar/page.tsx            # <SignIn/> do Clerk
+  criar-conta/page.tsx        # <SignUp/> do Clerk
+  jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
                              # fim-de-jogo, estrategia), cada uma com demos ChessBoard
                              # não-interativos
@@ -24,7 +31,9 @@ components/
                               # cada peça como SVG inline (não glifos Unicode — ver secção
                               # própria abaixo)
   LearningPanel/              # painel lateral do modo de aprendizagem (toggle, botão
-                               # "sugerir jogada", badge de qualidade do lance)
+                               # "sugerir jogada", badge de qualidade do lance); as
+                               # frases de explicação de lances são premium — recebe
+                               # isPremium como prop simples, não sabe nada de Clerk
   ModeSelector/                 # ecrã inicial: modo/dificuldade/cor -> navega para
                                  # /jogar com querystring
   RulesModal/                    # popup fechável com resumo das regras — usado no
@@ -40,7 +49,13 @@ lib/chess/
   difficulty.ts               # Difficulty ('facil'|'medio'|'dificil') -> EngineOptions
   moveClassification.ts        # perda de centipawns -> MoveQuality ('boa'|'imprecisao'|'erro')
   threats.ts                     # peças penduradas/ameaçadas para o modo de aprendizagem
+  moveExplanation.ts               # frases de explicação de lances (premium) — ver
+                                    # secção própria abaixo
   *.test.ts                       # cada módulo acima tem testes ao lado
+lib/auth/
+  isPremiumUser.ts        # lê user.publicMetadata.premium do Clerk — usada em
+                          # app/jogar/page.tsx para decidir o que o LearningPanel
+                          # mostra
 public/
   sw.js            # service worker — ver secção própria abaixo
   manifest.json      # lang "pt-PT"
@@ -92,6 +107,33 @@ qualquer browser/SO. A grelha em si também tem `grid-rows-8` explícito e
 cada célula `min-h-0 min-w-0 overflow-hidden` como defesa adicional: mesmo
 que algum conteúdo futuro tente ficar maior que a célula, não volta a
 deformar o tabuleiro.
+
+### Autenticação e funcionalidades premium (Clerk)
+
+Login usa o Clerk (`@clerk/nextjs`), instalado como integração nativa
+do Vercel Marketplace — `CLERK_SECRET_KEY` e
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` são provisionadas automaticamente
+como variáveis de ambiente do projeto na Vercel. `middleware.ts` só
+mantém a sessão sincronizada (`clerkMiddleware()`, sem
+`auth.protect()`) — nenhuma rota exige autenticação para ser acedida;
+`/jogar`, `/aprender`, etc. continuam todas públicas.
+
+O que é premium: as frases de explicação de lances
+(`lib/chess/moveExplanation.ts`, mostradas em `LearningPanel`) — tudo o
+resto do modo de aprendizagem (destaque de ameaças, sugestão de
+jogada, badge de qualidade boa/imprecisão/erro) continua gratuito. A
+flag vive em `user.publicMetadata.premium` (booleano) e só é editável
+pela Clerk Dashboard ou por uma chamada de backend com
+`CLERK_SECRET_KEY` — nunca pelo próprio utilizador — por isso
+`lib/auth/isPremiumUser.ts` pode lê-la em segurança no cliente
+(`app/jogar/page.tsx`, via `useUser()`) sem precisar de nenhuma API
+route própria. Não há pagamentos nem base de dados ainda: ativar
+premium para um utilizador é, para já, um passo manual na Clerk
+Dashboard.
+
+Páginas `/entrar` e `/criar-conta` (não `/sign-in`/`/sign-up`, para
+consistência com as restantes rotas em português) usam os componentes
+prontos do Clerk (`<SignIn/>`/`<SignUp/>`) sem lógica própria.
 
 ### O tabuleiro tem de caber sempre no ecrã visível (browser e PWA)
 
