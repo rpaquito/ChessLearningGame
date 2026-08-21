@@ -19,8 +19,10 @@ app/
                            # e ClerkProvider
   page.tsx                 # menu inicial: link "Entrar"/<UserButton/>, ModeSelector,
                             # link "Regras do jogo"
-  entrar/page.tsx            # <SignIn/> do Clerk
-  criar-conta/page.tsx        # <SignUp/> do Clerk
+  entrar/[[...rest]]/page.tsx       # <SignIn/> do Clerk — catch-all: o Clerk exige
+                                     # este segmento para os sub-fluxos (verificação
+                                     # de email, MFA, callback OAuth)
+  criar-conta/[[...rest]]/page.tsx   # <SignUp/> do Clerk — mesma razão
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
                              # fim-de-jogo, estrategia), cada uma com demos ChessBoard
