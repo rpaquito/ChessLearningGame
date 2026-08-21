@@ -8,7 +8,9 @@ export interface LearningPanelProps {
   onRequestSuggestion: () => void;
   suggestionLoading?: boolean;
   hasSuggestion?: boolean;
+  suggestionExplanation?: string | null;
   lastMoveQuality?: MoveQuality | null;
+  lastMoveExplanation?: string | null;
 }
 
 const QUALITY_LABEL: Record<MoveQuality, string> = {
@@ -29,7 +31,9 @@ export function LearningPanel({
   onRequestSuggestion,
   suggestionLoading = false,
   hasSuggestion = false,
+  suggestionExplanation = null,
   lastMoveQuality = null,
+  lastMoveExplanation = null,
 }: LearningPanelProps) {
   return (
     <aside className="flex flex-col gap-4 w-full max-w-xs border border-stone-200 rounded-md p-4">
@@ -59,11 +63,13 @@ export function LearningPanel({
           {hasSuggestion && (
             <p className="text-sm text-stone-600">
               Jogada sugerida destacada em verde no tabuleiro.
+              {suggestionExplanation && ` ${suggestionExplanation}`}
             </p>
           )}
           {lastMoveQuality && (
             <p className={`text-sm rounded-md px-3 py-2 ${QUALITY_CLASS[lastMoveQuality]}`}>
               O teu último lance: {QUALITY_LABEL[lastMoveQuality]}
+              {lastMoveExplanation && ` — ${lastMoveExplanation}`}
             </p>
           )}
         </>

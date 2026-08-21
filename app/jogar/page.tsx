@@ -10,6 +10,7 @@ import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
+import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
 import { findThreatenedSquares } from '@/lib/chess/threats';
 import { createStockfishClient, type StockfishClient } from '@/lib/chess/stockfishClient';
 import { parseUciMove } from '@/lib/chess/uciParser';
@@ -46,7 +47,9 @@ function JogarContent() {
   const [learningEnabled, setLearningEnabled] = useState(true);
   const [suggestion, setSuggestion] = useState<{ from: Square; to: Square } | null>(null);
   const [suggestionLoading, setSuggestionLoading] = useState(false);
+  const [suggestionExplanation, setSuggestionExplanation] = useState<string | null>(null);
   const [lastMoveQuality, setLastMoveQuality] = useState<MoveQuality | null>(null);
+  const [lastMoveExplanation, setLastMoveExplanation] = useState<string | null>(null);
   const [engineUnavailable, setEngineUnavailable] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
 
@@ -76,6 +79,7 @@ function JogarContent() {
     (square: Square) => {
       if (!isHumanTurn || state.isGameOver) return;
       setSuggestion(null);
+      setSuggestionExplanation(null);
 
       if (selectedSquare && legalMovesFrom(selectedSquare).includes(square)) {
         const fenBefore = state.fen;
@@ -90,7 +94,19 @@ function JogarContent() {
           Promise.all([engine.evaluate(fenBefore, 10), engine.evaluate(fenAfter, 10)])
             .then(([bestEval, replyEval]) => {
               const playedEval = -replyEval;
-              setLastMoveQuality(classifyMove(centipawnLoss(bestEval, playedEval)));
+              const loss = centipawnLoss(bestEval, playedEval);
+              const quality = classifyMove(loss);
+              setLastMoveQuality(quality);
+              try {
+                const tagSentence = describeMove(fenBefore, {
+                  from: selectedSquare,
+                  to: square,
+                  promotion: 'q',
+                });
+                setLastMoveExplanation(explainMoveQuality(quality, tagSentence, loss));
+              } catch {
+                setLastMoveExplanation(null);
+              }
             })
             .catch(() => {
               setEngineUnavailable(true);
@@ -130,11 +146,19 @@ function JogarContent() {
     const engine = engineRef.current;
     if (!engine) return;
     setSuggestionLoading(true);
+    const fenBefore = state.fen;
     engine
-      .getBestMove(state.fen, difficultyToEngineOptions('dificil'))
+      .getBestMove(fenBefore, difficultyToEngineOptions('dificil'))
       .then((uci) => {
         const { from, to } = parseUciMove(uci);
         setSuggestion({ from: from as Square, to: to as Square });
+        try {
+          setSuggestionExplanation(
+            describeMove(fenBefore, { from: from as Square, to: to as Square })
+          );
+        } catch {
+          setSuggestionExplanation(null);
+        }
         setSuggestionLoading(false);
       })
       .catch(() => {
@@ -147,7 +171,9 @@ function JogarContent() {
     reset();
     setSelectedSquare(null);
     setSuggestion(null);
+    setSuggestionExplanation(null);
     setLastMoveQuality(null);
+    setLastMoveExplanation(null);
   }
 
   return (
@@ -192,7 +218,9 @@ function JogarContent() {
           onRequestSuggestion={handleRequestSuggestion}
           suggestionLoading={suggestionLoading}
           hasSuggestion={Boolean(suggestion)}
+          suggestionExplanation={suggestionExplanation}
           lastMoveQuality={lastMoveQuality}
+          lastMoveExplanation={lastMoveExplanation}
         />
       )}
 
