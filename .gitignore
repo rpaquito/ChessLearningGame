@@ -49,3 +49,7 @@ next-env.d.ts
 
 # superpowers SDD workspace
 .superpowers/
+
+# git worktrees created by this development workflow — never sweep these
+# into a commit from this or any other checkout
+.claude/worktrees/

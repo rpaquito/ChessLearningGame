@@ -8,5 +8,5 @@ export default clerkMiddleware();
 export const config = {
   // Só exclui assets estáticos com hash/ícones — este projeto não tem
   // rotas /api nem tRPC, por isso o matcher não precisa de as referir.
-  matcher: ['/((?!_next|.*\\.(?:png|jpg|svg|ico|webmanifest|json)$).*)'],
+  matcher: ['/((?!_next|.*\\.(?:png|jpg|svg|ico|webmanifest|json|js|wasm|css|txt)$).*)'],
 };

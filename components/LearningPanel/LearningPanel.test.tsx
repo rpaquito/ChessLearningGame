@@ -17,7 +17,7 @@ describe('LearningPanel', () => {
       />
     );
     expect(screen.getByText(/Captura o cavalo e dá xeque\./)).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Torna-te premium' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Entra ou contacta-nos' })).not.toBeInTheDocument();
   });
 
   it('shows an upsell link instead of the suggestion explanation to a free user', () => {
@@ -32,7 +32,7 @@ describe('LearningPanel', () => {
       />
     );
     expect(screen.queryByText(/Captura o cavalo e dá xeque\./)).not.toBeInTheDocument();
-    const link = screen.getByRole('link', { name: 'Torna-te premium' });
+    const link = screen.getByRole('link', { name: 'Entra ou contacta-nos' });
     expect(link).toHaveAttribute('href', '/entrar');
   });
 
@@ -66,7 +66,7 @@ describe('LearningPanel', () => {
     expect(
       screen.queryByText(/Foi um erro: perdeste cerca de 250 centipawns de vantagem\./)
     ).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Torna-te premium' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Entra ou contacta-nos' })).toBeInTheDocument();
   });
 
   it('does not show an upsell when there is no explanation to gate', () => {
@@ -80,6 +80,6 @@ describe('LearningPanel', () => {
         suggestionExplanation={null}
       />
     );
-    expect(screen.queryByRole('link', { name: 'Torna-te premium' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Entra ou contacta-nos' })).not.toBeInTheDocument();
   });
 });

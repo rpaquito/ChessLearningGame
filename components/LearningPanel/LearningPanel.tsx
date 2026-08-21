@@ -53,9 +53,9 @@ function ExplanationOrUpsell({
     <>
       {separator}
       <Link href="/entrar" className="underline">
-        Torna-te premium
+        Entra ou contacta-nos
       </Link>{' '}
-      para veres a explicação deste lance.
+      para pedires acesso premium e veres a explicação deste lance.
     </>
   );
 }

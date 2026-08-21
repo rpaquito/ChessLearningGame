@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { Show, UserButton } from '@clerk/nextjs';
 import { ModeSelector } from '@/components/ModeSelector/ModeSelector';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 
@@ -12,14 +12,14 @@ export default function HomePage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center gap-10 p-8">
       <div className="w-full max-w-sm flex justify-end text-sm">
-        <SignedOut>
+        <Show when="signed-out">
           <Link href="/entrar" className="underline text-sky-700">
             Entrar
           </Link>
-        </SignedOut>
-        <SignedIn>
+        </Show>
+        <Show when="signed-in">
           <UserButton />
-        </SignedIn>
+        </Show>
       </div>
       <div className="text-center">
         <h1 className="text-3xl font-bold">Xadrez</h1>

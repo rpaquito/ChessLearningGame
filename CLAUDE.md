@@ -13,7 +13,7 @@ exceção: autenticação (Clerk), usada só para gate de funcionalidades premiu
 ## Estrutura
 
 ```
-middleware.ts              # clerkMiddleware() — só sincroniza sessão, sem auth.protect()
+proxy.ts                   # clerkMiddleware() — só sincroniza sessão, sem auth.protect()
 app/
   layout.tsx              # <html lang="pt-PT">, metadata/PWA, monta ServiceWorkerRegistration
                            # e ClerkProvider
@@ -113,7 +113,7 @@ deformar o tabuleiro.
 Login usa o Clerk (`@clerk/nextjs`), instalado como integração nativa
 do Vercel Marketplace — `CLERK_SECRET_KEY` e
 `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` são provisionadas automaticamente
-como variáveis de ambiente do projeto na Vercel. `middleware.ts` só
+como variáveis de ambiente do projeto na Vercel. `proxy.ts` só
 mantém a sessão sincronizada (`clerkMiddleware()`, sem
 `auth.protect()`) — nenhuma rota exige autenticação para ser acedida;
 `/jogar`, `/aprender`, etc. continuam todas públicas.
@@ -130,6 +130,12 @@ pela Clerk Dashboard ou por uma chamada de backend com
 route própria. Não há pagamentos nem base de dados ainda: ativar
 premium para um utilizador é, para já, um passo manual na Clerk
 Dashboard.
+
+Importante: isto protege o *valor da flag*, não o conteúdo em si — a
+frase de explicação é gerada e enviada ao browser de qualquer forma;
+`isPremium` só decide se aparece ou não. Não é uma fronteira de
+segurança, é só uma gate de UI — aceitável enquanto não há pagamentos
+reais a proteger.
 
 Páginas `/entrar` e `/criar-conta` (não `/sign-in`/`/sign-up`, para
 consistência com as restantes rotas em português) usam os componentes
@@ -168,6 +174,13 @@ verificar por atualizações sempre que a app volta a primeiro plano
 já está persistido em `localStorage` (`STORAGE_KEY` em `useChessGame.ts`) —
 não persiste UI auxiliar (toggle do modo de aprendizagem, sugestão pendente),
 o que é intencional.
+
+Desde a introdução do Clerk, o `proxy.ts` (`clerkMiddleware()`) intercepta
+as navegações network-first antes de chegarem à app quando há rede — não
+muda a estratégia acima, só se interpõe à frente dela. Os pedidos ao
+Frontend API do Clerk (usado por `<SignIn/>`/`<SignUp/>`/`<UserButton/>`)
+vão para um domínio externo do próprio Clerk e não passam por este service
+worker nem pela sua cache — o Clerk gere o seu próprio caching/offline.
 
 ### Testes
 
