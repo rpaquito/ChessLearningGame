@@ -62,6 +62,7 @@ public/
   sw.js            # service worker — ver secção própria abaixo
   manifest.json      # lang "pt-PT"
   stockfish/           # binário WASM vendorizado (GPLv3, não modificado — excluído do lint)
+  board/                # texturas de madeira das casas — ver secção própria abaixo
 ```
 
 `app/jogar/page.tsx` é o ponto onde tudo se junta: lê `mode`/`difficulty`/`color`
@@ -109,6 +110,36 @@ qualquer browser/SO. A grelha em si também tem `grid-rows-8` explícito e
 cada célula `min-h-0 min-w-0 overflow-hidden` como defesa adicional: mesmo
 que algum conteúdo futuro tente ficar maior que a célula, não volta a
 deformar o tabuleiro.
+
+### Textura das casas do tabuleiro: imagens geradas, vendorizadas
+
+`public/board/light-square.webp` e `public/board/dark-square.webp` são
+texturas de madeira (carvalho claro / nogueira escura) geradas com o
+Antigravity CLI (`agy`, modelo Gemini "Nano Banana") e vendorizadas no
+repositório — tal como o binário do Stockfish, não são geradas em runtime
+nem pedidas a um serviço externo. `ChessBoard.tsx` aplica-as via
+`backgroundImage` inline (Tailwind não referencia ficheiros de `public/`
+por classe), com `background-size: cover`; as classes `bg-amber-100`/
+`bg-amber-700` continuam no botão como cor de fallback caso a imagem ainda
+não esteja em cache (primeira visita offline).
+
+Se voltares a gerar estas imagens: pede explicitamente lisura/tileability
+("seamless tileable"), iluminação plana sem sombras/vinheta (uma imagem com
+gradiente de luz fica óbvia quando repetida por trás de casas próximas), e
+depois **redimensiona e comprime antes de commitar** — os originais saem a
+1024×1024 (~0.8-0.9 MB cada); `sips -Z 384` seguido de `cwebp -q 85` reduz
+para ~5-12 KB sem perda visível, o que importa porque o tabuleiro nunca
+mostra mais do que ~70px por casa (`min(92vw, 62dvh, 560px)` a dividir por
+8 colunas).
+
+O destaque de xeque deixou de substituir a cor da casa por
+`bg-red-400` sólido (isso escondia a textura) — passou a ser uma camada
+`absolute inset-0 bg-red-500/50` translúcida por cima da textura, como os
+outros estados (`ring`/`outline` de último lance, seleção, ameaça,
+sugestão). Peças pretas ganharam também um `drop-shadow` claro (as brancas
+já tinham um escuro) — grão de madeira real tem mais variação de contraste
+do que uma cor lisa, por isso as duas cores de peça precisam de contorno
+para se manterem legíveis nas duas texturas.
 
 ### Autenticação e funcionalidades premium (Clerk)
 
