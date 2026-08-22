@@ -17,17 +17,20 @@ proxy.ts                   # clerkMiddleware() — só sincroniza sessão, sem a
 app/
   layout.tsx              # <html lang="pt-PT">, metadata/PWA, monta ServiceWorkerRegistration
                            # e ClerkProvider
-  page.tsx                 # menu inicial: três tiles ilustrados ("Contra o CPU",
-                            # "Dois jogadores", "Opções"), links "Regras" e "Entrar"/<UserButton/>
-
+  page.tsx                 # menu inicial: três tiles ilustrados ("Jogar contra o
+                            # computador", "Dois jogadores", "Opções"), links
+                            # "Regras do jogo" e "Entrar"/<UserButton/>
   entrar/[[...rest]]/page.tsx       # <SignIn/> do Clerk — catch-all: o Clerk exige
                                      # este segmento para os sub-fluxos (verificação
                                      # de email, MFA, callback OAuth)
   criar-conta/[[...rest]]/page.tsx   # <SignUp/> do Clerk — mesma razão
-  configurar/page.tsx            # seletor de dificuldade (CPU) e cor de início —
-                                  # pré-preenchido a partir de lib/settings/
-  opcoes/page.tsx                 # definições (som, tabuleiro, etc.) e placeholders
-                                  # "Brevemente" para características futuras
+  configurar/page.tsx            # dificuldade e cor para o modo computador, pré-
+                                  # preenchidas a partir de lib/settings/ mas só
+                                  # para esta partida — escolher aqui não altera as
+                                  # definições por omissão, isso só acontece em /opcoes
+  opcoes/page.tsx                 # dificuldade/cor por omissão (persistem de facto) e
+                                  # quatro placeholders "Brevemente" para
+                                  # funcionalidades futuras
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
                              # fim-de-jogo, estrategia), cada uma com demos ChessBoard
@@ -41,8 +44,6 @@ components/
                                # "sugerir jogada", badge de qualidade do lance); as
                                # frases de explicação de lances são premium — recebe
                                # isPremium como prop simples, não sabe nada de Clerk
-  ModeSelector/                 # ecrã inicial: modo/dificuldade/cor -> navega para
-                                 # /jogar com querystring
   RulesModal/                    # popup fechável com resumo das regras — usado no
                                   # menu inicial e a meio da partida, sem mexer no
                                   # estado do jogo
@@ -64,15 +65,17 @@ lib/auth/
                           # app/jogar/page.tsx para decidir o que o LearningPanel
                           # mostra
 lib/settings/
-  settings.ts             # tipos e SETTINGS_STORAGE_KEY para preferências persistidas
-  useSettings.ts          # hook de estado para difficulty, playerColor, soundEnabled, etc.
+  settings.ts             # Settings { defaultDifficulty, defaultColor }, DEFAULT_SETTINGS,
+                           # loadSettings()/saveSettings() puros — chave de localStorage
+                           # é uma constante interna, não exportada
+  useSettings.ts          # hook fino sobre settings.ts — { settings, updateSettings }
 public/
   sw.js            # service worker — ver secção própria abaixo
   manifest.json      # lang "pt-PT"
   stockfish/           # binário WASM vendorizado (GPLv3, não modificado — excluído do lint)
   board/                # texturas de madeira das casas — ver secção própria abaixo
   menu/                 # tiles ilustrados do menu (vs-cpu.webp, options.webp,
-                        # two-players.webp) — ver secção "Menu redesenhado" abaixo
+                        # background.webp) — ver secção "Menu redesenhado" abaixo
 ```
 
 `app/jogar/page.tsx` é o ponto onde tudo se junta: lê `mode`/`difficulty`/`color`
@@ -153,13 +156,55 @@ para se manterem legíveis nas duas texturas.
 
 ### Menu redesenhado e configurações persistidas (tiles, /configurar, /opcoes)
 
-`app/page.tsx` deixou de ser um formulário único (`ModeSelector`) — agora é um menu com três tiles ilustrados: "Contra o CPU", "Dois jogadores", "Opções", mais um link para "Regras do jogo". Os tiles "Contra o CPU" e "Dois jogadores" navegam para `/configurar`, que tem seletores de dificuldade (CPU) e cor de início, pré-preenchidos a partir de preferências guardadas. `/opcoes` é uma página com definições (som, tabuleiro, etc.) e quatro placeholders "Brevemente" para características futuras.
+`app/page.tsx` deixou de ser um formulário único (`ModeSelector`, removido)
+— agora é um menu com três tiles ilustrados: "Jogar contra o computador"
+(→ `/configurar`), "Dois jogadores" (→ direto para `/jogar?mode=local`,
+sem ecrã intermédio — não há nada para configurar nesse modo), e
+"Opções" (→ `/opcoes`). "Ver tutorial" e "Regras do jogo" mantêm-se como
+links secundários mais pequenos.
 
-O estado persistido (`difficulty`, `playerColor`, `soundEnabled`, etc.) vive em `lib/settings/useSettings.ts` + `lib/settings/settings.ts`, espelhando o padrão exato de `useChessGame.ts` — wrapper hook + `localStorage` com chave tipada (`SETTINGS_STORAGE_KEY`).
+`/configurar` mostra dificuldade e cor pré-preenchidas a partir das
+Definições guardadas, mas escolher aqui é só para esta partida —
+**não** altera as Definições por omissão (isso só acontece em
+`/opcoes`, que grava de facto a cada alteração, sem botão "Guardar").
+Este é o ponto central da divisão entre `components/GameSetup/
+GameSetup.tsx` (lê `useSettings()`, nunca chama `updateSettings`) e
+`app/opcoes/page.tsx` (chama `updateSettings` a cada clique).
 
-As imagens dos tiles (`public/menu/vs-cpu.webp`, `public/menu/options.webp`, `public/menu/two-players.webp`) foram geradas com o pipeline `agy` → `sips` → `cwebp` — ver "Textura das casas do tabuleiro" acima para o detalhe de redimensionamento e compressão (`sips -Z 384 | cwebp -q 85`). **Nota importante:** a imagem "Dois jogadores" não foi completada (geração interrompida por quota exhaustão do serviço `agy`); o tile usa um gradiente Tailwind (`bg-gradient-to-br from-stone-700 to-stone-900`) temporariamente — trocar por uma imagem verdadeira quando a quota for reposta (aproximadamente 6.5 dias após 2026-08-22).
+O estado persistido — `Settings { defaultDifficulty, defaultColor }`,
+`DEFAULT_SETTINGS`, `loadSettings()`/`saveSettings()` — vive em
+`lib/settings/settings.ts`, com `lib/settings/useSettings.ts` como
+wrapper fino em hook. Espelha o padrão exato de `useChessGame.ts`
+(`useState(() => loadSettings())`, sem `useEffect`) **só que este
+padrão não é seguro aqui** — ver a nota sobre hidratação abaixo.
 
-Os quatro espaços "Brevemente" em `/opcoes` (som expandido, análise de partidas, treino tático, edição de posição) são placeholders intencionais para sub-projetos futuros, não bugs. Cada um marca-se `pointer-events-none opacity-50`.
+As imagens dos tiles (`public/menu/vs-cpu.webp`, `public/menu/
+options.webp`) e o fundo do menu (`public/menu/background.webp`) foram
+geradas com o mesmo pipeline `agy` → `sips` → `cwebp` da textura do
+tabuleiro (`sips -Z 800` para os tiles, `-Z 1200` para o fundo, depois
+`cwebp -q 85` — dois comandos separados, não um pipe). **Nota
+importante:** a imagem "Dois jogadores" não foi completada (geração
+interrompida pelo esgotamento da quota do serviço `agy`); o tile usa
+um gradiente Tailwind (`bg-gradient-to-br from-stone-700 to-stone-900`)
+temporariamente, com a mesma estrutura dos outros tiles — trocar pela
+imagem verdadeira é uma alteração de duas linhas quando a quota for
+reposta (~6.5 dias após 2026-08-22).
+
+Os quatro espaços "Brevemente" em `/opcoes` — tema do tabuleiro, estilo
+das peças, imagem de fundo, idioma — são placeholders intencionais
+para sub-projetos futuros (não bugs), marcados com `opacity-50` e
+`aria-disabled="true"`.
+
+**Hidratação:** ao contrário de `useChessGame` (cuja página `/jogar`
+nunca é pré-renderizada, por estar atrás de `useSearchParams` dentro de
+`<Suspense>`), `/configurar` e `/opcoes` são páginas normais,
+pré-renderizadas no servidor. Ler `localStorage` diretamente no
+inicializador de `useState` nestas páginas produziria HTML do servidor
+com `DEFAULT_SETTINGS` e HTML do cliente com o valor real guardado —
+um erro de hidratação sempre que o utilizador já tiver definições não-
+-padrão guardadas. `useSettings` evita isto lendo `DEFAULT_SETTINGS` no
+render inicial (igual em servidor e cliente) e só lendo o
+`localStorage` real dentro de um `useEffect`, depois de montar.
 
 ### Autenticação e funcionalidades premium (Clerk)
 

@@ -49,4 +49,13 @@ describe('useSettings', () => {
     });
     expect(result.current.settings).toEqual({ defaultDifficulty: 'medio', defaultColor: 'random' });
   });
+
+  it('does not lose an update when two updateSettings calls happen before a re-render settles', () => {
+    const { result } = renderHook(() => useSettings());
+    act(() => {
+      result.current.updateSettings({ defaultDifficulty: 'medio' });
+      result.current.updateSettings({ defaultColor: 'random' });
+    });
+    expect(result.current.settings).toEqual({ defaultDifficulty: 'medio', defaultColor: 'random' });
+  });
 });
