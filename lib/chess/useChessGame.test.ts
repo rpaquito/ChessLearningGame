@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { useChessGame } from './useChessGame';
+import { useChessGame, clearSavedGame, STORAGE_KEY } from './useChessGame';
 
 describe('useChessGame', () => {
   beforeEach(() => {
@@ -78,5 +78,17 @@ describe('useChessGame', () => {
     const { result: restored } = renderHook(() => useChessGame(true));
     expect(restored.current.state.fen).toBe(fenAfterMove);
     expect(restored.current.state.turn).toBe('b');
+  });
+
+  it('clearSavedGame removes any persisted FEN', () => {
+    const { result } = renderHook(() => useChessGame(true));
+    act(() => {
+      result.current.makeMove('e2', 'e4');
+    });
+    expect(window.localStorage.getItem(STORAGE_KEY)).not.toBeNull();
+
+    clearSavedGame();
+
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBeNull();
   });
 });

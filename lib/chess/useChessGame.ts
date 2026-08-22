@@ -22,6 +22,21 @@ export interface UseChessGameResult {
 
 export const STORAGE_KEY = 'chess-learning-game-fen';
 
+/**
+ * Limpa o FEN guardado, sem precisar de montar o hook. Usado antes de
+ * começar uma partida nova (tanto no botão "Começar" de /configurar como
+ * no clique direto em "Dois jogadores" no menu) — extraído para aqui em
+ * vez de duplicar a mesma lógica defensiva de try/catch nos dois sítios.
+ */
+export function clearSavedGame(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage indisponível — nada para limpar, segue em frente
+  }
+}
+
 function statusFromChess(chess: Chess): GameStatus {
   if (chess.isCheckmate()) return 'checkmate';
   if (chess.isStalemate()) return 'stalemate';
