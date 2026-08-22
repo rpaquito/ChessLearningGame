@@ -17,12 +17,17 @@ proxy.ts                   # clerkMiddleware() — só sincroniza sessão, sem a
 app/
   layout.tsx              # <html lang="pt-PT">, metadata/PWA, monta ServiceWorkerRegistration
                            # e ClerkProvider
-  page.tsx                 # menu inicial: link "Entrar"/<UserButton/>, ModeSelector,
-                            # link "Regras do jogo"
+  page.tsx                 # menu inicial: três tiles ilustrados ("Contra o CPU",
+                            # "Dois jogadores", "Opções"), links "Regras" e "Entrar"/<UserButton/>
+
   entrar/[[...rest]]/page.tsx       # <SignIn/> do Clerk — catch-all: o Clerk exige
                                      # este segmento para os sub-fluxos (verificação
                                      # de email, MFA, callback OAuth)
   criar-conta/[[...rest]]/page.tsx   # <SignUp/> do Clerk — mesma razão
+  configurar/page.tsx            # seletor de dificuldade (CPU) e cor de início —
+                                  # pré-preenchido a partir de lib/settings/
+  opcoes/page.tsx                 # definições (som, tabuleiro, etc.) e placeholders
+                                  # "Brevemente" para características futuras
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
                              # fim-de-jogo, estrategia), cada uma com demos ChessBoard
@@ -58,11 +63,16 @@ lib/auth/
   isPremiumUser.ts        # lê user.publicMetadata.premium do Clerk — usada em
                           # app/jogar/page.tsx para decidir o que o LearningPanel
                           # mostra
+lib/settings/
+  settings.ts             # tipos e SETTINGS_STORAGE_KEY para preferências persistidas
+  useSettings.ts          # hook de estado para difficulty, playerColor, soundEnabled, etc.
 public/
   sw.js            # service worker — ver secção própria abaixo
   manifest.json      # lang "pt-PT"
   stockfish/           # binário WASM vendorizado (GPLv3, não modificado — excluído do lint)
   board/                # texturas de madeira das casas — ver secção própria abaixo
+  menu/                 # tiles ilustrados do menu (vs-cpu.webp, options.webp,
+                        # two-players.webp) — ver secção "Menu redesenhado" abaixo
 ```
 
 `app/jogar/page.tsx` é o ponto onde tudo se junta: lê `mode`/`difficulty`/`color`
@@ -140,6 +150,16 @@ sugestão). Peças pretas ganharam também um `drop-shadow` claro (as brancas
 já tinham um escuro) — grão de madeira real tem mais variação de contraste
 do que uma cor lisa, por isso as duas cores de peça precisam de contorno
 para se manterem legíveis nas duas texturas.
+
+### Menu redesenhado e configurações persistidas (tiles, /configurar, /opcoes)
+
+`app/page.tsx` deixou de ser um formulário único (`ModeSelector`) — agora é um menu com três tiles ilustrados: "Contra o CPU", "Dois jogadores", "Opções", mais um link para "Regras do jogo". Os tiles "Contra o CPU" e "Dois jogadores" navegam para `/configurar`, que tem seletores de dificuldade (CPU) e cor de início, pré-preenchidos a partir de preferências guardadas. `/opcoes` é uma página com definições (som, tabuleiro, etc.) e quatro placeholders "Brevemente" para características futuras.
+
+O estado persistido (`difficulty`, `playerColor`, `soundEnabled`, etc.) vive em `lib/settings/useSettings.ts` + `lib/settings/settings.ts`, espelhando o padrão exato de `useChessGame.ts` — wrapper hook + `localStorage` com chave tipada (`SETTINGS_STORAGE_KEY`).
+
+As imagens dos tiles (`public/menu/vs-cpu.webp`, `public/menu/options.webp`, `public/menu/two-players.webp`) foram geradas com o pipeline `agy` → `sips` → `cwebp` — ver "Textura das casas do tabuleiro" acima para o detalhe de redimensionamento e compressão (`sips -Z 384 | cwebp -q 85`). **Nota importante:** a imagem "Dois jogadores" não foi completada (geração interrompida por quota exhaustão do serviço `agy`); o tile usa um gradiente Tailwind (`bg-gradient-to-br from-stone-700 to-stone-900`) temporariamente. Swapear por uma imagem verdadeira quando a quota repousa (aproximadamente 6.5 dias após 2026-08-22).
+
+Os quatro espaços "Brevemente" em `/opcoes` (som expandido, análise de partidas, treino tático, edição de posição) são placeholders intencionais para sub-projetos futuros, não bugs. Cada um marca-se `pointer-events-none opacity-50`.
 
 ### Autenticação e funcionalidades premium (Clerk)
 
