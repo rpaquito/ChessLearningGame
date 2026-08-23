@@ -154,6 +154,43 @@ já tinham um escuro) — grão de madeira real tem mais variação de contraste
 do que uma cor lisa, por isso as duas cores de peça precisam de contorno
 para se manterem legíveis nas duas texturas.
 
+### Geração de imagens: Draw Things local (substitui Antigravity/Gemini)
+
+Desde 2026-08-23, novas imagens (texturas, tiles, arte decorativa) são
+geradas com a app **Draw Things** (Mac, modelo local `z_image_turbo`)
+em vez do Antigravity CLI (`agy`)/Gemini — pedido explícito do
+utilizador, para não depender de quota de um serviço externo. Não há
+um servidor MCP dedicado instalado neste projeto (`mcp-drawthings`
+existe no npm mas não foi adicionado) — em vez disso, invoca-se
+diretamente a API HTTP local que a própria app expõe, compatível com o
+formato Automatic1111:
+
+1. Abrir a app Draw Things e confirmar que a opção **HTTP API Server**
+   está ativa (Definições → Advanced) — fica a ouvir em
+   `http://127.0.0.1:7860`. Confirmar com `curl -s http://127.0.0.1:7860/`
+   (devolve a configuração atual em JSON, incluindo o `model` carregado).
+2. Gerar com `POST /sdapi/v1/txt2img`, corpo JSON com pelo menos
+   `prompt`, `negative_prompt`, `width`/`height` (múltiplos de 64;
+   mínimo 128), `steps`, `sampler_name` (o valor por omissão da app,
+   visto no passo 1, funciona bem — ex.: `"UniPC Trailing"`) e
+   `batch_size`. Resposta: `{"images": ["<base64 PNG>", ...]}` — não há
+   passo de polling, o pedido bloqueia até a imagem estar pronta.
+   Gerações a ~1024×768/8-10 steps no modelo `z_image_turbo` local
+   demoraram 2-3 minutos nesta máquina — usar um timeout generoso
+   (>=300s) ao chamar via `curl`/Bash.
+3. Descodificar o base64 para PNG, inspecionar visualmente (`Read`)
+   antes de aceitar — o mesmo prompt pode sair fotorrealista (errado)
+   ou estilizado/"digital painting" (certo); comparar sempre contra as
+   imagens já vendorizadas para manter o estilo consistente, e iterar o
+   prompt se sair na estética errada (aconteceu ao gerar
+   `two-players.webp`: 1ª tentativa saiu foto de tabuleiro de madeira
+   realista, 2ª tentativa com prompt mais explícito sobre silhueta
+   dourada/fundo escuro/bokeh acertou o estilo).
+4. Dali em diante o pipeline é o mesmo de sempre:
+   redimensionar (`sips -Z <tamanho>`) e comprimir (`cwebp -q 85`)
+   antes de commitar — ver exemplos concretos nas secções de textura do
+   tabuleiro e do menu.
+
 ### Menu redesenhado e configurações persistidas (tiles, /configurar, /opcoes)
 
 `app/page.tsx` deixou de ser um formulário único (`ModeSelector`, removido)
@@ -179,16 +216,16 @@ wrapper fino em hook. Espelha o padrão exato de `useChessGame.ts`
 padrão não é seguro aqui** — ver a nota sobre hidratação abaixo.
 
 As imagens dos tiles (`public/menu/vs-cpu.webp`, `public/menu/
-options.webp`) e o fundo do menu (`public/menu/background.webp`) foram
-geradas com o mesmo pipeline `agy` → `sips` → `cwebp` da textura do
-tabuleiro (`sips -Z 800` para os tiles, `-Z 1200` para o fundo, depois
-`cwebp -q 85` — dois comandos separados, não um pipe). **Nota
-importante:** a imagem "Dois jogadores" não foi completada (geração
-interrompida pelo esgotamento da quota do serviço `agy`); o tile usa
-um gradiente Tailwind (`bg-gradient-to-br from-stone-700 to-stone-900`)
-temporariamente, com a mesma estrutura dos outros tiles — trocar pela
-imagem verdadeira é uma alteração de duas linhas quando a quota for
-reposta (~6.5 dias após 2026-08-22).
+options.webp`, `public/menu/two-players.webp`) e o fundo do menu
+(`public/menu/background.webp`) seguem o mesmo pipeline de
+redimensionamento/compressão (`sips -Z 800` para os tiles, `-Z 1200`
+para o fundo, depois `cwebp -q 85` — dois comandos separados, não um
+pipe). As três primeiras foram geradas com o Antigravity CLI (`agy`,
+Gemini "Nano Banana"); `two-players.webp` foi gerada depois (2026-08-23)
+com o Draw Things local — ver secção "Geração de imagens" abaixo — para
+igualar o estilo "premium chess club" (fundo escuro, rim light dourado,
+bokeh subtil) das outras três. As quatro tiles/fundo do menu estão
+completas, nada pendente aqui.
 
 Os quatro espaços "Brevemente" em `/opcoes` — tema do tabuleiro, estilo
 das peças, imagem de fundo, idioma — são placeholders intencionais

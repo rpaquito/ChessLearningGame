@@ -41,7 +41,8 @@ export default function HomePage() {
         <Link
           href="/jogar?mode=local"
           onClick={() => clearSavedGame()}
-          className="relative flex items-center justify-center rounded-md overflow-hidden h-32 bg-gradient-to-br from-stone-700 to-stone-900"
+          className="relative flex items-center justify-center rounded-md overflow-hidden h-32 bg-stone-800 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/menu/two-players.webp)' }}
         >
           <span className="relative bg-black/50 text-white text-lg font-semibold px-4 py-2 rounded">
             Dois jogadores
