@@ -81,8 +81,12 @@ public/
 `app/jogar/page.tsx` é o ponto onde tudo se junta: lê `mode`/`difficulty`/`color`
 da querystring, usa `useChessGame` para o estado, cria o `StockfishClient`
 quando `mode === 'ai'`, e passa tudo a `ChessBoard` + `LearningPanel`. O
-`ChessBoard` em si é "burro" — recebe `fen` e arrays de squares a destacar,
-nunca decide regras sozinho. Por baixo do tabuleiro há sempre uma fila com
+`ChessBoard` em si é "burro" quanto a regras de jogo — recebe `fen` e arrays
+de squares a destacar, nunca decide se um lance é legal nem impede cliques.
+A única exceção estreita é a animação de lances (ver secção própria abaixo):
+para saber *o que* mudou entre dois FEN consecutivos, o próprio `ChessBoard`
+usa o `chess.js` internamente — mas só para desenhar a transição, nunca para
+validar ou vetar nada. Por baixo do tabuleiro há sempre uma fila com
 três ações: "Menu inicial" (`next/link` para `/`), "Reiniciar partida" e
 "Regras" (abre o `RulesModal`) — ao acrescentar uma nova ação de nível de
 página, é aqui que ela entra.
@@ -123,6 +127,65 @@ qualquer browser/SO. A grelha em si também tem `grid-rows-8` explícito e
 cada célula `min-h-0 min-w-0 overflow-hidden` como defesa adicional: mesmo
 que algum conteúdo futuro tente ficar maior que a célula, não volta a
 deformar o tabuleiro.
+
+### Animação de lances: camada de peças separada da grelha de casas
+
+Desde 2026-08-23, as peças deslizam visualmente da casa de origem até à de
+destino em vez de "saltarem" para a nova posição a cada mudança de `fen` —
+em `/jogar` e em qualquer futura sequência de posições em `/aprender`
+(hoje cada demo do tutorial usa um `fen` fixo que nunca muda depois de
+montado, por isso não há nada visível para animar aí ainda, mas o mecanismo
+já funciona para quando isso mudar).
+
+Duas peças novas, ambas em `lib/chess/`, tal como os outros módulos puros:
+
+- **`inferMove(prevFen, nextFen)`** — descobre que lance liga duas posições
+  consecutivas, testando cada lance legal de `prevFen` até encontrar o que
+  produz `nextFen` (comparando só o campo de colocação de peças do FEN).
+  Devolve `{ from, to, piece, color, promotion?, capturedSquare?,
+  castleRookFrom?, castleRookTo? }`, ou `null` se nenhum lance legal ligar
+  as duas posições (reinício de partida, posição carregada do zero) — nesse
+  caso quem chama trata como "sem animação, salta direto". Cobre captura,
+  *en passant* (a casa capturada não é a casa de destino), roque dos dois
+  lados (inclui o lance da torre) e promoção — tudo derivado dos métodos
+  `isCapture()`/`isEnPassant()`/`isKingsideCastle()`/etc. do `Move` do
+  `chess.js`, sem lógica especial por tipo de lance.
+- **`ChessBoard.tsx`** deixou de desenhar a peça dentro do `<button>` de
+  cada casa — as 64 casas continuam a ser botões normais (clique, destaque,
+  textura), mas as peças passaram a ser uma camada `absolute inset-0
+  pointer-events-none` por cima, com uma `<div>` por peça posicionada por
+  percentagem (`left`/`top`, 12.5% por coluna/linha) e `transition-all
+  duration-200 motion-reduce:transition-none`. Cada peça mantém uma
+  identidade (`id`) estável entre posições — ao mudar `square` no estado
+  interno em vez de desmontar/remontar a peça, é a mudança de `left`/`top`
+  que a CSS anima, não um salto. No roque, a torre recebe a mesma
+  atualização de `square` que o rei, na mesma transição. Uma peça
+  capturada não desaparece logo: fica marcada `removing` (fade + encolhe,
+  `duration-150`) e só sai da lista ~150ms depois — a constante
+  `CAPTURE_FADE_MS` tem de bater certo com essa duração da classe Tailwind.
+  `motion-reduce:` (Tailwind v4, sem configuração extra) colapsa tudo isto
+  para instantâneo quando o utilizador pede menos movimento.
+- Promoção é desenhada de forma simplificada: a peça que desliza já mostra
+  o tipo promovido do início ao fim do movimento, em vez de trocar de ícone
+  a meio do ar — mais simples, aceitável, revisitar só se ficar estranho.
+- `vitest.config.ts` ganhou `resolve.alias` para `@/*` (antes só existia em
+  `tsconfig.json`, que o Next.js resolve sozinho no build mas o Vitest não)
+  — necessário porque `ChessBoard.tsx` importa `inferMove` via `@/lib/...`,
+  e nenhum teste tinha exercitado esse alias antes.
+
+**Descoberta durante este trabalho, não relacionada com a animação:**
+`useChessGame.ts` lê `window.localStorage` diretamente dentro do
+inicializador de `useState` (`useChessGame(persist = true)`), sem o mesmo
+cuidado que `useSettings.ts` tem (ver secção de hidratação mais abaixo) —
+como `/jogar` é renderizada no servidor a cada pedido (não é estática, mas
+também não escapa a SSR só por estar atrás de `useSearchParams`/`Suspense`),
+uma partida gravada de uma visita anterior causa um mismatch real de
+hidratação ao recarregar a página (confirmado na consola do browser:
+"A tree hydrated but some attributes of the server rendered HTML didn't
+match"). Não foi corrigido aqui — pré-existia a esta sessão e é ortogonal
+à animação — mas está registado no backlog para uma correção futura
+(replicar o padrão "só ler localStorage num `useEffect`, depois de montar"
+de `useSettings.ts`).
 
 ### Textura das casas do tabuleiro: imagens geradas, vendorizadas
 
