@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import type { Difficulty } from '@/lib/chess/difficulty';
 import type { PlayerColor } from '@/lib/chess/playerColor';
+import type { BackgroundTheme, BoardTheme } from '@/lib/settings/settings';
+import { BACKGROUND_THEMES, BOARD_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
 
 const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
@@ -30,6 +32,51 @@ function ComingSoonSection({ title }: { title: string }) {
     </fieldset>
   );
 }
+
+function ThemePicker<T extends string>({
+  legend,
+  options,
+  value,
+  onChange,
+}: {
+  legend: string;
+  options: { id: T; label: string; previewImage: string }[];
+  value: T;
+  onChange: (id: T) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="font-medium mb-1">{legend}</legend>
+      <div className="flex gap-3">
+        {options.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            aria-pressed={value === opt.id}
+            className={`flex flex-col items-center gap-1 rounded-md border p-1 ${
+              value === opt.id ? 'border-emerald-600 ring-2 ring-emerald-600' : 'border-stone-300'
+            }`}
+          >
+            <span
+              className="h-16 w-16 rounded bg-cover bg-center"
+              style={{ backgroundImage: `url(${opt.previewImage})` }}
+            />
+            <span className="text-xs">{opt.label}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+const BOARD_THEME_OPTIONS: { id: BoardTheme; label: string; previewImage: string }[] = (
+  Object.keys(BOARD_THEMES) as BoardTheme[]
+).map((id) => ({ id, label: BOARD_THEMES[id].label, previewImage: BOARD_THEMES[id].light }));
+
+const BACKGROUND_THEME_OPTIONS: { id: BackgroundTheme; label: string; previewImage: string }[] = (
+  Object.keys(BACKGROUND_THEMES) as BackgroundTheme[]
+).map((id) => ({ id, label: BACKGROUND_THEMES[id].label, previewImage: BACKGROUND_THEMES[id].image }));
 
 export default function OpcoesPage() {
   const { settings, updateSettings } = useSettings();
@@ -80,9 +127,19 @@ export default function OpcoesPage() {
           </div>
         </fieldset>
 
-        <ComingSoonSection title="Tema do tabuleiro" />
+        <ThemePicker
+          legend="Tema do tabuleiro"
+          options={BOARD_THEME_OPTIONS}
+          value={settings.boardTheme}
+          onChange={(boardTheme) => updateSettings({ boardTheme })}
+        />
         <ComingSoonSection title="Estilo das peças" />
-        <ComingSoonSection title="Imagem de fundo" />
+        <ThemePicker
+          legend="Imagem de fundo"
+          options={BACKGROUND_THEME_OPTIONS}
+          value={settings.backgroundTheme}
+          onChange={(backgroundTheme) => updateSettings({ backgroundTheme })}
+        />
         <ComingSoonSection title="Idioma" />
       </div>
 
