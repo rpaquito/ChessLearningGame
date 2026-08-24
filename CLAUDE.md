@@ -65,10 +65,13 @@ lib/auth/
                           # app/jogar/page.tsx para decidir o que o LearningPanel
                           # mostra
 lib/settings/
-  settings.ts             # Settings { defaultDifficulty, defaultColor }, DEFAULT_SETTINGS,
-                           # loadSettings()/saveSettings() puros — chave de localStorage
-                           # é uma constante interna, não exportada
+  settings.ts             # Settings { defaultDifficulty, defaultColor, boardTheme,
+                           # backgroundTheme }, DEFAULT_SETTINGS, loadSettings()/
+                           # saveSettings() puros — chave de localStorage é uma
+                           # constante interna, não exportada
   useSettings.ts          # hook fino sobre settings.ts — { settings, updateSettings }
+  themes.ts                # registo único dos assets de cada tema (BOARD_THEMES,
+                            # BACKGROUND_THEMES) — ver secção "Menu redesenhado" abaixo
 public/
   sw.js            # service worker — ver secção própria abaixo
   manifest.json      # lang "pt-PT"
@@ -271,12 +274,27 @@ Este é o ponto central da divisão entre `components/GameSetup/
 GameSetup.tsx` (lê `useSettings()`, nunca chama `updateSettings`) e
 `app/opcoes/page.tsx` (chama `updateSettings` a cada clique).
 
-O estado persistido — `Settings { defaultDifficulty, defaultColor }`,
-`DEFAULT_SETTINGS`, `loadSettings()`/`saveSettings()` — vive em
-`lib/settings/settings.ts`, com `lib/settings/useSettings.ts` como
-wrapper fino em hook. Espelha o padrão exato de `useChessGame.ts`
-(`useState(() => loadSettings())`, sem `useEffect`) **só que este
-padrão não é seguro aqui** — ver a nota sobre hidratação abaixo.
+O estado persistido — `Settings { defaultDifficulty, defaultColor,
+boardTheme, backgroundTheme }`, `DEFAULT_SETTINGS`,
+`loadSettings()`/`saveSettings()` — vive em `lib/settings/settings.ts`,
+com `lib/settings/useSettings.ts` como wrapper fino em hook. Espelha o
+padrão exato de `useChessGame.ts` (`useState(() => loadSettings())`,
+sem `useEffect`) **só que este padrão não é seguro aqui** — ver a nota
+sobre hidratação abaixo.
+
+`boardTheme` (`'carvalho' | 'ebano-bordo'`) e `backgroundTheme`
+(`'classico' | 'noturno'`) são escolhidos em `/opcoes` e lidos em dois
+sítios: `ChessBoard` aplica a textura das casas via a sua prop
+`boardTheme`, e `app/jogar/page.tsx` desenha o fundo como uma camada
+`fixed inset-0 -z-10` (fora do fluxo, `aria-hidden`) para não poder
+interferir com a restrição "o tabuleiro tem de caber no ecrã" abaixo —
+`main` ganha `relative` só como âncora de posicionamento, não muda o
+seu próprio layout. O registo único dos assets de cada tema —
+etiquetas e caminhos de imagem, para não escrever caminhos de ficheiro
+espalhados pela app — vive em `lib/settings/themes.ts`
+(`BOARD_THEMES`, `BACKGROUND_THEMES`), lido por `ChessBoard.tsx`,
+`app/page.tsx` (fundo do menu), `app/jogar/page.tsx` e
+`app/opcoes/page.tsx` (os seletores).
 
 As imagens dos tiles (`public/menu/vs-cpu.webp`, `public/menu/
 options.webp`, `public/menu/two-players.webp`) e o fundo do menu
@@ -290,10 +308,14 @@ igualar o estilo "premium chess club" (fundo escuro, rim light dourado,
 bokeh subtil) das outras três. As quatro tiles/fundo do menu estão
 completas, nada pendente aqui.
 
-Os quatro espaços "Brevemente" em `/opcoes` — tema do tabuleiro, estilo
-das peças, imagem de fundo, idioma — são placeholders intencionais
-para sub-projetos futuros (não bugs), marcados com `opacity-50` e
-`aria-disabled="true"`.
+Dos quatro espaços originalmente reservados em `/opcoes`, dois já têm
+seletores reais — tema do tabuleiro e imagem de fundo, ambos usando
+`ThemePicker` (miniaturas clicáveis lidas de `lib/settings/themes.ts`).
+Os outros dois — estilo das peças, idioma — continuam como "Brevemente"
+(`ComingSoonSection`, `opacity-50` + `aria-disabled="true"`): sub-
+-projetos futuros, não bugs. Ver a nota sobre "peças do tabuleiro" acima
+para porque estilo das peças, em particular, não é um simples drop-in de
+imagens — teria de respeitar a convenção de SVG desenhado à mão.
 
 **Hidratação:** ao contrário de `useChessGame` (cuja página `/jogar`
 nunca é pré-renderizada, por estar atrás de `useSearchParams` dentro de
