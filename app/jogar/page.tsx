@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
+import { BACKGROUND_THEMES } from '@/lib/settings/themes';
+import { useSettings } from '@/lib/settings/useSettings';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
@@ -45,6 +47,7 @@ function JogarContent() {
   });
 
   const { state, legalMovesFrom, makeMove, reset } = useChessGame(true);
+  const { settings } = useSettings();
   const { user } = useUser();
   const isPremium = isPremiumUser(user);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
@@ -181,11 +184,17 @@ function JogarContent() {
   }
 
   return (
-    <main className="min-h-dvh flex flex-col md:flex-row items-center md:items-start justify-start md:justify-center gap-4 sm:gap-8 p-4 sm:p-8">
+    <main className="relative min-h-dvh flex flex-col md:flex-row items-center md:items-start justify-start md:justify-center gap-4 sm:gap-8 p-4 sm:p-8">
+      <div
+        className="fixed inset-0 -z-10 bg-stone-900 bg-cover bg-center"
+        style={{ backgroundImage: `url(${BACKGROUND_THEMES[settings.backgroundTheme].image})` }}
+        aria-hidden="true"
+      />
       <div className="flex flex-col items-center gap-4">
         <p className="font-medium">{STATUS_LABEL[state.status]}</p>
         <ChessBoard
           fen={state.fen}
+          boardTheme={settings.boardTheme}
           orientation={humanColor === 'w' ? 'white' : 'black'}
           selectedSquare={selectedSquare}
           legalTargets={legalTargets}
