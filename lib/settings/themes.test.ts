@@ -1,0 +1,27 @@
+import { describe, expect, it } from 'vitest';
+import { BOARD_THEMES, BACKGROUND_THEMES } from './themes';
+import type { BoardTheme, BackgroundTheme } from './settings';
+
+const ALL_BOARD_THEMES: BoardTheme[] = ['carvalho', 'ebano-bordo'];
+const ALL_BACKGROUND_THEMES: BackgroundTheme[] = ['classico', 'noturno'];
+
+describe('BOARD_THEMES', () => {
+  it('has a registry entry for every BoardTheme value', () => {
+    for (const theme of ALL_BOARD_THEMES) {
+      expect(BOARD_THEMES[theme]).toBeDefined();
+      expect(BOARD_THEMES[theme].light).toMatch(/^\/board\//);
+      expect(BOARD_THEMES[theme].dark).toMatch(/^\/board\//);
+      expect(BOARD_THEMES[theme].label.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe('BACKGROUND_THEMES', () => {
+  it('has a registry entry for every BackgroundTheme value', () => {
+    for (const theme of ALL_BACKGROUND_THEMES) {
+      expect(BACKGROUND_THEMES[theme]).toBeDefined();
+      expect(BACKGROUND_THEMES[theme].image).toMatch(/^\/menu\//);
+      expect(BACKGROUND_THEMES[theme].label.length).toBeGreaterThan(0);
+    }
+  });
+});
