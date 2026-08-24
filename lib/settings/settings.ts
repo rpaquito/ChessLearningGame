@@ -3,12 +3,14 @@ import type { PlayerColor } from '@/lib/chess/playerColor';
 
 export type BoardTheme = 'carvalho' | 'ebano-bordo';
 export type BackgroundTheme = 'classico' | 'noturno';
+export type PieceStyle = 'classico' | 'moderno';
 
 export interface Settings {
   defaultDifficulty: Difficulty;
   defaultColor: PlayerColor;
   boardTheme: BoardTheme;
   backgroundTheme: BackgroundTheme;
+  pieceStyle: PieceStyle;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -16,6 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultColor: 'white',
   boardTheme: 'carvalho',
   backgroundTheme: 'classico',
+  pieceStyle: 'classico',
 };
 
 const STORAGE_KEY = 'xadrez-settings';
@@ -24,6 +27,7 @@ const VALID_DIFFICULTIES: readonly Difficulty[] = ['facil', 'medio', 'dificil'];
 const VALID_COLORS: readonly PlayerColor[] = ['white', 'black', 'random'];
 const VALID_BOARD_THEMES: readonly BoardTheme[] = ['carvalho', 'ebano-bordo'];
 const VALID_BACKGROUND_THEMES: readonly BackgroundTheme[] = ['classico', 'noturno'];
+const VALID_PIECE_STYLES: readonly PieceStyle[] = ['classico', 'moderno'];
 
 function isDifficulty(value: unknown): value is Difficulty {
   return typeof value === 'string' && (VALID_DIFFICULTIES as readonly string[]).includes(value);
@@ -41,6 +45,10 @@ function isBackgroundTheme(value: unknown): value is BackgroundTheme {
   return (
     typeof value === 'string' && (VALID_BACKGROUND_THEMES as readonly string[]).includes(value)
   );
+}
+
+function isPieceStyle(value: unknown): value is PieceStyle {
+  return typeof value === 'string' && (VALID_PIECE_STYLES as readonly string[]).includes(value);
 }
 
 /**
@@ -70,6 +78,9 @@ export function loadSettings(): Settings {
       backgroundTheme: isBackgroundTheme(candidate.backgroundTheme)
         ? candidate.backgroundTheme
         : DEFAULT_SETTINGS.backgroundTheme,
+      pieceStyle: isPieceStyle(candidate.pieceStyle)
+        ? candidate.pieceStyle
+        : DEFAULT_SETTINGS.pieceStyle,
     };
   } catch {
     return DEFAULT_SETTINGS;

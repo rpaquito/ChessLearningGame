@@ -59,6 +59,19 @@ describe('loadSettings', () => {
     );
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
   });
+
+  it('returns a previously saved piece style', () => {
+    saveSettings({ ...DEFAULT_SETTINGS, pieceStyle: 'moderno' });
+    expect(loadSettings()).toEqual({ ...DEFAULT_SETTINGS, pieceStyle: 'moderno' });
+  });
+
+  it('falls back to the default piece style when the saved value is invalid', () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...DEFAULT_SETTINGS, pieceStyle: 'nao-existe' })
+    );
+    expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
+  });
 });
 
 describe('saveSettings', () => {

@@ -3,13 +3,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Chess, type Color, type PieceSymbol, type Square } from 'chess.js';
 import { BOARD_THEMES } from '@/lib/settings/themes';
-import type { BoardTheme } from '@/lib/settings/settings';
+import type { BoardTheme, PieceStyle } from '@/lib/settings/settings';
 import { PieceIcon } from './PieceIcon';
 import { inferMove } from '@/lib/chess/inferMove';
 
 export interface ChessBoardProps {
   fen: string;
   boardTheme?: BoardTheme;
+  pieceStyle?: PieceStyle;
   orientation?: 'white' | 'black';
   selectedSquare?: Square | null;
   legalTargets?: Square[];
@@ -97,6 +98,7 @@ function applyMove(pieces: DisplayPiece[], prevFen: string, nextFen: string): Di
 export function ChessBoard({
   fen,
   boardTheme = 'carvalho',
+  pieceStyle = 'classico',
   orientation = 'white',
   selectedSquare = null,
   legalTargets = [],
@@ -197,6 +199,7 @@ export function ChessBoard({
               key={piece.id}
               data-square={piece.square}
               data-piece={`${piece.color}${piece.type}`}
+              data-piece-style={pieceStyle}
               data-removing={piece.removing ? 'true' : undefined}
               style={{ left: `${fileIdx * 12.5}%`, top: `${rankIdx * 12.5}%` }}
               className={[
@@ -208,7 +211,7 @@ export function ChessBoard({
                   : 'text-black drop-shadow-[0_0_2px_rgba(255,255,255,0.9)]',
               ].join(' ')}
             >
-              <PieceIcon type={piece.type} />
+              <PieceIcon type={piece.type} style={pieceStyle} />
             </div>
           );
         })}

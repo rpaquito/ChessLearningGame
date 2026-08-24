@@ -37,9 +37,10 @@ app/
                              # não-interativos
 components/
   ChessBoard/                # grelha 8x8 pura: recebe FEN + props de destaque, não
-                              # sabe nada de regras — só desenha. PieceIcon.tsx desenha
-                              # cada peça como SVG inline (não glifos Unicode — ver secção
-                              # própria abaixo)
+                              # sabe nada de regras — só desenha. PieceIcon.tsx escolhe
+                              # o estilo (prop `style`) e delega a forma de cada peça a
+                              # pieceStyles/classico.tsx ou pieceStyles/moderno.tsx, ambos
+                              # SVG inline (não glifos Unicode — ver secção própria abaixo)
   LearningPanel/              # painel lateral do modo de aprendizagem (toggle, botão
                                # "sugerir jogada", badge de qualidade do lance); as
                                # frases de explicação de lances são premium — recebe
@@ -220,6 +221,38 @@ já tinham um escuro) — grão de madeira real tem mais variação de contraste
 do que uma cor lisa, por isso as duas cores de peça precisam de contorno
 para se manterem legíveis nas duas texturas.
 
+### Segundo estilo de peças: `pieceStyles/`, mesmo convénio SVG
+
+Desde 2026-08-24, `PieceIcon.tsx` deixou de conter as formas das peças
+diretamente — passou a escolher entre `pieceStyles/classico.tsx` (as
+formas originais, movidas sem alteração) e `pieceStyles/moderno.tsx`
+(novo), ambos exportando o mesmo `PieceShape({ type })`. A prop nova
+`style?: PieceStyle` percorre a cadeia toda: `PieceIcon` → `ChessBoard`
+(prop `pieceStyle`, default `'classico'`, mesmo padrão de `boardTheme`)
+→ `app/jogar/page.tsx` (lê `settings.pieceStyle`). Páginas que não
+passam `pieceStyle` (as demos de `/aprender`) continuam no `'classico'`
+por omissão, tal como já acontecia com `boardTheme`.
+
+`moderno` é deliberadamente angular — polígonos (hexágonos, losangos,
+zigzags) em vez dos círculos e curvas Bézier do clássico — para se ler
+como família visualmente distinta ao relance, não uma variação subtil;
+mais visível na torre (coroa em zigzag vs. merlões retos) e no bispo
+(topo em losango vs. círculo). O cavalo é literalmente a mesma forma
+nos dois estilos: já era o único polígono "anguloso" do clássico, não
+havia o que diferenciar sem forçar. Antes de desenhar as formas finais,
+foi montada uma página HTML solta (fora do repo, só para comparação
+visual lado a lado nos dois temas de tabuleiro) e inspecionada via
+screenshot — vale o mesmo cuidado dado às texturas do tabuleiro: a
+única forma fiável de validar um desenho geométrico é olhar para ele
+renderizado, não confiar nas coordenadas de cabeça.
+
+O seletor em `/opcoes` (`PieceStylePicker`) não reutiliza o
+`ThemePicker` genérico — este espera `previewImage` como caminho de
+ficheiro para `background-image`, mas as peças são SVG desenhado à
+mão, não imagens em `public/`. A miniatura de cada opção renderiza o
+próprio `PieceIcon` (um rei) sobre um `bg-stone-700`, em vez de uma
+imagem.
+
 ### Geração de imagens: Draw Things local (substitui Antigravity/Gemini)
 
 Desde 2026-08-23, novas imagens (texturas, tiles, arte decorativa) são
@@ -308,14 +341,14 @@ igualar o estilo "premium chess club" (fundo escuro, rim light dourado,
 bokeh subtil) das outras três. As quatro tiles/fundo do menu estão
 completas, nada pendente aqui.
 
-Dos quatro espaços originalmente reservados em `/opcoes`, dois já têm
-seletores reais — tema do tabuleiro e imagem de fundo, ambos usando
-`ThemePicker` (miniaturas clicáveis lidas de `lib/settings/themes.ts`).
-Os outros dois — estilo das peças, idioma — continuam como "Brevemente"
-(`ComingSoonSection`, `opacity-50` + `aria-disabled="true"`): sub-
--projetos futuros, não bugs. Ver a nota sobre "peças do tabuleiro" acima
-para porque estilo das peças, em particular, não é um simples drop-in de
-imagens — teria de respeitar a convenção de SVG desenhado à mão.
+Dos quatro espaços originalmente reservados em `/opcoes`, três já têm
+seletores reais: tema do tabuleiro e imagem de fundo usam `ThemePicker`
+(miniaturas clicáveis lidas de `lib/settings/themes.ts`); estilo das
+peças usa `PieceStylePicker`, próprio (ver secção "Segundo estilo de
+peças" acima — as peças são SVG desenhado à mão, não imagens, por isso
+não cabem no `ThemePicker` genérico). Só "Idioma" continua como
+"Brevemente" (`ComingSoonSection`, `opacity-50` + `aria-disabled="true"`)
+— um sub-projeto futuro (i18n completo), não um bug.
 
 **Hidratação:** ao contrário de `useChessGame` (cuja página `/jogar`
 nunca é pré-renderizada, por estar atrás de `useSearchParams` dentro de

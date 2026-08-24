@@ -195,6 +195,7 @@ function JogarContent() {
         <ChessBoard
           fen={state.fen}
           boardTheme={settings.boardTheme}
+          pieceStyle={settings.pieceStyle}
           orientation={humanColor === 'w' ? 'white' : 'black'}
           selectedSquare={selectedSquare}
           legalTargets={legalTargets}

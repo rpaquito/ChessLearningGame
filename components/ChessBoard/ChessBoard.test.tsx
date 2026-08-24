@@ -32,6 +32,19 @@ describe('ChessBoard', () => {
     expect(dark.style.backgroundImage).toContain('/board/ebano-bordo-dark-square.webp');
   });
 
+  it('defaults to the classico piece style', () => {
+    const { container } = render(<ChessBoard fen={START_FEN} />);
+    const piece = pieceEls(container)[0];
+    expect(piece.dataset.pieceStyle).toBe('classico');
+  });
+
+  it('uses the given pieceStyle for every piece', () => {
+    const { container } = render(<ChessBoard fen={START_FEN} pieceStyle="moderno" />);
+    for (const piece of pieceEls(container)) {
+      expect(piece.dataset.pieceStyle).toBe('moderno');
+    }
+  });
+
   it('renders a piece for every occupied square of the given FEN', () => {
     const { container } = render(<ChessBoard fen={START_FEN} />);
     const pieces = pieceEls(container);

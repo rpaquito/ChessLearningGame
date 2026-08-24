@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import type { Difficulty } from '@/lib/chess/difficulty';
 import type { PlayerColor } from '@/lib/chess/playerColor';
-import type { BackgroundTheme, BoardTheme } from '@/lib/settings/settings';
+import type { BackgroundTheme, BoardTheme, PieceStyle } from '@/lib/settings/settings';
 import { BACKGROUND_THEMES, BOARD_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
+import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
 
 const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
 const COLORS: [PlayerColor, string][] = [
@@ -92,6 +93,48 @@ const BACKGROUND_THEME_OPTIONS: { id: BackgroundTheme; label: string; previewIma
   Object.keys(BACKGROUND_THEMES) as BackgroundTheme[]
 ).map((id) => ({ id, label: BACKGROUND_THEMES[id].label, previewImage: BACKGROUND_THEMES[id].image }));
 
+const PIECE_STYLE_OPTIONS: { id: PieceStyle; label: string }[] = [
+  { id: 'classico', label: 'Clássico' },
+  { id: 'moderno', label: 'Moderno' },
+];
+
+// Picker próprio em vez de reutilizar ThemePicker: as peças são SVG
+// desenhado à mão (ver PieceIcon.tsx), não imagens em public/ — a
+// miniatura tem de renderizar o próprio componente, não um background-image.
+function PieceStylePicker({
+  value,
+  onChange,
+}: {
+  value: PieceStyle;
+  onChange: (id: PieceStyle) => void;
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="font-medium mb-1">Estilo das peças</legend>
+      <div className="flex gap-3">
+        {PIECE_STYLE_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            aria-pressed={value === opt.id}
+            className={`flex flex-col items-center gap-1 rounded-md border p-1 ${
+              value === opt.id ? 'border-emerald-600 ring-2 ring-emerald-600' : 'border-stone-300'
+            }`}
+          >
+            <span className="flex h-16 w-16 items-center justify-center rounded bg-stone-700">
+              <span className="h-12 w-12 text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.9)]">
+                <PieceIcon type="k" style={opt.id} />
+              </span>
+            </span>
+            <span className="text-xs">{opt.label}</span>
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
 export default function OpcoesPage() {
   const { settings, updateSettings } = useSettings();
 
@@ -147,7 +190,10 @@ export default function OpcoesPage() {
           value={settings.boardTheme}
           onChange={(boardTheme) => updateSettings({ boardTheme })}
         />
-        <ComingSoonSection title="Estilo das peças" />
+        <PieceStylePicker
+          value={settings.pieceStyle}
+          onChange={(pieceStyle) => updateSettings({ pieceStyle })}
+        />
         <ThemePicker
           legend="Imagem de fundo"
           options={BACKGROUND_THEME_OPTIONS}
