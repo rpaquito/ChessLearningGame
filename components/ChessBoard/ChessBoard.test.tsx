@@ -20,6 +20,18 @@ afterEach(() => {
 });
 
 describe('ChessBoard', () => {
+  it('uses the carvalho texture by default', () => {
+    const { container } = render(<ChessBoard fen={START_FEN} />);
+    const square = container.querySelector('button[data-square="a8"]') as HTMLButtonElement;
+    expect(square.style.backgroundImage).toContain('/board/light-square.webp');
+  });
+
+  it('uses the given boardTheme texture', () => {
+    const { container } = render(<ChessBoard fen={START_FEN} boardTheme="ebano-bordo" />);
+    const dark = container.querySelector('button[data-square="a1"]') as HTMLButtonElement;
+    expect(dark.style.backgroundImage).toContain('/board/ebano-bordo-dark-square.webp');
+  });
+
   it('renders a piece for every occupied square of the given FEN', () => {
     const { container } = render(<ChessBoard fen={START_FEN} />);
     const pieces = pieceEls(container);

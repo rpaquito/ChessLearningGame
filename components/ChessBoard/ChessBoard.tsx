@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Chess, type Color, type PieceSymbol, type Square } from 'chess.js';
+import { BOARD_THEMES } from '@/lib/settings/themes';
+import type { BoardTheme } from '@/lib/settings/settings';
 import { PieceIcon } from './PieceIcon';
 import { inferMove } from '@/lib/chess/inferMove';
 
 export interface ChessBoardProps {
   fen: string;
+  boardTheme?: BoardTheme;
   orientation?: 'white' | 'black';
   selectedSquare?: Square | null;
   legalTargets?: Square[];
@@ -26,16 +29,6 @@ const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
 // do fade, senão ou desaparece a meio da animação ou fica um instante a
 // mais sem animação nenhuma a correr.
 const CAPTURE_FADE_MS = 150;
-
-// Texturas de madeira geradas — vendorizadas em public/board/, cache-first
-// pelo service worker como qualquer outro asset estático. As classes
-// bg-amber-* continuam no botão como cor de fallback: se a imagem ainda não
-// estiver em cache (primeira visita offline), a cor plana aparece em vez de
-// um quadrado em branco.
-const SQUARE_TEXTURE = {
-  light: '/board/light-square.webp',
-  dark: '/board/dark-square.webp',
-};
 
 interface DisplayPiece {
   id: string;
@@ -103,6 +96,7 @@ function applyMove(pieces: DisplayPiece[], prevFen: string, nextFen: string): Di
 
 export function ChessBoard({
   fen,
+  boardTheme = 'carvalho',
   orientation = 'white',
   selectedSquare = null,
   legalTargets = [],
@@ -114,6 +108,7 @@ export function ChessBoard({
   onSquareClick,
 }: ChessBoardProps) {
   const board = new Chess(fen).board();
+  const texture = BOARD_THEMES[boardTheme];
   const files = orientation === 'white' ? FILES : [...FILES].reverse();
   const ranks = orientation === 'white' ? RANKS : [...RANKS].reverse();
 
@@ -163,7 +158,7 @@ export function ChessBoard({
               disabled={!interactive}
               onClick={() => onSquareClick?.(square)}
               style={{
-                backgroundImage: `url(${isLight ? SQUARE_TEXTURE.light : SQUARE_TEXTURE.dark})`,
+                backgroundImage: `url(${isLight ? texture.light : texture.dark})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
               }}
