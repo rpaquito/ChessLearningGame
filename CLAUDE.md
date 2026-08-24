@@ -90,10 +90,13 @@ de squares a destacar, nunca decide se um lance é legal nem impede cliques.
 A única exceção estreita é a animação de lances (ver secção própria abaixo):
 para saber *o que* mudou entre dois FEN consecutivos, o próprio `ChessBoard`
 usa o `chess.js` internamente — mas só para desenhar a transição, nunca para
-validar ou vetar nada. Por baixo do tabuleiro há sempre uma fila com
-três ações: "Menu inicial" (`next/link` para `/`), "Reiniciar partida" e
-"Regras" (abre o `RulesModal`) — ao acrescentar uma nova ação de nível de
-página, é aqui que ela entra.
+validar ou vetar nada. No fundo da página (desde 2026-08-25; antes ficava
+logo abaixo do tabuleiro, entalada entre este e o `LearningPanel`) há
+sempre uma fila com três ações: "Menu inicial" (`next/link` para `/`),
+"Reiniciar partida" e "Regras" (abre o `RulesModal`) — ao acrescentar
+uma nova ação de nível de página, é aqui que ela entra. Continua irmã
+direta de `<main>`, nunca dentro de um wrapper à volta do tabuleiro —
+ver a nota sobre o bug de tamanho do tabuleiro mais abaixo.
 
 ## Convenções que não são óbvias a partir do código
 
@@ -396,12 +399,54 @@ prontos do Clerk (`<SignIn/>`/`<SignUp/>`) sem lógica própria.
 
 ### O tabuleiro tem de caber sempre no ecrã visível (browser e PWA)
 
-`ChessBoard.tsx` limita a largura a `min(92vw, 62dvh, 560px)` — por largura
-**e** por altura visível, não só por largura. `app/jogar/page.tsx` usa
-`min-h-dvh` + `justify-start` (não `min-h-screen`/`justify-center`): se o
-conteúdo não couber, tem de dar scroll, nunca cortar simetricamente o topo e
-o fundo. `dvh` acompanha a barra de endereço do browser móvel e comporta-se
-bem tanto a navegar como instalado como PWA — não trocar por `vh` sozinho.
+`ChessBoard.tsx` limita a largura a `w-full max-w-[min(92vw, 62dvh, 560px)]`
+(mobile, abaixo de `sm:`, usa `98vw` em vez de `92vw` — ver secção seguinte)
+— por largura **e** por altura visível, não só por largura. `app/jogar/
+page.tsx` usa `min-h-dvh` + `justify-start` (não `min-h-screen`/
+`justify-center`): se o conteúdo não couber, tem de dar scroll, nunca cortar
+simetricamente o topo e o fundo. `dvh` acompanha a barra de endereço do
+browser móvel e comporta-se bem tanto a navegar como instalado como PWA —
+não trocar por `vh` sozinho.
+
+### Bug descoberto 2026-08-25: o tabuleiro nunca chegava perto do seu
+### próprio limite de tamanho, em `/jogar` e em `/aprender`
+
+`max-w-[min(...)]` só funciona se o `w-full` do tabuleiro conseguir
+resolver-se contra uma largura **definida** do pai. Em `/jogar`, o
+tabuleiro está dentro de um `<div className="flex flex-col items-center
+...">`, ele próprio filho direto de `<main>` (também `flex`, com
+`items-center` em mobile e `flex-row` a partir de `md:`) — um item flex
+sem `width` próprio, cujo cross-size (mobile, coluna, `items-center`) ou
+main-size (desktop, linha, `flex-basis: auto`) nenhum dos dois é
+"stretch para o espaço disponível": o browser calcula o tamanho do item
+via *shrink-to-fit*/`max-content`, e nesse cálculo uma percentagem (o
+`width: 100%` do tabuleiro) contra um contentor ainda sem largura
+definida conta como `auto` — cai para o tamanho intrínseco do conteúdo
+da grelha (peças/células), não para os 92vw/560px pretendidos. O
+resultado: o tabuleiro renderizava a uma fração do tamanho documentado
+(confirmado com `getBoundingClientRect()`: ~250px em vez de ~560px em
+desktop, ~110px em mobile depois de mexer na estrutura à volta) — um
+bug que já existia em produção antes desta sessão, não só nas mudanças
+de layout feitas aqui, e que também afeta as demos de `/aprender`
+(idêntico padrão `flex ... items-center` a envolver `<ChessBoard/>`
+diretamente) — não corrigido aí, por ficar fora do âmbito pedido.
+
+A correção em `/jogar`: o `<div>` que envolve o tabuleiro (estado +
+`ChessBoard`) ganhou a **mesma fórmula** `w-[min(98vw,62dvh,560px)]
+sm:w-[min(92vw,62dvh,560px)]` do próprio `ChessBoard.tsx` — um `width`
+definido (não percentagem), resolve-se sozinho contra o viewport sem
+depender de nenhum pai, o que dá ao `w-full` do tabuleiro lá dentro uma
+base definida para resolver corretamente. Testado com
+`getBoundingClientRect()` via Chrome DevTools MCP, não só visualmente:
+confirmar sempre o tamanho real em pixels ao mexer nesta cadeia, não
+só "parece bem no screenshot" — um colapso de ~50% pode passar
+despercebido a olho nu num ecrã pequeno. `md:w-auto` ou `md:flex-1`
+foram tentados e descartados: o primeiro reproduz o mesmo colapso em
+desktop (linha, `flex-basis:auto` tem o mesmo problema que
+`items-center` em coluna); o segundo corrige o tamanho mas faz o
+tabuleiro crescer para preencher todo o espaço da linha, empurrando o
+`LearningPanel` para a margem direita em vez de ficarem juntos e
+centrados como grupo.
 
 ### Service worker / PWA: estratégia de cache e atualização
 

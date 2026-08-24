@@ -136,7 +136,7 @@ export function ChessBoard({
     <div
       role="grid"
       aria-label="Tabuleiro de xadrez"
-      className="relative grid grid-cols-8 grid-rows-8 aspect-square w-full max-w-[min(92vw,62dvh,560px)] select-none border-4 border-stone-800 rounded-md overflow-hidden"
+      className="relative grid grid-cols-8 grid-rows-8 aspect-square w-full max-w-[min(98vw,62dvh,560px)] sm:max-w-[min(92vw,62dvh,560px)] select-none border-4 border-stone-800 rounded-md overflow-hidden"
     >
       {ranks.map((rank, rankIdx) =>
         files.map((file, fileIdx) => {

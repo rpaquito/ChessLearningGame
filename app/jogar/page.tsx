@@ -184,13 +184,21 @@ function JogarContent() {
   }
 
   return (
-    <main className="relative min-h-dvh flex flex-col md:flex-row items-center md:items-start justify-start md:justify-center gap-4 sm:gap-8 p-4 sm:p-8">
+    <main className="relative min-h-dvh flex flex-col md:flex-row md:flex-wrap items-center md:items-start justify-start md:justify-center gap-4 sm:gap-8 px-2 py-4 sm:p-8">
       <div
         className="fixed inset-0 -z-10 bg-stone-900 bg-cover bg-center"
         style={{ backgroundImage: `url(${BACKGROUND_THEMES[settings.backgroundTheme].image})` }}
         aria-hidden="true"
       />
-      <div className="flex flex-col items-center gap-4">
+      {/* Mesma fórmula min(vw,dvh,560px) do próprio ChessBoard (w-full
+          max-w-[...]), repetida aqui de propósito — ver "Tamanho do
+          tabuleiro colapsava" em CLAUDE.md: sem um width definido aqui,
+          este flex item fica sem largura definida (quer no eixo cruzado
+          em coluna com items-center, quer no eixo principal em linha com
+          flex-basis:auto), e o w-full do tabuleiro nunca chega a resolver
+          contra a fórmula grande — colapsa para o tamanho intrínseco dos
+          seus filhos. */}
+      <div className="flex flex-col items-center gap-4 w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)]">
         <p className="font-medium text-stone-100">{STATUS_LABEL[state.status]}</p>
         <ChessBoard
           fen={state.fen}
@@ -206,17 +214,6 @@ function JogarContent() {
           interactive={isHumanTurn && !state.isGameOver}
           onSquareClick={handleSquareClick}
         />
-        <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className="underline text-stone-300">
-            Menu inicial
-          </Link>
-          <button type="button" onClick={handleReset} className="underline text-stone-300">
-            Reiniciar partida
-          </button>
-          <button type="button" onClick={() => setRulesOpen(true)} className="underline text-stone-300">
-            Regras
-          </button>
-        </div>
         {mode === 'ai' && engineUnavailable && (
           <p className="max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             O motor de xadrez não pôde ser carregado. Tenta novamente mais tarde, ou joga no
@@ -238,6 +235,28 @@ function JogarContent() {
           lastMoveExplanation={lastMoveExplanation}
         />
       )}
+
+      {/* Fila de ações de nível de página — sempre o último elemento de
+          <main>, para nunca ficar entalada entre o tabuleiro e o painel de
+          aprendizagem. Em mobile (flex-col) a ordem do DOM já a põe por
+          último; em desktop (md:flex-row), md:w-full força-a para a sua
+          própria linha (com md:flex-wrap no main) em vez de virar uma
+          terceira coluna ao lado do painel — ver CLAUDE.md. Continua
+          irmã direta de <main>, sem wrapper extra à volta do tabuleiro e
+          do LearningPanel: aninhar outro flex-col ali dentro faz o
+          `w-full` do tabuleiro colapsar antes de o max-width entrar em
+          jogo (shrink-to-fit com `items-center` duas vezes seguidas). */}
+      <div className="flex items-center gap-4 text-sm md:w-full md:justify-center">
+        <Link href="/" className="underline text-stone-300">
+          Menu inicial
+        </Link>
+        <button type="button" onClick={handleReset} className="underline text-stone-300">
+          Reiniciar partida
+        </button>
+        <button type="button" onClick={() => setRulesOpen(true)} className="underline text-stone-300">
+          Regras
+        </button>
+      </div>
 
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
     </main>
