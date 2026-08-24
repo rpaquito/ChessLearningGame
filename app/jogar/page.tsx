@@ -191,7 +191,7 @@ function JogarContent() {
         aria-hidden="true"
       />
       <div className="flex flex-col items-center gap-4">
-        <p className="font-medium">{STATUS_LABEL[state.status]}</p>
+        <p className="font-medium text-stone-100">{STATUS_LABEL[state.status]}</p>
         <ChessBoard
           fen={state.fen}
           boardTheme={settings.boardTheme}
@@ -206,13 +206,13 @@ function JogarContent() {
           onSquareClick={handleSquareClick}
         />
         <div className="flex items-center gap-4 text-sm">
-          <Link href="/" className="underline text-stone-600">
+          <Link href="/" className="underline text-stone-300">
             Menu inicial
           </Link>
-          <button type="button" onClick={handleReset} className="underline text-stone-600">
+          <button type="button" onClick={handleReset} className="underline text-stone-300">
             Reiniciar partida
           </button>
-          <button type="button" onClick={() => setRulesOpen(true)} className="underline text-stone-600">
+          <button type="button" onClick={() => setRulesOpen(true)} className="underline text-stone-300">
             Regras
           </button>
         </div>

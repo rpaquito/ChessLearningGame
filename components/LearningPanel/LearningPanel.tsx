@@ -72,7 +72,7 @@ export function LearningPanel({
   lastMoveExplanation = null,
 }: LearningPanelProps) {
   return (
-    <aside className="flex flex-col gap-4 w-full max-w-xs border border-stone-200 rounded-md p-4">
+    <aside className="flex flex-col gap-4 w-full max-w-xs border border-stone-200 rounded-md p-4 bg-white/95">
       <label className="flex items-center justify-between gap-2 font-medium">
         Modo de aprendizagem
         <input

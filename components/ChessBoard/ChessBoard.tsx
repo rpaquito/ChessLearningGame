@@ -173,10 +173,10 @@ export function ChessBoard({
             >
               {isCheck && <span className="absolute inset-0 bg-red-500/50" />}
               {isLegalTarget && !piece && (
-                <span className="absolute w-3 h-3 rounded-full bg-slate-900/40" />
+                <span className="absolute w-3 h-3 rounded-full bg-emerald-500/70" />
               )}
               {isLegalTarget && piece && (
-                <span className="absolute inset-0 rounded-full ring-4 ring-slate-900/40" />
+                <span className="absolute inset-0 rounded-full ring-4 ring-emerald-500/70" />
               )}
             </button>
           );
@@ -204,8 +204,8 @@ export function ChessBoard({
                 'transition-all duration-200 ease-out motion-reduce:transition-none',
                 piece.removing ? 'opacity-0 scale-50 !duration-150 !ease-in' : 'opacity-100 scale-100',
                 piece.color === 'w'
-                  ? 'text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.6)]'
-                  : 'text-black drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]',
+                  ? 'text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.9)]'
+                  : 'text-black drop-shadow-[0_0_2px_rgba(255,255,255,0.9)]',
               ].join(' ')}
             >
               <PieceIcon type={piece.type} />

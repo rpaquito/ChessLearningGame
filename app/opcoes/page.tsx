@@ -40,7 +40,7 @@ function ThemePicker<T extends string>({
   onChange,
 }: {
   legend: string;
-  options: { id: T; label: string; previewImage: string }[];
+  options: { id: T; label: string; previewImage: string; previewImage2?: string }[];
   value: T;
   onChange: (id: T) => void;
 }) {
@@ -58,10 +58,19 @@ function ThemePicker<T extends string>({
               value === opt.id ? 'border-emerald-600 ring-2 ring-emerald-600' : 'border-stone-300'
             }`}
           >
-            <span
-              className="h-16 w-16 rounded bg-cover bg-center"
-              style={{ backgroundImage: `url(${opt.previewImage})` }}
-            />
+            {opt.previewImage2 ? (
+              <span className="grid h-16 w-16 grid-cols-2 grid-rows-2 overflow-hidden rounded">
+                <span style={{ backgroundImage: `url(${opt.previewImage})`, backgroundSize: 'cover' }} />
+                <span style={{ backgroundImage: `url(${opt.previewImage2})`, backgroundSize: 'cover' }} />
+                <span style={{ backgroundImage: `url(${opt.previewImage2})`, backgroundSize: 'cover' }} />
+                <span style={{ backgroundImage: `url(${opt.previewImage})`, backgroundSize: 'cover' }} />
+              </span>
+            ) : (
+              <span
+                className="h-16 w-16 rounded bg-cover bg-center"
+                style={{ backgroundImage: `url(${opt.previewImage})` }}
+              />
+            )}
             <span className="text-xs">{opt.label}</span>
           </button>
         ))}
@@ -70,9 +79,14 @@ function ThemePicker<T extends string>({
   );
 }
 
-const BOARD_THEME_OPTIONS: { id: BoardTheme; label: string; previewImage: string }[] = (
+const BOARD_THEME_OPTIONS: { id: BoardTheme; label: string; previewImage: string; previewImage2: string }[] = (
   Object.keys(BOARD_THEMES) as BoardTheme[]
-).map((id) => ({ id, label: BOARD_THEMES[id].label, previewImage: BOARD_THEMES[id].light }));
+).map((id) => ({
+  id,
+  label: BOARD_THEMES[id].label,
+  previewImage: BOARD_THEMES[id].light,
+  previewImage2: BOARD_THEMES[id].dark,
+}));
 
 const BACKGROUND_THEME_OPTIONS: { id: BackgroundTheme; label: string; previewImage: string }[] = (
   Object.keys(BACKGROUND_THEMES) as BackgroundTheme[]
