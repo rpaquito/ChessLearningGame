@@ -13,16 +13,21 @@ describe('loadSettings', () => {
   });
 
   it('returns previously saved settings', () => {
-    saveSettings({ defaultDifficulty: 'dificil', defaultColor: 'black' });
-    expect(loadSettings()).toEqual({ defaultDifficulty: 'dificil', defaultColor: 'black' });
+    saveSettings({ ...DEFAULT_SETTINGS, defaultDifficulty: 'dificil', defaultColor: 'black' });
+    expect(loadSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
+      defaultDifficulty: 'dificil',
+      defaultColor: 'black',
+    });
   });
 
   it('falls back to defaults field-by-field when one field is invalid', () => {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ defaultDifficulty: 'impossivel', defaultColor: 'black' })
+      JSON.stringify({ ...DEFAULT_SETTINGS, defaultDifficulty: 'impossivel', defaultColor: 'black' })
     );
     expect(loadSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
       defaultDifficulty: DEFAULT_SETTINGS.defaultDifficulty,
       defaultColor: 'black',
     });
@@ -37,6 +42,23 @@ describe('loadSettings', () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify('a string, not an object'));
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
   });
+
+  it('returns previously saved theme choices', () => {
+    saveSettings({ ...DEFAULT_SETTINGS, boardTheme: 'ebano-bordo', backgroundTheme: 'noturno' });
+    expect(loadSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
+      boardTheme: 'ebano-bordo',
+      backgroundTheme: 'noturno',
+    });
+  });
+
+  it('falls back to default theme choices when saved values are invalid', () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...DEFAULT_SETTINGS, boardTheme: 'nao-existe', backgroundTheme: 42 })
+    );
+    expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
+  });
 });
 
 describe('saveSettings', () => {
@@ -45,7 +67,11 @@ describe('saveSettings', () => {
   });
 
   it('persists settings that loadSettings can read back', () => {
-    saveSettings({ defaultDifficulty: 'medio', defaultColor: 'random' });
-    expect(loadSettings()).toEqual({ defaultDifficulty: 'medio', defaultColor: 'random' });
+    saveSettings({ ...DEFAULT_SETTINGS, defaultDifficulty: 'medio', defaultColor: 'random' });
+    expect(loadSettings()).toEqual({
+      ...DEFAULT_SETTINGS,
+      defaultDifficulty: 'medio',
+      defaultColor: 'random',
+    });
   });
 });

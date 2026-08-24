@@ -16,10 +16,14 @@ describe('useSettings', () => {
   it('starts from whatever was already saved', () => {
     window.localStorage.setItem(
       'xadrez-settings',
-      JSON.stringify({ defaultDifficulty: 'dificil', defaultColor: 'black' })
+      JSON.stringify({ ...DEFAULT_SETTINGS, defaultDifficulty: 'dificil', defaultColor: 'black' })
     );
     const { result } = renderHook(() => useSettings());
-    expect(result.current.settings).toEqual({ defaultDifficulty: 'dificil', defaultColor: 'black' });
+    expect(result.current.settings).toEqual({
+      ...DEFAULT_SETTINGS,
+      defaultDifficulty: 'dificil',
+      defaultColor: 'black',
+    });
   });
 
   it('updateSettings merges a partial change and persists it', () => {
@@ -27,16 +31,10 @@ describe('useSettings', () => {
     act(() => {
       result.current.updateSettings({ defaultColor: 'black' });
     });
-    expect(result.current.settings).toEqual({
-      defaultDifficulty: DEFAULT_SETTINGS.defaultDifficulty,
-      defaultColor: 'black',
-    });
+    expect(result.current.settings).toEqual({ ...DEFAULT_SETTINGS, defaultColor: 'black' });
     // Persisted for real, not just in local React state — a fresh load
     // from storage sees the same value.
-    expect(loadSettings()).toEqual({
-      defaultDifficulty: DEFAULT_SETTINGS.defaultDifficulty,
-      defaultColor: 'black',
-    });
+    expect(loadSettings()).toEqual({ ...DEFAULT_SETTINGS, defaultColor: 'black' });
   });
 
   it('two separate updateSettings calls both persist (no lost update)', () => {
@@ -47,7 +45,11 @@ describe('useSettings', () => {
     act(() => {
       result.current.updateSettings({ defaultColor: 'random' });
     });
-    expect(result.current.settings).toEqual({ defaultDifficulty: 'medio', defaultColor: 'random' });
+    expect(result.current.settings).toEqual({
+      ...DEFAULT_SETTINGS,
+      defaultDifficulty: 'medio',
+      defaultColor: 'random',
+    });
   });
 
   it('does not lose an update when two updateSettings calls happen before a re-render settles', () => {
@@ -56,6 +58,10 @@ describe('useSettings', () => {
       result.current.updateSettings({ defaultDifficulty: 'medio' });
       result.current.updateSettings({ defaultColor: 'random' });
     });
-    expect(result.current.settings).toEqual({ defaultDifficulty: 'medio', defaultColor: 'random' });
+    expect(result.current.settings).toEqual({
+      ...DEFAULT_SETTINGS,
+      defaultDifficulty: 'medio',
+      defaultColor: 'random',
+    });
   });
 });
