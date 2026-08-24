@@ -5,14 +5,17 @@ import Link from 'next/link';
 import { Show, UserButton } from '@clerk/nextjs';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
+import { BACKGROUND_THEMES } from '@/lib/settings/themes';
+import { useSettings } from '@/lib/settings/useSettings';
 
 export default function HomePage() {
   const [rulesOpen, setRulesOpen] = useState(false);
+  const { settings } = useSettings();
 
   return (
     <main
       className="min-h-dvh flex flex-col items-center gap-8 p-8 bg-stone-900 bg-cover bg-center"
-      style={{ backgroundImage: 'url(/menu/background.webp)' }}
+      style={{ backgroundImage: `url(${BACKGROUND_THEMES[settings.backgroundTheme].image})` }}
     >
       <div className="w-full max-w-sm flex justify-end text-sm">
         <Show when="signed-out">
