@@ -3,7 +3,7 @@ import type { PlayerColor } from '@/lib/chess/playerColor';
 
 export type BoardTheme = 'sakura' | 'nebulosa' | 'neon';
 export type BackgroundTheme = 'classico' | 'noturno';
-export type PieceStyle = 'classico' | 'moderno';
+export type PieceStyle = 'classico' | 'moderno' | 'anime';
 
 export interface Settings {
   defaultDifficulty: Difficulty;
@@ -18,7 +18,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultColor: 'white',
   boardTheme: 'nebulosa',
   backgroundTheme: 'classico',
-  pieceStyle: 'classico',
+  pieceStyle: 'anime',
 };
 
 const STORAGE_KEY = 'xadrez-settings';
@@ -27,7 +27,7 @@ const VALID_DIFFICULTIES: readonly Difficulty[] = ['facil', 'medio', 'dificil'];
 const VALID_COLORS: readonly PlayerColor[] = ['white', 'black', 'random'];
 const VALID_BOARD_THEMES: readonly BoardTheme[] = ['sakura', 'nebulosa', 'neon'];
 const VALID_BACKGROUND_THEMES: readonly BackgroundTheme[] = ['classico', 'noturno'];
-const VALID_PIECE_STYLES: readonly PieceStyle[] = ['classico', 'moderno'];
+const VALID_PIECE_STYLES: readonly PieceStyle[] = ['classico', 'moderno', 'anime'];
 
 function isDifficulty(value: unknown): value is Difficulty {
   return typeof value === 'string' && (VALID_DIFFICULTIES as readonly string[]).includes(value);

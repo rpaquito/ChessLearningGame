@@ -102,6 +102,7 @@ const BACKGROUND_THEME_OPTIONS: { id: BackgroundTheme; label: string; previewIma
 const PIECE_STYLE_OPTIONS: { id: PieceStyle; label: string }[] = [
   { id: 'classico', label: 'Clássico' },
   { id: 'moderno', label: 'Moderno' },
+  { id: 'anime', label: 'Anime' },
 ];
 
 // Picker próprio em vez de reutilizar ThemePicker: as peças são SVG

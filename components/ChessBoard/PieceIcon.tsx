@@ -2,10 +2,12 @@ import type { PieceSymbol } from 'chess.js';
 import type { PieceStyle } from '@/lib/settings/settings';
 import { PieceShape as ClassicoShape } from './pieceStyles/classico';
 import { PieceShape as ModernoShape } from './pieceStyles/moderno';
+import { PieceShape as AnimeShape } from './pieceStyles/anime';
 
 const SHAPES: Record<PieceStyle, (props: { type: PieceSymbol }) => React.ReactElement | null> = {
   classico: ClassicoShape,
   moderno: ModernoShape,
+  anime: AnimeShape,
 };
 
 export function PieceIcon({ type, style = 'classico' }: { type: PieceSymbol; style?: PieceStyle }) {

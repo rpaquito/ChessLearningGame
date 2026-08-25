@@ -20,9 +20,9 @@ app/
                                   # preenchidas a partir de lib/settings/ mas só
                                   # para esta partida — escolher aqui não altera as
                                   # definições por omissão, isso só acontece em /opcoes
-  opcoes/page.tsx                 # dificuldade/cor por omissão (persistem de facto) e
-                                  # quatro placeholders "Brevemente" para
-                                  # funcionalidades futuras
+  opcoes/page.tsx                 # dificuldade/cor por omissão (persistem de facto),
+                                  # temas de tabuleiro/fundo/peças, e um placeholder
+                                  # "Brevemente" (Idioma) para uma funcionalidade futura
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
                              # fim-de-jogo, estrategia), cada uma com demos ChessBoard
@@ -31,8 +31,13 @@ components/
   ChessBoard/                # grelha 8x8 pura: recebe FEN + props de destaque, não
                               # sabe nada de regras — só desenha. PieceIcon.tsx escolhe
                               # o estilo (prop `style`) e delega a forma de cada peça a
-                              # pieceStyles/classico.tsx ou pieceStyles/moderno.tsx, ambos
+                              # pieceStyles/classico.tsx, moderno.tsx ou anime.tsx, todos
                               # SVG inline (não glifos Unicode — ver secção própria abaixo)
+  ChipButton/                 # chip de ação com corte diagonal — substitui texto
+                               # sublinhado para qualquer link/ação secundária da app,
+                               # ver secção "Identidade visual anime" abaixo
+  GameSetup/                    # dificuldade/cor da partida em /configurar — lê
+                                 # useSettings() mas nunca chama updateSettings
   LearningPanel/              # painel lateral do modo de aprendizagem (toggle, botão
                                # "sugerir jogada", badge de qualidade do lance, frases
                                # de explicação de lances — tudo gratuito)
@@ -64,9 +69,9 @@ public/
   sw.js            # service worker — ver secção própria abaixo
   manifest.json      # lang "pt-PT"
   stockfish/           # binário WASM vendorizado (GPLv3, não modificado — excluído do lint)
-  board/                # texturas de madeira das casas — ver secção própria abaixo
-  menu/                 # tiles ilustrados do menu (vs-cpu.webp, options.webp,
-                        # background.webp) — ver secção "Menu redesenhado" abaixo
+  board/                # texturas das casas (cor flat + grão) — ver secção própria abaixo
+  menu/                 # tiles ilustrados do menu e fundos, estilo anime — ver secção
+                        # "Menu redesenhado" abaixo
 ```
 
 `app/jogar/page.tsx` é o ponto onde tudo se junta: lê `mode`/`difficulty`/`color`
@@ -79,11 +84,12 @@ para saber *o que* mudou entre dois FEN consecutivos, o próprio `ChessBoard`
 usa o `chess.js` internamente — mas só para desenhar a transição, nunca para
 validar ou vetar nada. No fundo da página (desde 2026-08-25; antes ficava
 logo abaixo do tabuleiro, entalada entre este e o `LearningPanel`) há
-sempre uma fila com três ações: "Menu inicial" (`next/link` para `/`),
-"Reiniciar partida" e "Regras" (abre o `RulesModal`) — ao acrescentar
-uma nova ação de nível de página, é aqui que ela entra. Continua irmã
-direta de `<main>`, nunca dentro de um wrapper à volta do tabuleiro —
-ver a nota sobre o bug de tamanho do tabuleiro mais abaixo.
+sempre uma fila com três `ChipButton` (ver secção "Identidade visual
+anime" abaixo): "Menu inicial" (para `/`), "Reiniciar partida" e
+"Regras" (abre o `RulesModal`) — ao acrescentar uma nova ação de nível
+de página, é aqui que ela entra. Continua irmã direta de `<main>`,
+nunca dentro de um wrapper à volta do tabuleiro — ver a nota sobre o
+bug de tamanho do tabuleiro mais abaixo.
 
 ## Convenções que não são óbvias a partir do código
 
@@ -181,17 +187,26 @@ match"). Não foi corrigido aqui — pré-existia a esta sessão e é ortogonal
 (replicar o padrão "só ler localStorage num `useEffect`, depois de montar"
 de `useSettings.ts`).
 
-### Textura das casas do tabuleiro: imagens geradas, vendorizadas
+### Texturas das casas do tabuleiro: cor flat + grão subtil, geradas
 
-`public/board/light-square.webp` e `public/board/dark-square.webp` são
-texturas de madeira (carvalho claro / nogueira escura) geradas com o
-Antigravity CLI (`agy`, modelo Gemini "Nano Banana") e vendorizadas no
-repositório — tal como o binário do Stockfish, não são geradas em runtime
-nem pedidas a um serviço externo. `ChessBoard.tsx` aplica-as via
-`backgroundImage` inline (Tailwind não referencia ficheiros de `public/`
-por classe), com `background-size: cover`; as classes `bg-amber-100`/
-`bg-amber-700` continuam no botão como cor de fallback caso a imagem ainda
-não esteja em cache (primeira visita offline).
+Desde o redesenho "anime" (2026-08-25, ver secção própria abaixo),
+`public/board/` deixou de ter texturas de madeira fotorrealistas —
+`BOARD_THEMES` (`lib/settings/themes.ts`) tem três temas, cada um com
+um par `<tema>-light-square.webp`/`<tema>-dark-square.webp`: `sakura`
+(rosa-claro/magenta), `nebulosa` (lilás/roxo profundo — o tema por
+omissão, a condizer com o gradiente do herói) e `neon` (ciano-claro/
+petróleo escuro). Todas geradas com Draw Things (ver secção "Geração
+de imagens" abaixo) com o mesmo prompt-base: cor sólida + "subtle fine
+paper grain" — só o suficiente para não ficarem completamente planas,
+sem nenhum padrão óbvio que se repita de forma visível entre casas
+adjacentes. `ChessBoard.tsx` aplica-as via `backgroundImage` inline
+(Tailwind não referencia ficheiros de `public/` por classe), com
+`background-size: cover`; as classes `bg-violet-200`/`bg-violet-800`
+continuam no botão como cor de fallback caso a imagem ainda não esteja
+em cache (primeira visita offline) — combinam com `nebulosa`
+especificamente, não com os outros dois temas (a mesma limitação que
+já existia com os temas de madeira antigos, só a cor de fallback
+mudou).
 
 Se voltares a gerar estas imagens: pede explicitamente lisura/tileability
 ("seamless tileable"), iluminação plana sem sombras/vinheta (uma imagem com
@@ -207,41 +222,57 @@ O destaque de xeque deixou de substituir a cor da casa por
 `absolute inset-0 bg-red-500/50` translúcida por cima da textura, como os
 outros estados (`ring`/`outline` de último lance, seleção, ameaça,
 sugestão). Peças pretas ganharam também um `drop-shadow` claro (as brancas
-já tinham um escuro) — grão de madeira real tem mais variação de contraste
-do que uma cor lisa, por isso as duas cores de peça precisam de contorno
-para se manterem legíveis nas duas texturas.
+já tinham um escuro) — mesmo com texturas planas, os dois tons de cada
+tema (claro/escuro) continuam a exigir contorno próprio para as peças se
+manterem legíveis nos dois.
 
-### Segundo estilo de peças: `pieceStyles/`, mesmo convénio SVG
+### Estilos de peças: `pieceStyles/`, mesmo convénio SVG
 
-Desde 2026-08-24, `PieceIcon.tsx` deixou de conter as formas das peças
-diretamente — passou a escolher entre `pieceStyles/classico.tsx` (as
-formas originais, movidas sem alteração) e `pieceStyles/moderno.tsx`
-(novo), ambos exportando o mesmo `PieceShape({ type })`. A prop nova
-`style?: PieceStyle` percorre a cadeia toda: `PieceIcon` → `ChessBoard`
-(prop `pieceStyle`, default `'classico'`, mesmo padrão de `boardTheme`)
-→ `app/jogar/page.tsx` (lê `settings.pieceStyle`). Páginas que não
-passam `pieceStyle` (as demos de `/aprender`) continuam no `'classico'`
-por omissão, tal como já acontecia com `boardTheme`.
+Desde 2026-08-24 (e alargado com um terceiro estilo em 2026-08-25),
+`PieceIcon.tsx` deixou de conter as formas das peças diretamente —
+passou a escolher entre `pieceStyles/classico.tsx` (as formas
+originais), `pieceStyles/moderno.tsx` e `pieceStyles/anime.tsx`, todos
+exportando o mesmo `PieceShape({ type })`. A prop `style?: PieceStyle`
+percorre a cadeia toda: `PieceIcon` → `ChessBoard` (prop `pieceStyle`,
+default `'classico'` — só o `ChessBoard` em si; ver nota sobre o
+default da app abaixo) → `app/jogar/page.tsx` (lê
+`settings.pieceStyle`). Páginas que não passam `pieceStyle` (as demos
+de `/aprender`) continuam no `'classico'` por omissão, tal como já
+acontecia com `boardTheme`.
 
-`moderno` é deliberadamente angular — polígonos (hexágonos, losangos,
-zigzags) em vez dos círculos e curvas Bézier do clássico — para se ler
-como família visualmente distinta ao relance, não uma variação subtil;
-mais visível na torre (coroa em zigzag vs. merlões retos) e no bispo
-(topo em losango vs. círculo). O cavalo é literalmente a mesma forma
-nos dois estilos: já era o único polígono "anguloso" do clássico, não
-havia o que diferenciar sem forçar. Antes de desenhar as formas finais,
-foi montada uma página HTML solta (fora do repo, só para comparação
-visual lado a lado nos dois temas de tabuleiro) e inspecionada via
-screenshot — vale o mesmo cuidado dado às texturas do tabuleiro: a
-única forma fiável de validar um desenho geométrico é olhar para ele
-renderizado, não confiar nas coordenadas de cabeça.
+Cada estilo tem uma identidade geométrica própria e deliberadamente
+distinta ao relance, não uma variação subtil — mais visível na torre e
+no bispo em cada caso:
+
+- `classico`: círculos e curvas Bézier — o original.
+- `moderno`: polígonos simples (hexágonos, losangos, zigzags rasos).
+- `anime`: silhuetas denteadas/pontiagudas ("cristal/energia" —
+  zigzags mais acentuados que `moderno`, losangos afiados em vez de
+  círculos) — parte do redesenho "anime", a mesma linguagem visual das
+  coroas denteadas e faíscas usadas no resto da identidade nova.
+
+O cavalo é literalmente a mesma forma nos três estilos — já era o
+único polígono "anguloso" do clássico, não há o que diferenciar sem
+forçar. **Mas a base (`BASE`/`MODERN_BASE`/`ANIME_BASE`) tem de ser
+diferente em cada ficheiro mesmo quando a forma principal se repete**
+— sem isso, dois estilos produzem exatamente o mesmo SVG para o
+cavalo (aconteceu ao adicionar `anime`: reaproveitar o `BASE` simples
+do `classico` fazia o teste "estilos produzem HTML diferente" falhar
+só para o tipo `n`, porque a base era a única coisa que os
+diferenciava para as outras peças).
+
+Antes de desenhar as formas finais de um estilo novo, monta-se sempre
+uma página HTML solta (fora do repo, no scratchpad) para comparação
+visual lado a lado e inspeção via screenshot — nunca confiar nas
+coordenadas de cabeça. Para `anime` isto apanhou o acento (faísca) da
+dama a ficar demasiado pequeno para se ver a 70px antes de o aumentar
+ligeiramente.
 
 O seletor em `/opcoes` (`PieceStylePicker`) não reutiliza o
 `ThemePicker` genérico — este espera `previewImage` como caminho de
 ficheiro para `background-image`, mas as peças são SVG desenhado à
 mão, não imagens em `public/`. A miniatura de cada opção renderiza o
-próprio `PieceIcon` (um rei) sobre um `bg-stone-700`, em vez de uma
-imagem.
+próprio `PieceIcon` (um rei) sobre um `bg-ink`, em vez de uma imagem.
 
 ### Geração de imagens: Draw Things local (substitui Antigravity/Gemini)
 
@@ -305,39 +336,42 @@ padrão exato de `useChessGame.ts` (`useState(() => loadSettings())`,
 sem `useEffect`) **só que este padrão não é seguro aqui** — ver a nota
 sobre hidratação abaixo.
 
-`boardTheme` (`'carvalho' | 'ebano-bordo'`) e `backgroundTheme`
-(`'classico' | 'noturno'`) são escolhidos em `/opcoes` e lidos em dois
-sítios: `ChessBoard` aplica a textura das casas via a sua prop
-`boardTheme`, e `app/jogar/page.tsx` desenha o fundo como uma camada
-`fixed inset-0 -z-10` (fora do fluxo, `aria-hidden`) para não poder
-interferir com a restrição "o tabuleiro tem de caber no ecrã" abaixo —
-`main` ganha `relative` só como âncora de posicionamento, não muda o
-seu próprio layout. O registo único dos assets de cada tema —
-etiquetas e caminhos de imagem, para não escrever caminhos de ficheiro
-espalhados pela app — vive em `lib/settings/themes.ts`
-(`BOARD_THEMES`, `BACKGROUND_THEMES`), lido por `ChessBoard.tsx`,
-`app/page.tsx` (fundo do menu), `app/jogar/page.tsx` e
-`app/opcoes/page.tsx` (os seletores).
+`boardTheme` (`'sakura' | 'nebulosa' | 'neon'`, ver secção de texturas
+acima) e `backgroundTheme` (`'classico' | 'noturno'`) são escolhidos em
+`/opcoes` e lidos em dois sítios: `ChessBoard` aplica a textura das
+casas via a sua prop `boardTheme`, e `app/jogar/page.tsx` desenha o
+fundo como uma camada `fixed inset-0 -z-10` (fora do fluxo,
+`aria-hidden`) para não poder interferir com a restrição "o tabuleiro
+tem de caber no ecrã" abaixo — `main` ganha `relative` só como âncora
+de posicionamento, não muda o seu próprio layout. O registo único dos
+assets de cada tema — etiquetas e caminhos de imagem, para não
+escrever caminhos de ficheiro espalhados pela app — vive em
+`lib/settings/themes.ts` (`BOARD_THEMES`, `BACKGROUND_THEMES`), lido
+por `ChessBoard.tsx`, `app/page.tsx` (fundo do menu), `app/jogar/
+page.tsx` e `app/opcoes/page.tsx` (os seletores).
 
 As imagens dos tiles (`public/menu/vs-cpu.webp`, `public/menu/
 options.webp`, `public/menu/two-players.webp`) e o fundo do menu
-(`public/menu/background.webp`) seguem o mesmo pipeline de
-redimensionamento/compressão (`sips -Z 800` para os tiles, `-Z 1200`
-para o fundo, depois `cwebp -q 85` — dois comandos separados, não um
-pipe). As três primeiras foram geradas com o Antigravity CLI (`agy`,
-Gemini "Nano Banana"); `two-players.webp` foi gerada depois (2026-08-23)
-com o Draw Things local — ver secção "Geração de imagens" abaixo — para
-igualar o estilo "premium chess club" (fundo escuro, rim light dourado,
-bokeh subtil) das outras três. As quatro tiles/fundo do menu estão
-completas, nada pendente aqui.
+(`public/menu/background.webp`, `public/menu/background-noturno.webp`)
+seguem o mesmo pipeline de redimensionamento/compressão (`sips -Z 800`
+para os tiles, `-Z 1200` para o fundo, depois `cwebp -q 85` — dois
+comandos separados, não um pipe). Regeneradas por completo em
+2026-08-25 como parte do redesenho "anime" (ver secção própria abaixo)
+— substituem a arte "premium chess club" anterior (a primeira geração,
+via Antigravity/Gemini, mais `two-players.webp` gerada depois com Draw
+Things para igualar esse estilo). Os tiles em `app/page.tsx` aplicam a
+imagem como `backgroundImage` do próprio `Link`, com uma camada de
+gradiente translúcido por cima (`TILE_LABEL_STROKE`/cor de acento por
+tile) para o texto se manter legível sobre qualquer parte da
+ilustração, em vez de depender do contraste da própria imagem.
 
 Dos quatro espaços originalmente reservados em `/opcoes`, três já têm
 seletores reais: tema do tabuleiro e imagem de fundo usam `ThemePicker`
 (miniaturas clicáveis lidas de `lib/settings/themes.ts`); estilo das
-peças usa `PieceStylePicker`, próprio (ver secção "Segundo estilo de
-peças" acima — as peças são SVG desenhado à mão, não imagens, por isso
-não cabem no `ThemePicker` genérico). Só "Idioma" continua como
-"Brevemente" (`ComingSoonSection`, `opacity-50` + `aria-disabled="true"`)
+peças usa `PieceStylePicker`, próprio (ver secção "Estilos de peças"
+acima — as peças são SVG desenhado à mão, não imagens, por isso não
+cabem no `ThemePicker` genérico). Só "Idioma" continua como
+"Brevemente" (`ComingSoonSection`, `opacity-60` + `aria-disabled="true"`)
 — um sub-projeto futuro (i18n completo), não um bug.
 
 **Hidratação:** ao contrário de `useChessGame` (cuja página `/jogar`
@@ -369,21 +403,86 @@ alcance do agente). As explicações de lances passaram a ser sempre
 gratuitas — `LearningPanel` já não recebe nenhuma prop `isPremium`,
 mostra a explicação sempre que existe.
 
+### Identidade visual "anime" (redesenho 2026-08-25)
+
+A app inteira foi redesenhada a pedido explícito do utilizador — a
+identidade anterior ("premium chess club": fundo escuro, madeira
+realista, tipografia por omissão do browser) foi descrita como
+"genérica, sem identidade". Brainstorming feito com o
+`superpowers:brainstorming` visual-companion (servidor local que
+mostra mockups HTML num separador do browser) — cinco direções foram
+exploradas lado a lado (flat cartoon estilo Duolingo, pastel
+storybook, candy arcade, kawaii japonês, anime) antes de o utilizador
+escolher "anime". Cinco incrementos, cada um commitado e verificado
+sozinho antes do seguinte: (1) os três temas de tabuleiro (ver secção
+de texturas acima), (2) tipografia + paleta + `ChipButton` + página do
+menu, (3) o resto das páginas, (4) arte dos tiles/fundo do menu, (5) o
+terceiro estilo de peças. Todo o trabalho ficou num único branch
+(`redesign/anime-visual-identity`) em vez de um branch por incremento
+— são todos a mesma entrega, só sequenciados.
+
+**Tipografia** (`app/layout.tsx`, via `next/font/google`): **Bangers**
+só para títulos de impacto (`font-display`, uma úníca weight 400) —
+nunca para texto corrido, é demasiado carregada para se ler bem em
+frases longas. **Poppins** (pesos 400-800) é o `font-sans` por
+omissão, aplicado a tudo o resto. As duas incluem o subset
+`latin-ext`, não só `latin` — o texto é todo PT-PT, precisa dos
+acentos (ã, ç, õ, etc.).
+
+**Paleta** (`app/globals.css`, tokens `@theme` do Tailwind v4): `ink`
+(#1A0B33, fundo base), `ink-soft` (#241246, cartões), `cyan` (#00E5FF),
+`pink` (#FF6FA5), `gold` (#FFD600), `purple` (#7B3FA0), `lilac`
+(#E8D9FF, texto secundário sobre fundo escuro). Nomes próprios para
+não colidir com a paleta por omissão do Tailwind (stone/sky/emerald/
+etc., que alguns badges semânticos — qualidade do lance em
+`LearningPanel` — continuam a usar de propósito, ver essa secção). A
+app é **sempre escura agora**, sem depender de `prefers-color-scheme`
+— ver "Cuidado recorrente" logo a seguir para a razão concreta.
+
+**`ChipButton`** (`components/ChipButton/ChipButton.tsx`): substitui
+todo o texto sublinhado da app por um "chip" com corte diagonal
+(`clip-path`) e sombra "carimbada" (offset sólido, sem blur) — pedido
+explícito: "all the links should have this button feel". Quatro
+variantes de cor (`purple`/`cyan`/`pink`/`gold`), renderiza `<Link>`
+quando recebe `href` ou `<button>` quando recebe `onClick`. Usado em
+todas as páginas para qualquer ação secundária (Menu inicial, Voltar,
+Reiniciar partida, Regras, Ver tutorial, etc.) — ao acrescentar uma
+nova ação deste tipo nalguma página, usar sempre este componente, não
+`underline`/`text-sky-*` à mão.
+
+As três tiles do menu (`app/page.tsx`) e os grupos de seleção
+(dificuldade/cor, em `/opcoes` e em `GameSetup.tsx`) partilham a mesma
+linguagem visual — corte diagonal + sombra carimbada — mas não usam
+`ChipButton` (são maiores, e os grupos de seleção têm lógica de estado
+"ativo/inativo" própria); o mesmo `TILE_CLASS`/estilo inline aparece
+duplicado nesses três sítios. Não extraído para um componente partilhado
+ainda — cada um tem pequenas diferenças suficientes (imagem de fundo
+vs. gradiente sólido, `aria-pressed`) para a extração ainda não valer
+claramente a pena, mas é candidato óbvio se aparecer um quarto sítio.
+
 ### Cuidado recorrente: texto sem cor própria herda quase-branco em dark mode
 
-`app/globals.css` define `--foreground: #ededed` (quase branco) sob
-`@media (prefers-color-scheme: dark)`. Qualquer elemento sem uma classe
-de cor de texto explícita herda essa cor — inofensivo sobre um fundo
-escuro, mas invisível sobre um cartão claro (`bg-white`/`bg-white/95`).
-Já aconteceu duas vezes: o `<label>` "Modo de aprendizagem" em
-`LearningPanel.tsx` (corrigido 2026-08-25, ver "Sem autenticação"
-acima) e o `<h2>`/`<dt>` de `RulesModal.tsx` (corrigido no mesmo dia).
-Os dois tinham o mesmo padrão: um contentor claro isolado dentro de uma
-app maioritariamente escura, com filhos que nunca precisaram de
-definir a própria cor porque sempre herdaram bem — até ao dia em que o
-fundo à volta escureceu. Ao criar ou tocar num componente com fundo
-claro (`bg-white`/`bg-stone-100` e semelhantes), definir sempre uma cor
-de texto explícita no contentor — não confiar na herança do `body`.
+Histórico do porquê de a app ser **sempre escura** agora (ver secção
+de identidade visual acima), não só uma preferência de estilo:
+`app/globals.css` costumava definir `--foreground: #ededed` (quase
+branco) só sob `@media (prefers-color-scheme: dark)`. Qualquer
+elemento sem uma classe de cor de texto explícita herdava essa cor —
+inofensivo sobre um fundo escuro, mas invisível sobre um cartão claro
+(`bg-white`/`bg-white/95`). Aconteceu duas vezes no mesmo dia
+(2026-08-25): o `<label>` "Modo de aprendizagem" em
+`LearningPanel.tsx` e o `<h2>`/`<dt>` de `RulesModal.tsx` — os dois
+tinham o mesmo padrão, um contentor claro isolado dentro de uma app
+maioritariamente escura, com filhos que nunca precisaram de definir a
+própria cor porque sempre herdaram bem, até ao dia em que o fundo à
+volta escureceu. Corrigidos primeiro pontualmente (cor explícita em
+cada painel), depois pela raiz no mesmo redesenho: já não há nenhum
+cartão `bg-white` na app — `--foreground` deixou de depender de
+`prefers-color-scheme`, é sempre a mesma cor clara. Isto não torna o
+cuidado obsoleto: qualquer componente novo com fundo genuinamente
+diferente do resto da app (não é claro vs. escuro, é qualquer
+contentor cuja cor de fundo não é óbvia por herança) deve continuar a
+definir a própria cor de texto explicitamente, em vez de confiar na
+herança do `body`.
 
 ### O tabuleiro tem de caber sempre no ecrã visível (browser e PWA)
 

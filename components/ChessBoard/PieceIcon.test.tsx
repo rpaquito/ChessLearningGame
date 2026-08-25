@@ -60,4 +60,27 @@ describe('PieceIcon', () => {
       unmount();
     }
   });
+
+  it('renders different shapes for anime vs. classico and moderno', () => {
+    for (const type of TYPES) {
+      const results = ['classico', 'moderno', 'anime'].map((style) => {
+        const { container, unmount } = render(
+          <PieceIcon type={type} style={style as 'classico' | 'moderno' | 'anime'} />
+        );
+        const html = container.querySelector('svg')?.innerHTML;
+        unmount();
+        return html;
+      });
+      expect(new Set(results).size).toBe(3);
+    }
+  });
+
+  it('renders visible shapes for every piece type in the anime style', () => {
+    for (const type of TYPES) {
+      const { container, unmount } = render(<PieceIcon type={type} style="anime" />);
+      const svg = container.querySelector('svg');
+      expect(svg?.querySelectorAll('path, rect, circle, polygon').length).toBeGreaterThan(0);
+      unmount();
+    }
+  });
 });
