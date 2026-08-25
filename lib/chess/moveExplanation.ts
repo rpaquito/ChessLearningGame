@@ -68,22 +68,25 @@ export function describeMove(fenBefore: string, move: MoveInput): string {
   const clauses: string[] = [];
 
   if (verboseMove.captured) {
-    clauses.push(`captura ${withArticle(verboseMove.captured)}`);
+    clauses.push(`captura ${withArticle(verboseMove.captured)} em ${move.to}`);
   }
   if (verboseMove.san.endsWith('+')) {
     clauses.push('dá xeque');
   }
   if (verboseMove.promotion) {
-    clauses.push(`promove o peão a ${PIECE_NAME[verboseMove.promotion]}`);
+    clauses.push(`promove o peão a ${PIECE_NAME[verboseMove.promotion]} em ${move.to}`);
   }
-  if (verboseMove.flags.includes('k') || verboseMove.flags.includes('q')) {
-    clauses.push('coloca o rei em segurança com o roque');
+  if (verboseMove.flags.includes('k')) {
+    clauses.push('coloca o rei em segurança com o roque pequeno');
   }
-  if (wasThreatened) {
-    clauses.push('foge de uma peça ameaçada');
+  if (verboseMove.flags.includes('q')) {
+    clauses.push('coloca o rei em segurança com o roque grande');
+  }
+  if (wasThreatened && movingPiece) {
+    clauses.push(`afasta ${withArticle(movingPiece.type)} de uma ameaça`);
   }
   if (CENTER_SQUARES.has(move.to)) {
-    clauses.push('ocupa uma casa central');
+    clauses.push(`ocupa o centro em ${move.to}`);
   }
   if (
     movingPiece &&
@@ -91,21 +94,37 @@ export function describeMove(fenBefore: string, move: MoveInput): string {
     move.from.endsWith(BACK_RANK[color]) &&
     fullmoveNumber <= DEVELOPMENT_MOVE_LIMIT
   ) {
-    clauses.push('desenvolve uma peça');
+    clauses.push(`desenvolve ${withArticle(movingPiece.type)}`);
   }
 
-  if (clauses.length === 0) {
-    clauses.push('é um lance posicional');
+  // Nunca genérico: mesmo sem nenhuma característica notável, nomeia a
+  // peça e o destino em vez de um "é um lance posicional" vago.
+  if (clauses.length === 0 && movingPiece) {
+    clauses.push(`move ${withArticle(movingPiece.type)} para ${move.to}`);
   }
 
   return `${capitalize(clauses.slice(0, 2).join(' e '))}.`;
+}
+
+// Valor aproximado de cada peça em centipawns (convenção universal do
+// xadrez: 1 peão = 100 centipawns) — usado só para dar ao número uma
+// grandeza intuitiva, não para nenhum cálculo. Ver também a explicação
+// de "centipawns" em RulesModal.tsx, que usa a mesma referência.
+function centipawnFeel(loss: number): string {
+  if (loss < 100) return 'menos do que um peão';
+  if (loss < 300) return 'cerca de um peão';
+  if (loss < 500) return 'cerca de uma peça menor, como um cavalo ou bispo';
+  if (loss < 900) return 'cerca de uma torre';
+  return 'mais do que uma dama';
 }
 
 /**
  * Combina a descrição de características do lance jogado (de
  * `describeMove`) com a classificação de qualidade já calculada em
  * moveClassification.ts, para explicar não só o que aconteceu no tabuleiro
- * mas também porque é que o lance foi bom, impreciso ou um erro.
+ * mas também porque é que o lance foi bom, impreciso ou um erro. O número
+ * de centipawns sozinho não diz nada a quem não é familiar com a unidade —
+ * por isso vem sempre acompanhado de uma grandeza em termos de peças reais.
  */
 export function explainMoveQuality(quality: MoveQuality, tagSentence: string, loss: number): string {
   if (quality === 'boa') {
@@ -113,7 +132,7 @@ export function explainMoveQuality(quality: MoveQuality, tagSentence: string, lo
   }
   const suffix =
     quality === 'erro'
-      ? `Foi um erro: perdeste cerca de ${loss} centipawns de vantagem.`
-      : `Havia uma jogada melhor: perdeste cerca de ${loss} centipawns de vantagem.`;
+      ? `Foi um erro: perdeste cerca de ${loss} centipawns de vantagem (${centipawnFeel(loss)}).`
+      : `Havia uma jogada melhor: perdeste cerca de ${loss} centipawns de vantagem (${centipawnFeel(loss)}).`;
   return `${tagSentence} ${suffix}`;
 }

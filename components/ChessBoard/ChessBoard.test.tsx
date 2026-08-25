@@ -103,6 +103,31 @@ describe('ChessBoard', () => {
     expect(atD5[0]?.dataset.piece).toBe('wp');
   });
 
+  it('highlights both the origin and destination of a suggested move', () => {
+    const { container } = render(
+      <ChessBoard fen={START_FEN} suggestedMove={{ from: 'e2', to: 'e4' }} />
+    );
+    expect(container.querySelector('[data-square="e2"]')).toHaveAttribute('data-suggested', 'true');
+    expect(container.querySelector('[data-square="e4"]')).toHaveAttribute('data-suggested', 'true');
+    expect(container.querySelector('[data-square="d2"]')).not.toHaveAttribute('data-suggested');
+  });
+
+  it('keeps the suggestion highlight visible on a square that is also selected', () => {
+    const { container } = render(
+      <ChessBoard
+        fen={START_FEN}
+        selectedSquare="e2"
+        suggestedMove={{ from: 'e2', to: 'e4' }}
+      />
+    );
+    // Regression: selecting the suggested piece (the natural first step to
+    // play it) used to clobber the emerald outline with the selection's sky
+    // outline, since both were the same `outline` CSS property on the same
+    // element — only one color could ever render. The suggestion highlight
+    // must stay visible regardless of what else is going on with the square.
+    expect(container.querySelector('[data-square="e2"]')).toHaveAttribute('data-suggested', 'true');
+  });
+
   it('snaps to the new position without crashing when fen changes to an unrelated position', () => {
     const { container, rerender } = render(<ChessBoard fen={fenAfter(['e4', 'd5'])} />);
     const unrelatedFen = '4k3/8/8/8/8/8/8/4K3 w - - 0 1';

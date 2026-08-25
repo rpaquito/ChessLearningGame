@@ -369,6 +369,22 @@ alcance do agente). As explicações de lances passaram a ser sempre
 gratuitas — `LearningPanel` já não recebe nenhuma prop `isPremium`,
 mostra a explicação sempre que existe.
 
+### Cuidado recorrente: texto sem cor própria herda quase-branco em dark mode
+
+`app/globals.css` define `--foreground: #ededed` (quase branco) sob
+`@media (prefers-color-scheme: dark)`. Qualquer elemento sem uma classe
+de cor de texto explícita herda essa cor — inofensivo sobre um fundo
+escuro, mas invisível sobre um cartão claro (`bg-white`/`bg-white/95`).
+Já aconteceu duas vezes: o `<label>` "Modo de aprendizagem" em
+`LearningPanel.tsx` (corrigido 2026-08-25, ver "Sem autenticação"
+acima) e o `<h2>`/`<dt>` de `RulesModal.tsx` (corrigido no mesmo dia).
+Os dois tinham o mesmo padrão: um contentor claro isolado dentro de uma
+app maioritariamente escura, com filhos que nunca precisaram de
+definir a própria cor porque sempre herdaram bem — até ao dia em que o
+fundo à volta escureceu. Ao criar ou tocar num componente com fundo
+claro (`bg-white`/`bg-stone-100` e semelhantes), definir sempre uma cor
+de texto explícita no contentor — não confiar na herança do `body`.
+
 ### O tabuleiro tem de caber sempre no ecrã visível (browser e PWA)
 
 `ChessBoard.tsx` limita a largura a `w-full max-w-[min(92vw, 62dvh, 560px)]`

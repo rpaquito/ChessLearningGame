@@ -81,10 +81,14 @@ function JogarContent() {
   const handleSquareClick = useCallback(
     (square: Square) => {
       if (!isHumanTurn || state.isGameOver) return;
-      setSuggestion(null);
-      setSuggestionExplanation(null);
 
       if (selectedSquare && legalMovesFrom(selectedSquare).includes(square)) {
+        // Só limpa a sugestão quando um lance é de facto jogado — nunca a
+        // cada clique. Selecionar a peça sugerida (o primeiro passo natural
+        // para a jogar) não pode apagar a sugestão antes de chegar à casa
+        // de destino; ver o destaque correspondente em ChessBoard.tsx.
+        setSuggestion(null);
+        setSuggestionExplanation(null);
         const fenBefore = state.fen;
         const preview = new Chess(fenBefore);
         const previewMove = preview.move({ from: selectedSquare, to: square, promotion: 'q' });

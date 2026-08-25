@@ -68,6 +68,18 @@ const SECTIONS: { title: string; items: { title: string; text: string }[] }[] = 
       },
     ],
   },
+  {
+    title: 'Modo de aprendizagem',
+    items: [
+      {
+        title: 'Centipawns',
+        text:
+          'É a unidade que o motor de xadrez usa para avaliar uma posição — 100 centipawns valem cerca de ' +
+          'um peão. Perder poucos é normal; perder uma centena ou mais costuma significar que havia uma ' +
+          'jogada bastante melhor disponível.',
+      },
+    ],
+  },
 ];
 
 export function RulesModal({ open, onClose }: RulesModalProps) {
@@ -88,15 +100,22 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
+      {/* text-stone-900 explícito no próprio painel: sem isto, o `dt` de
+          cada item (só "font-medium", sem cor própria) herdava o
+          --foreground quase branco que globals.css define sob
+          prefers-color-scheme:dark, invisível sobre este bg-white — a
+          mesma falha já corrigida em LearningPanel.tsx. Definir a cor
+          aqui em vez de em cada elemento protege qualquer texto futuro
+          que também se esqueça de a definir. */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Regras do xadrez"
         onClick={(event) => event.stopPropagation()}
-        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-md bg-white p-6"
+        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-md bg-white p-6 text-stone-900"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 className="text-xl font-bold">Regras do xadrez</h2>
+          <h2 className="text-xl font-bold text-stone-900">Regras do xadrez</h2>
           <button
             type="button"
             onClick={onClose}

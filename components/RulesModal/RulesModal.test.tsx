@@ -13,6 +13,12 @@ describe('RulesModal', () => {
     expect(screen.getByRole('dialog', { name: 'Regras do xadrez' })).toBeInTheDocument();
   });
 
+  it('explains what centipawns are', () => {
+    render(<RulesModal open onClose={() => {}} />);
+    expect(screen.getByText('Centipawns')).toBeInTheDocument();
+    expect(screen.getByText(/100 centipawns valem cerca de um peão/)).toBeInTheDocument();
+  });
+
   it('calls onClose when the close button is clicked', () => {
     const onClose = vi.fn();
     render(<RulesModal open onClose={onClose} />);

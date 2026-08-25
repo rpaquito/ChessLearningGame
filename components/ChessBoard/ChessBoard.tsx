@@ -157,6 +157,7 @@ export function ChessBoard({
               type="button"
               key={square}
               data-square={square}
+              data-suggested={isSuggested ? 'true' : undefined}
               disabled={!interactive}
               onClick={() => onSquareClick?.(square)}
               style={{
@@ -170,9 +171,18 @@ export function ChessBoard({
                 isLastMove ? 'ring-4 ring-yellow-400 ring-inset' : '',
                 isSelected ? 'outline outline-4 outline-sky-500 -outline-offset-4' : '',
                 isThreatened ? 'outline outline-4 outline-red-500 -outline-offset-4' : '',
-                isSuggested ? 'outline outline-4 outline-emerald-500 -outline-offset-4' : '',
               ].join(' ')}
             >
+              {/* Camada própria (não a classe `outline` do botão) de propósito:
+                  isSelected/isThreatened também usam `outline`, a mesma
+                  propriedade CSS — só uma cor poderia renderizar de cada vez.
+                  Uma sugestão continua válida mesmo quando o jogador seleciona
+                  a peça sugerida para a jogar (o passo natural seguinte), por
+                  isso este anel tem de conseguir mostrar-se por cima/ao lado
+                  de qualquer outro estado do quadrado, nunca ser substituído. */}
+              {isSuggested && (
+                <span className="absolute inset-0 ring-4 ring-emerald-500 ring-inset pointer-events-none" />
+              )}
               {isCheck && <span className="absolute inset-0 bg-red-500/50" />}
               {isLegalTarget && !piece && (
                 <span className="absolute w-3 h-3 rounded-full bg-emerald-500/70" />
