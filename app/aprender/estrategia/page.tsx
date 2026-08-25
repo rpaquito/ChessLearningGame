@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { ChipButton } from '@/components/ChipButton/ChipButton';
 
 const PRINCIPLES = [
   {
@@ -25,20 +25,35 @@ const PRINCIPLES = [
 
 export default function EstrategiaPage() {
   return (
-    <main className="min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6">
+    <main className="relative min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6 overflow-hidden bg-ink">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background: 'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.2), transparent 55%)',
+        }}
+      />
       <div>
-        <h1 className="text-3xl font-bold">Princípios de estratégia</h1>
-        <p className="text-stone-600 mt-2">
-          <Link href="/aprender" className="underline text-sky-700">
+        <h1
+          className="font-display text-4xl tracking-wide text-gold"
+          style={{
+            textShadow:
+              '-2px -2px 0 #1A0B33, 2px -2px 0 #1A0B33, -2px 2px 0 #1A0B33, 2px 2px 0 #1A0B33, 4px 4px 0 rgba(0,0,0,0.35)',
+          }}
+        >
+          PRINCÍPIOS DE ESTRATÉGIA
+        </h1>
+        <p className="mt-3">
+          <ChipButton color="purple" href="/aprender">
             Voltar ao tutorial
-          </Link>
+          </ChipButton>
         </p>
       </div>
       <ul className="flex flex-col gap-4">
         {PRINCIPLES.map((principle) => (
-          <li key={principle.title} className="rounded-md border border-stone-200 p-4">
-            <p className="font-semibold">{principle.title}</p>
-            <p className="text-stone-600 mt-1">{principle.text}</p>
+          <li key={principle.title} className="rounded-xl border-2 border-purple/40 bg-ink-soft p-4">
+            <p className="font-semibold text-white">{principle.title}</p>
+            <p className="text-lilac/80 mt-1">{principle.text}</p>
           </li>
         ))}
       </ul>

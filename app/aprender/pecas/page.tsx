@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { Chess, type Square } from 'chess.js';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
+import { ChipButton } from '@/components/ChipButton/ChipButton';
 
 interface PieceDemo {
   title: string;
@@ -54,13 +54,28 @@ const DEMOS: PieceDemo[] = [
 
 export default function PecasPage() {
   return (
-    <main className="min-h-screen max-w-3xl mx-auto p-8 flex flex-col gap-8">
+    <main className="relative min-h-screen max-w-3xl mx-auto p-8 flex flex-col gap-8 overflow-hidden bg-ink">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background: 'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.2), transparent 55%)',
+        }}
+      />
       <div>
-        <h1 className="text-3xl font-bold">Como as peças se movem</h1>
-        <p className="text-stone-600 mt-2">
-          <Link href="/aprender" className="underline text-sky-700">
+        <h1
+          className="font-display text-4xl tracking-wide text-gold"
+          style={{
+            textShadow:
+              '-2px -2px 0 #1A0B33, 2px -2px 0 #1A0B33, -2px 2px 0 #1A0B33, 2px 2px 0 #1A0B33, 4px 4px 0 rgba(0,0,0,0.35)',
+          }}
+        >
+          COMO AS PEÇAS SE MOVEM
+        </h1>
+        <p className="mt-3">
+          <ChipButton color="purple" href="/aprender">
             Voltar ao tutorial
-          </Link>
+          </ChipButton>
         </p>
       </div>
       {DEMOS.map((demo) => {
@@ -79,8 +94,8 @@ export default function PecasPage() {
               />
             </div>
             <div>
-              <h2 className="text-xl font-semibold">{demo.title}</h2>
-              <p className="text-stone-600 mt-1">{demo.description}</p>
+              <h2 className="text-xl font-semibold text-cyan">{demo.title}</h2>
+              <p className="text-lilac/80 mt-1">{demo.description}</p>
             </div>
           </section>
         );

@@ -14,6 +14,11 @@ const COLORS: [PlayerColor, string][] = [
   ['random', 'Aleatório'],
 ];
 
+// Mesmo estilo do botão ativo que app/opcoes/page.tsx (grupos de seleção
+// idênticos nas duas páginas) — inline em vez de bg-gradient-to-br, ver
+// nota lá.
+const ACTIVE_TOGGLE_STYLE = { background: 'linear-gradient(135deg, #00E5FF, #4EA8DE)', color: '#0B2E30' };
+
 // Dificuldade e cor pré-preenchem-se a partir das Definições guardadas,
 // mas escolher aqui é só para esta partida — não altera as Definições por
 // omissão (isso só acontece em /opcoes).
@@ -32,7 +37,7 @@ export function GameSetup() {
   return (
     <div className="flex flex-col gap-6 max-w-sm mx-auto w-full">
       <fieldset className="flex flex-col gap-2">
-        <legend className="font-medium mb-1">Dificuldade</legend>
+        <legend className="font-medium mb-1 text-white">Dificuldade</legend>
         <div className="flex gap-2">
           {DIFFICULTIES.map((level) => (
             <button
@@ -40,10 +45,9 @@ export function GameSetup() {
               type="button"
               onClick={() => setDifficulty(level)}
               aria-pressed={difficulty === level}
-              className={`flex-1 rounded-md border px-3 py-2 capitalize ${
-                difficulty === level
-                  ? 'bg-emerald-600 text-white border-emerald-600'
-                  : 'border-stone-300'
+              style={difficulty === level ? ACTIVE_TOGGLE_STYLE : undefined}
+              className={`flex-1 rounded-xl border-2 px-3 py-2 capitalize font-semibold transition-transform hover:scale-[1.02] ${
+                difficulty === level ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]' : 'border-purple/40 text-lilac'
               }`}
             >
               {level}
@@ -53,7 +57,7 @@ export function GameSetup() {
       </fieldset>
 
       <fieldset className="flex flex-col gap-2">
-        <legend className="font-medium mb-1">As tuas peças</legend>
+        <legend className="font-medium mb-1 text-white">As tuas peças</legend>
         <div className="flex gap-2">
           {COLORS.map(([value, label]) => (
             <button
@@ -61,8 +65,9 @@ export function GameSetup() {
               type="button"
               onClick={() => setColor(value)}
               aria-pressed={color === value}
-              className={`flex-1 rounded-md border px-3 py-2 ${
-                color === value ? 'bg-emerald-600 text-white border-emerald-600' : 'border-stone-300'
+              style={color === value ? ACTIVE_TOGGLE_STYLE : undefined}
+              className={`flex-1 rounded-xl border-2 px-3 py-2 font-semibold transition-transform hover:scale-[1.02] ${
+                color === value ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]' : 'border-purple/40 text-lilac'
               }`}
             >
               {label}
@@ -74,7 +79,8 @@ export function GameSetup() {
       <button
         type="button"
         onClick={handleStart}
-        className="rounded-md bg-stone-900 text-white px-4 py-3 font-semibold"
+        className="rounded-xl px-4 py-3 font-bold text-[#0B2E30] shadow-[4px_4px_0_rgba(0,0,0,0.35)] transition-transform hover:scale-[1.02]"
+        style={{ background: 'linear-gradient(135deg, #FFD600, #FFA800)' }}
       >
         Começar
       </button>

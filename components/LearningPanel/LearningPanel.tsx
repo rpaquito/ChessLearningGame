@@ -19,9 +19,10 @@ const QUALITY_LABEL: Record<MoveQuality, string> = {
   erro: 'Erro',
 };
 
-// Chips translúcidos sobre o cartão escuro — mantêm a cor semântica
-// (verde/âmbar/vermelho) sem os fundos pastel claros que ficavam fora de
-// tom ao lado do resto da UI escura.
+// Pílulas translúcidas — mantêm a cor semântica (verde/âmbar/vermelho)
+// de propósito, para não se confundirem com as cores de marca
+// (cyan/rosa/dourado/roxo) usadas no resto da identidade nova: aqui a
+// cor comunica correção do lance, não estilo.
 const QUALITY_CLASS: Record<MoveQuality, string> = {
   boa: 'bg-emerald-900/60 text-emerald-200',
   imprecisao: 'bg-amber-900/60 text-amber-200',
@@ -39,38 +40,39 @@ export function LearningPanel({
   lastMoveExplanation = null,
 }: LearningPanelProps) {
   return (
-    <aside className="flex flex-col gap-4 w-full max-w-xs border border-stone-700 rounded-md p-4 bg-stone-800/95 text-stone-100">
-      <label className="flex items-center justify-between gap-2 font-medium">
+    <aside className="flex flex-col gap-4 w-full max-w-xs border-2 border-cyan rounded-2xl p-4 bg-ink-soft text-lilac">
+      <label className="flex items-center justify-between gap-2 font-medium text-white">
         Modo de aprendizagem
         <input
           type="checkbox"
           checked={enabled}
           onChange={(event) => onToggle(event.target.checked)}
-          className="h-5 w-5"
+          className="h-5 w-5 accent-cyan"
         />
       </label>
 
       {enabled && (
         <>
-          <p className="text-sm text-stone-300">
+          <p className="text-sm text-lilac/80">
             Lances legais e peças ameaçadas aparecem destacados no tabuleiro.
           </p>
           <button
             type="button"
             onClick={onRequestSuggestion}
             disabled={suggestionLoading}
-            className="rounded-md bg-sky-600 text-white px-3 py-2 disabled:opacity-50"
+            className="rounded-lg px-3 py-2 font-semibold text-[#0B2E30] shadow-[3px_3px_0_rgba(0,0,0,0.35)] disabled:opacity-50 transition-transform enabled:hover:scale-[1.02]"
+            style={{ background: 'linear-gradient(135deg, #00E5FF, #4EA8DE)' }}
           >
             {suggestionLoading ? 'A pensar…' : 'Sugerir jogada'}
           </button>
           {hasSuggestion && (
-            <p className="text-sm text-stone-300">
+            <p className="text-sm text-lilac/80">
               Jogada sugerida destacada em verde no tabuleiro.
               {suggestionExplanation && ` ${suggestionExplanation}`}
             </p>
           )}
           {lastMoveQuality && (
-            <p className={`text-sm rounded-md px-3 py-2 ${QUALITY_CLASS[lastMoveQuality]}`}>
+            <p className={`text-sm rounded-full px-3 py-2 ${QUALITY_CLASS[lastMoveQuality]}`}>
               O teu último lance: {QUALITY_LABEL[lastMoveQuality]}
               {lastMoveExplanation && ` — ${lastMoveExplanation}`}
             </p>

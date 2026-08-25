@@ -1,12 +1,18 @@
 'use client';
 
-import Link from 'next/link';
 import type { Difficulty } from '@/lib/chess/difficulty';
 import type { PlayerColor } from '@/lib/chess/playerColor';
 import type { BackgroundTheme, BoardTheme, PieceStyle } from '@/lib/settings/settings';
 import { BACKGROUND_THEMES, BOARD_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
 import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
+import { ChipButton } from '@/components/ChipButton/ChipButton';
+
+// Estilo do botão ativo nos dois grupos de seleção (dificuldade/cor) —
+// inline em vez de bg-gradient-to-br: mais seguro do que depender do
+// nome exato da utility de gradiente do Tailwind v4 (renomeada nalgumas
+// versões), e já é o padrão usado no resto deste redesenho.
+const ACTIVE_TOGGLE_STYLE = { background: 'linear-gradient(135deg, #00E5FF, #4EA8DE)', color: '#0B2E30' };
 
 const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
 const COLORS: [PlayerColor, string][] = [
@@ -20,14 +26,14 @@ const COLORS: [PlayerColor, string][] = [
 // aqui. Ver docs/superpowers/specs/2026-08-22-menu-settings-redesign-design.md.
 function ComingSoonSection({ title }: { title: string }) {
   return (
-    <fieldset className="flex flex-col gap-2 opacity-50" aria-disabled="true">
-      <legend className="font-medium mb-1 flex items-center gap-2">
+    <fieldset className="flex flex-col gap-2 opacity-60" aria-disabled="true">
+      <legend className="font-medium mb-1 flex items-center gap-2 text-white">
         {title}
-        <span className="text-xs rounded-full bg-stone-200 text-stone-600 px-2 py-0.5 font-normal">
+        <span className="text-xs rounded-full bg-purple/40 text-lilac px-2 py-0.5 font-normal">
           Brevemente
         </span>
       </legend>
-      <div className="rounded-md border border-dashed border-stone-300 px-3 py-4 text-sm text-stone-500">
+      <div className="rounded-xl border border-dashed border-purple/50 px-3 py-4 text-sm text-lilac/70">
         Ainda não disponível.
       </div>
     </fieldset>
@@ -47,7 +53,7 @@ function ThemePicker<T extends string>({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="font-medium mb-1">{legend}</legend>
+      <legend className="font-medium mb-1 text-white">{legend}</legend>
       <div className="flex gap-3">
         {options.map((opt) => (
           <button
@@ -55,8 +61,8 @@ function ThemePicker<T extends string>({
             type="button"
             onClick={() => onChange(opt.id)}
             aria-pressed={value === opt.id}
-            className={`flex flex-col items-center gap-1 rounded-md border p-1 ${
-              value === opt.id ? 'border-emerald-600 ring-2 ring-emerald-600' : 'border-stone-300'
+            className={`flex flex-col items-center gap-1 rounded-xl border-2 p-1 transition-transform hover:scale-[1.03] ${
+              value === opt.id ? 'border-cyan ring-2 ring-cyan' : 'border-purple/40'
             }`}
           >
             {opt.previewImage2 ? (
@@ -72,7 +78,7 @@ function ThemePicker<T extends string>({
                 style={{ backgroundImage: `url(${opt.previewImage})` }}
               />
             )}
-            <span className="text-xs">{opt.label}</span>
+            <span className="text-xs text-lilac">{opt.label}</span>
           </button>
         ))}
       </div>
@@ -110,7 +116,7 @@ function PieceStylePicker({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="font-medium mb-1">Estilo das peças</legend>
+      <legend className="font-medium mb-1 text-white">Estilo das peças</legend>
       <div className="flex gap-3">
         {PIECE_STYLE_OPTIONS.map((opt) => (
           <button
@@ -118,16 +124,16 @@ function PieceStylePicker({
             type="button"
             onClick={() => onChange(opt.id)}
             aria-pressed={value === opt.id}
-            className={`flex flex-col items-center gap-1 rounded-md border p-1 ${
-              value === opt.id ? 'border-emerald-600 ring-2 ring-emerald-600' : 'border-stone-300'
+            className={`flex flex-col items-center gap-1 rounded-xl border-2 p-1 transition-transform hover:scale-[1.03] ${
+              value === opt.id ? 'border-cyan ring-2 ring-cyan' : 'border-purple/40'
             }`}
           >
-            <span className="flex h-16 w-16 items-center justify-center rounded bg-stone-700">
+            <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-ink">
               <span className="h-12 w-12 text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.9)]">
                 <PieceIcon type="k" style={opt.id} />
               </span>
             </span>
-            <span className="text-xs">{opt.label}</span>
+            <span className="text-xs text-lilac">{opt.label}</span>
           </button>
         ))}
       </div>
@@ -139,11 +145,26 @@ export default function OpcoesPage() {
   const { settings, updateSettings } = useSettings();
 
   return (
-    <main className="min-h-dvh flex flex-col items-center justify-start gap-8 p-8">
-      <h1 className="text-2xl font-bold">Opções</h1>
-      <div className="flex flex-col gap-6 max-w-sm w-full">
+    <main className="relative min-h-dvh flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.25), transparent 55%)',
+        }}
+      />
+      <h1
+        className="relative font-display text-4xl tracking-wide text-gold"
+        style={{
+          textShadow:
+            '-2px -2px 0 #1A0B33, 2px -2px 0 #1A0B33, -2px 2px 0 #1A0B33, 2px 2px 0 #1A0B33, 4px 4px 0 rgba(0,0,0,0.35)',
+        }}
+      >
+        OPÇÕES
+      </h1>
+      <div className="relative flex flex-col gap-6 max-w-sm w-full">
         <fieldset className="flex flex-col gap-2">
-          <legend className="font-medium mb-1">Dificuldade padrão</legend>
+          <legend className="font-medium mb-1 text-white">Dificuldade padrão</legend>
           <div className="flex gap-2">
             {DIFFICULTIES.map((level) => (
               <button
@@ -151,10 +172,11 @@ export default function OpcoesPage() {
                 type="button"
                 onClick={() => updateSettings({ defaultDifficulty: level })}
                 aria-pressed={settings.defaultDifficulty === level}
-                className={`flex-1 rounded-md border px-3 py-2 capitalize ${
+                style={settings.defaultDifficulty === level ? ACTIVE_TOGGLE_STYLE : undefined}
+                className={`flex-1 rounded-xl border-2 px-3 py-2 capitalize font-semibold transition-transform hover:scale-[1.02] ${
                   settings.defaultDifficulty === level
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'border-stone-300'
+                    ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]'
+                    : 'border-purple/40 text-lilac'
                 }`}
               >
                 {level}
@@ -164,7 +186,7 @@ export default function OpcoesPage() {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="font-medium mb-1">Cor padrão</legend>
+          <legend className="font-medium mb-1 text-white">Cor padrão</legend>
           <div className="flex gap-2">
             {COLORS.map(([value, label]) => (
               <button
@@ -172,10 +194,11 @@ export default function OpcoesPage() {
                 type="button"
                 onClick={() => updateSettings({ defaultColor: value })}
                 aria-pressed={settings.defaultColor === value}
-                className={`flex-1 rounded-md border px-3 py-2 ${
+                style={settings.defaultColor === value ? ACTIVE_TOGGLE_STYLE : undefined}
+                className={`flex-1 rounded-xl border-2 px-3 py-2 font-semibold transition-transform hover:scale-[1.02] ${
                   settings.defaultColor === value
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'border-stone-300'
+                    ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]'
+                    : 'border-purple/40 text-lilac'
                 }`}
               >
                 {label}
@@ -203,9 +226,9 @@ export default function OpcoesPage() {
         <ComingSoonSection title="Idioma" />
       </div>
 
-      <Link href="/" className="underline text-stone-600 text-sm">
+      <ChipButton color="purple" href="/" className="relative">
         Menu inicial
-      </Link>
+      </ChipButton>
     </main>
   );
 }

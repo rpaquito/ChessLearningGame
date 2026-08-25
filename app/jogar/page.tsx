@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
@@ -10,6 +9,7 @@ import { useSettings } from '@/lib/settings/useSettings';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
+import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
 import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
@@ -186,9 +186,19 @@ function JogarContent() {
   return (
     <main className="relative min-h-dvh flex flex-col md:flex-row md:flex-wrap items-center md:items-start justify-start md:justify-center gap-4 sm:gap-8 px-2 py-4 sm:p-8">
       <div
-        className="fixed inset-0 -z-10 bg-stone-900 bg-cover bg-center"
+        className="fixed inset-0 -z-10 bg-ink bg-cover bg-center"
         style={{ backgroundImage: `url(${BACKGROUND_THEMES[settings.backgroundTheme].image})` }}
         aria-hidden="true"
+      />
+      {/* Mesma camada de identidade da página de menu — ver app/page.tsx. */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 -z-10 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.25), transparent 55%), ' +
+            'linear-gradient(180deg, rgba(26,11,51,0.55) 0%, rgba(26,11,51,0.85) 100%)',
+        }}
       />
       {/* Mesma fórmula min(vw,dvh,560px) do próprio ChessBoard (w-full
           max-w-[...]), repetida aqui de propósito — ver "Tamanho do
@@ -199,7 +209,7 @@ function JogarContent() {
           contra a fórmula grande — colapsa para o tamanho intrínseco dos
           seus filhos. */}
       <div className="flex flex-col items-center gap-4 w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)]">
-        <p className="font-medium text-stone-100">{STATUS_LABEL[state.status]}</p>
+        <p className="font-semibold text-gold">{STATUS_LABEL[state.status]}</p>
         <ChessBoard
           fen={state.fen}
           boardTheme={settings.boardTheme}
@@ -215,7 +225,7 @@ function JogarContent() {
           onSquareClick={handleSquareClick}
         />
         {mode === 'ai' && engineUnavailable && (
-          <p className="max-w-sm rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="max-w-sm rounded-2xl border-2 border-gold bg-ink-soft px-4 py-3 text-sm text-lilac">
             O motor de xadrez não pôde ser carregado. Tenta novamente mais tarde, ou joga no
             modo Dois jogadores.
           </p>
@@ -245,16 +255,16 @@ function JogarContent() {
           do LearningPanel: aninhar outro flex-col ali dentro faz o
           `w-full` do tabuleiro colapsar antes de o max-width entrar em
           jogo (shrink-to-fit com `items-center` duas vezes seguidas). */}
-      <div className="flex items-center gap-4 text-sm md:w-full md:justify-center">
-        <Link href="/" className="underline text-stone-300">
+      <div className="flex items-center gap-3 flex-wrap justify-center md:w-full">
+        <ChipButton color="purple" href="/">
           Menu inicial
-        </Link>
-        <button type="button" onClick={handleReset} className="underline text-stone-300">
+        </ChipButton>
+        <ChipButton color="pink" onClick={handleReset}>
           Reiniciar partida
-        </button>
-        <button type="button" onClick={() => setRulesOpen(true)} className="underline text-stone-300">
+        </ChipButton>
+        <ChipButton color="cyan" onClick={() => setRulesOpen(true)}>
           Regras
-        </button>
+        </ChipButton>
       </div>
 
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />

@@ -100,27 +100,34 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
       onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
-      {/* text-stone-900 explícito no próprio painel: sem isto, o `dt` de
-          cada item (só "font-medium", sem cor própria) herdava o
-          --foreground quase branco que globals.css define sob
-          prefers-color-scheme:dark, invisível sobre este bg-white — a
-          mesma falha já corrigida em LearningPanel.tsx. Definir a cor
-          aqui em vez de em cada elemento protege qualquer texto futuro
-          que também se esqueça de a definir. */}
+      {/* text-lilac explícito no próprio painel (não só nos elementos
+          individuais) — protege qualquer texto futuro que se esqueça de
+          definir a própria cor, mesmo agora que a app é sempre escura
+          (ver "Cuidado recorrente" em CLAUDE.md: o cartão já foi
+          bg-white/prefers-color-scheme, o hábito de nunca confiar só na
+          herança do body fica). */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Regras do xadrez"
         onClick={(event) => event.stopPropagation()}
-        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-md bg-white p-6 text-stone-900"
+        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 className="text-xl font-bold text-stone-900">Regras do xadrez</h2>
+          <h2
+            className="font-display text-2xl tracking-wide text-gold"
+            style={{
+              textShadow:
+                '-1px -1px 0 #1A0B33, 1px -1px 0 #1A0B33, -1px 1px 0 #1A0B33, 1px 1px 0 #1A0B33',
+            }}
+          >
+            Regras do xadrez
+          </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="rounded-md px-2 py-1 text-stone-500 hover:bg-stone-100 hover:text-stone-900"
+            className="rounded-full h-8 w-8 shrink-0 bg-pink text-[#3A0B1F] font-bold hover:scale-110 transition-transform"
           >
             ✕
           </button>
@@ -129,12 +136,12 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
         <div className="flex flex-col gap-5">
           {SECTIONS.map((section) => (
             <section key={section.title}>
-              <h3 className="mb-2 font-semibold text-stone-800">{section.title}</h3>
+              <h3 className="mb-2 font-semibold text-cyan">{section.title}</h3>
               <dl className="flex flex-col gap-2">
                 {section.items.map((item) => (
                   <div key={item.title}>
-                    <dt className="font-medium">{item.title}</dt>
-                    <dd className="text-sm text-stone-600">{item.text}</dd>
+                    <dt className="font-medium text-white">{item.title}</dt>
+                    <dd className="text-sm text-lilac/80">{item.text}</dd>
                   </div>
                 ))}
               </dl>
