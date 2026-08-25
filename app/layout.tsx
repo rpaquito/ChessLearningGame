@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from 'next';
-import { ClerkProvider } from '@clerk/nextjs';
 import './globals.css';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 
@@ -30,10 +29,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-PT">
       <body className="antialiased">
-        <ClerkProvider>
-          <ServiceWorkerRegistration />
-          {children}
-        </ClerkProvider>
+        <ServiceWorkerRegistration />
+        {children}
       </body>
     </html>
   );

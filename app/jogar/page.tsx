@@ -12,9 +12,7 @@ import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
-import { useUser } from '@clerk/nextjs';
 import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
-import { isPremiumUser } from '@/lib/auth/isPremiumUser';
 import { findThreatenedSquares } from '@/lib/chess/threats';
 import { createStockfishClient, type StockfishClient } from '@/lib/chess/stockfishClient';
 import { parseUciMove } from '@/lib/chess/uciParser';
@@ -48,8 +46,6 @@ function JogarContent() {
 
   const { state, legalMovesFrom, makeMove, reset } = useChessGame(true);
   const { settings } = useSettings();
-  const { user } = useUser();
-  const isPremium = isPremiumUser(user);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [learningEnabled, setLearningEnabled] = useState(true);
   const [suggestion, setSuggestion] = useState<{ from: Square; to: Square } | null>(null);
@@ -224,7 +220,6 @@ function JogarContent() {
 
       {mode === 'ai' && !engineUnavailable && (
         <LearningPanel
-          isPremium={isPremium}
           enabled={learningEnabled}
           onToggle={setLearningEnabled}
           onRequestSuggestion={handleRequestSuggestion}

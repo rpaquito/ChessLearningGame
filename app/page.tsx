@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Show, UserButton } from '@clerk/nextjs';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
@@ -17,17 +16,6 @@ export default function HomePage() {
       className="min-h-dvh flex flex-col items-center gap-8 p-8 bg-stone-900 bg-cover bg-center"
       style={{ backgroundImage: `url(${BACKGROUND_THEMES[settings.backgroundTheme].image})` }}
     >
-      <div className="w-full max-w-sm flex justify-end text-sm">
-        <Show when="signed-out">
-          <Link href="/entrar" className="underline text-sky-200">
-            Entrar
-          </Link>
-        </Show>
-        <Show when="signed-in">
-          <UserButton />
-        </Show>
-      </div>
-
       <h1 className="text-3xl font-bold text-white">Xadrez</h1>
 
       <div className="flex flex-col gap-4 w-full max-w-sm">

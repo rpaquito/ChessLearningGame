@@ -5,25 +5,17 @@
 App Next.js (App Router) de xadrez: jogar contra o Stockfish (3 níveis) ou a
 dois no mesmo dispositivo, um "modo de aprendizagem" (lances legais, peças
 ameaçadas, sugestão de jogada, avaliação do último lance, com explicação de
-lances premium) e um tutorial em `/aprender`. Instalável como PWA, funciona
-offline. Sem backend/API routes próprias — tudo corre no browser, com uma
-exceção: autenticação (Clerk), usada só para gate de funcionalidades premium
-(ver secção própria abaixo).
+lances) e um tutorial em `/aprender`. Instalável como PWA, funciona offline.
+Sem backend/API routes próprias nem autenticação — tudo corre no browser.
 
 ## Estrutura
 
 ```
-proxy.ts                   # clerkMiddleware() — só sincroniza sessão, sem auth.protect()
 app/
   layout.tsx              # <html lang="pt-PT">, metadata/PWA, monta ServiceWorkerRegistration
-                           # e ClerkProvider
   page.tsx                 # menu inicial: três tiles ilustrados ("Jogar contra o
-                            # computador", "Dois jogadores", "Opções"), links
-                            # "Regras do jogo" e "Entrar"/<UserButton/>
-  entrar/[[...rest]]/page.tsx       # <SignIn/> do Clerk — catch-all: o Clerk exige
-                                     # este segmento para os sub-fluxos (verificação
-                                     # de email, MFA, callback OAuth)
-  criar-conta/[[...rest]]/page.tsx   # <SignUp/> do Clerk — mesma razão
+                            # computador", "Dois jogadores", "Opções"), link
+                            # "Regras do jogo"
   configurar/page.tsx            # dificuldade e cor para o modo computador, pré-
                                   # preenchidas a partir de lib/settings/ mas só
                                   # para esta partida — escolher aqui não altera as
@@ -42,9 +34,8 @@ components/
                               # pieceStyles/classico.tsx ou pieceStyles/moderno.tsx, ambos
                               # SVG inline (não glifos Unicode — ver secção própria abaixo)
   LearningPanel/              # painel lateral do modo de aprendizagem (toggle, botão
-                               # "sugerir jogada", badge de qualidade do lance); as
-                               # frases de explicação de lances são premium — recebe
-                               # isPremium como prop simples, não sabe nada de Clerk
+                               # "sugerir jogada", badge de qualidade do lance, frases
+                               # de explicação de lances — tudo gratuito)
   RulesModal/                    # popup fechável com resumo das regras — usado no
                                   # menu inicial e a meio da partida, sem mexer no
                                   # estado do jogo
@@ -58,13 +49,9 @@ lib/chess/
   difficulty.ts               # Difficulty ('facil'|'medio'|'dificil') -> EngineOptions
   moveClassification.ts        # perda de centipawns -> MoveQuality ('boa'|'imprecisao'|'erro')
   threats.ts                     # peças penduradas/ameaçadas para o modo de aprendizagem
-  moveExplanation.ts               # frases de explicação de lances (premium) — ver
-                                    # secção própria abaixo
+  moveExplanation.ts               # frases de explicação de lances — ver secção
+                                    # própria abaixo
   *.test.ts                       # cada módulo acima tem testes ao lado
-lib/auth/
-  isPremiumUser.ts        # lê user.publicMetadata.premium do Clerk — usada em
-                          # app/jogar/page.tsx para decidir o que o LearningPanel
-                          # mostra
 lib/settings/
   settings.ts             # Settings { defaultDifficulty, defaultColor, boardTheme,
                            # backgroundTheme }, DEFAULT_SETTINGS, loadSettings()/
@@ -364,38 +351,23 @@ um erro de hidratação sempre que o utilizador já tiver definições não-
 render inicial (igual em servidor e cliente) e só lendo o
 `localStorage` real dentro de um `useEffect`, depois de montar.
 
-### Autenticação e funcionalidades premium (Clerk)
+### Sem autenticação (Clerk removido em 2026-08-25)
 
-Login usa o Clerk (`@clerk/nextjs`), instalado como integração nativa
-do Vercel Marketplace — `CLERK_SECRET_KEY` e
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` são provisionadas automaticamente
-como variáveis de ambiente do projeto na Vercel. `proxy.ts` só
-mantém a sessão sincronizada (`clerkMiddleware()`, sem
-`auth.protect()`) — nenhuma rota exige autenticação para ser acedida;
-`/jogar`, `/aprender`, etc. continuam todas públicas.
-
-O que é premium: as frases de explicação de lances
-(`lib/chess/moveExplanation.ts`, mostradas em `LearningPanel`) — tudo o
-resto do modo de aprendizagem (destaque de ameaças, sugestão de
-jogada, badge de qualidade boa/imprecisão/erro) continua gratuito. A
-flag vive em `user.publicMetadata.premium` (booleano) e só é editável
-pela Clerk Dashboard ou por uma chamada de backend com
-`CLERK_SECRET_KEY` — nunca pelo próprio utilizador — por isso
-`lib/auth/isPremiumUser.ts` pode lê-la em segurança no cliente
-(`app/jogar/page.tsx`, via `useUser()`) sem precisar de nenhuma API
-route própria. Não há pagamentos nem base de dados ainda: ativar
-premium para um utilizador é, para já, um passo manual na Clerk
-Dashboard.
-
-Importante: isto protege o *valor da flag*, não o conteúdo em si — a
-frase de explicação é gerada e enviada ao browser de qualquer forma;
-`isPremium` só decide se aparece ou não. Não é uma fronteira de
-segurança, é só uma gate de UI — aceitável enquanto não há pagamentos
-reais a proteger.
-
-Páginas `/entrar` e `/criar-conta` (não `/sign-in`/`/sign-up`, para
-consistência com as restantes rotas em português) usam os componentes
-prontos do Clerk (`<SignIn/>`/`<SignUp/>`) sem lógica própria.
+O projeto teve login via Clerk (`@clerk/nextjs`) — usado só para gate
+das frases de explicação de lances (`lib/chess/moveExplanation.ts`)
+atrás de uma flag `premium`, sem pagamentos nem base de dados a
+proteger de facto. Foi removido por completo a pedido do utilizador
+("estava a confundir o projeto"): `proxy.ts` (só existia para
+`clerkMiddleware()`), `ClerkProvider` em `app/layout.tsx`, as rotas
+`/entrar` e `/criar-conta`, `lib/auth/isPremiumUser.ts`, o botão
+"Entrar"/`<UserButton/>` no menu inicial, a dependência
+`@clerk/nextjs`, e as variáveis `CLERK_SECRET_KEY`/
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (de `.env.local` — continuam
+provisionadas na Vercel pela integração do Marketplace até essa
+integração ser desinstalada manualmente lá, passo que fica fora do
+alcance do agente). As explicações de lances passaram a ser sempre
+gratuitas — `LearningPanel` já não recebe nenhuma prop `isPremium`,
+mostra a explicação sempre que existe.
 
 ### O tabuleiro tem de caber sempre no ecrã visível (browser e PWA)
 
@@ -473,13 +445,6 @@ já está persistido em `localStorage` (`STORAGE_KEY` em `useChessGame.ts`) —
 não persiste UI auxiliar (toggle do modo de aprendizagem, sugestão pendente),
 o que é intencional.
 
-Desde a introdução do Clerk, o `proxy.ts` (`clerkMiddleware()`) intercepta
-as navegações network-first antes de chegarem à app quando há rede — não
-muda a estratégia acima, só se interpõe à frente dela. Os pedidos ao
-Frontend API do Clerk (usado por `<SignIn/>`/`<SignUp/>`/`<UserButton/>`)
-vão para um domínio externo do próprio Clerk e não passam por este service
-worker nem pela sua cache — o Clerk gere o seu próprio caching/offline.
-
 ### Testes
 
 Vitest + jsdom + Testing Library, ficheiro de teste sempre ao lado do
@@ -501,13 +466,11 @@ automático a cada push para `main` via integração com o GitHub
 (`rpaquito/ChessLearningGame`) — não é preciso correr `vercel deploy` à mão.
 Vercel é o único alvo de deploy suportado: o self-host via Docker (e o
 `output: "standalone"` em `next.config.ts` que existia só para isso) foi
-descontinuado quando a autenticação (Clerk) foi introduzida — o Dockerfile
-não tinha forma de receber as variáveis de ambiente do Clerk. As variáveis
-`CLERK_SECRET_KEY`/`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` são provisionadas
-automaticamente pela integração Clerk do Vercel Marketplace (ver secção
-"Autenticação e funcionalidades premium" acima) — não há passo manual de
-configuração de ambiente para um novo deploy, desde que essa integração
-esteja instalada no projeto.
+descontinuado quando a autenticação (Clerk) foi introduzida, e não foi
+restaurado ao remover o Clerk (ver "Sem autenticação" acima) — ficou
+fora do âmbito dessa remoção. Não há nenhuma variável de ambiente
+própria da app a configurar para um novo deploy (as únicas que existiam
+eram do Clerk).
 
 ## Ficheiros de contexto de agentes
 
