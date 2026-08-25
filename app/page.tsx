@@ -10,14 +10,19 @@ import { useSettings } from '@/lib/settings/useSettings';
 
 // Sombra "carimbada" (efeito banda-desenhada) + corte diagonal — a mesma
 // linguagem visual das ChipButton, só a uma escala maior, para as três
-// ações principais. Cores flat por agora: a arte ilustrada de cada tile
-// (vs-cpu.webp/two-players.webp/options.webp, estilo "premium chess club"
-// antigo) fica para a próxima fase do redesenho (gerar arte nova a
-// condizer, via Draw Things) — ver CLAUDE.md.
+// ações principais. vs-cpu.webp/two-players.webp/options.webp já são a
+// arte anime gerada com Draw Things (substitui o "premium chess club"
+// antigo) — a camada de cor por cima (TILE_TINT) mantém a identidade de
+// cor de cada tile e garante contraste para o texto sobre qualquer parte
+// da ilustração, em vez de depender da própria imagem.
 const TILE_CLASS =
-  'relative flex items-center justify-center h-32 rounded-2xl px-6 text-lg font-bold text-center ' +
+  'relative flex items-center justify-center h-32 rounded-2xl px-6 overflow-hidden bg-cover bg-center ' +
   'shadow-[4px_4px_0_rgba(0,0,0,0.35)] [clip-path:polygon(0_0,100%_0,100%_88%,96%_100%,0_100%)] ' +
   'transition-transform hover:scale-[1.02]';
+
+const TILE_LABEL_CLASS = 'relative z-10 text-lg font-bold text-center text-white';
+const TILE_LABEL_STROKE =
+  '-1px -1px 0 #1A0B33, 1px -1px 0 #1A0B33, -1px 1px 0 #1A0B33, 1px 1px 0 #1A0B33';
 
 export default function HomePage() {
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -57,28 +62,49 @@ export default function HomePage() {
         <Link
           href="/configurar"
           className={TILE_CLASS}
-          style={{ background: 'linear-gradient(135deg, #00E5FF, #4EA8DE)', color: '#0B2E30' }}
+          style={{ backgroundImage: 'url(/menu/vs-cpu.webp)' }}
         >
-          <span aria-hidden="true" className="absolute top-3 right-4 text-base">⚔️</span>
-          Jogar contra o computador
+          <span
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(135deg, rgba(0,229,255,0.55), rgba(78,168,222,0.4))' }}
+          />
+          <span aria-hidden="true" className="absolute top-3 right-4 text-base z-10">⚔️</span>
+          <span className={TILE_LABEL_CLASS} style={{ textShadow: TILE_LABEL_STROKE }}>
+            Jogar contra o computador
+          </span>
         </Link>
 
         <Link
           href="/jogar?mode=local"
           onClick={() => clearSavedGame()}
           className={TILE_CLASS}
-          style={{ background: 'linear-gradient(135deg, #FF6FA5, #FF9AC2)', color: '#3A0B1F' }}
+          style={{ backgroundImage: 'url(/menu/two-players.webp)' }}
         >
-          <span aria-hidden="true" className="absolute top-3 right-4 text-base">✨</span>
-          Dois jogadores
+          <span
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(135deg, rgba(255,111,165,0.55), rgba(255,154,194,0.4))' }}
+          />
+          <span aria-hidden="true" className="absolute top-3 right-4 text-base z-10">✨</span>
+          <span className={TILE_LABEL_CLASS} style={{ textShadow: TILE_LABEL_STROKE }}>
+            Dois jogadores
+          </span>
         </Link>
 
         <Link
           href="/opcoes"
           className={TILE_CLASS}
-          style={{ background: 'linear-gradient(135deg, #FFD600, #FFA800)', color: '#3A2A00' }}
+          style={{ backgroundImage: 'url(/menu/options.webp)' }}
         >
-          Opções
+          <span
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(135deg, rgba(255,214,0,0.5), rgba(255,168,0,0.35))' }}
+          />
+          <span className={TILE_LABEL_CLASS} style={{ textShadow: TILE_LABEL_STROKE }}>
+            Opções
+          </span>
         </Link>
       </div>
 
