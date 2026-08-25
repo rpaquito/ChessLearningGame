@@ -1,26 +1,44 @@
 @import "tailwindcss";
 
+/* Identidade visual "anime" (redesenho 2026-08-25) — sempre escura, não
+   depende de prefers-color-scheme. Antes disto, --foreground só ficava
+   quase-branco sob dark mode do SO, o que já causou dois bugs de
+   contraste em cartões claros (ver "Cuidado recorrente" em CLAUDE.md) —
+   assumir um único tema escuro para a app inteira elimina essa classe de
+   bug de raiz, e todos os cartões "claros" (RulesModal, LearningPanel)
+   deixaram de existir como tal neste redesenho. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #1A0B33;
+  --foreground: #FFF6EE;
+
+  /* Paleta do redesenho — nomes próprios para não colidir com a paleta
+     por omissão do Tailwind (stone/sky/emerald/etc., ainda usada nalguns
+     sítios por converter). */
+  --color-ink: #1A0B33;
+  --color-ink-soft: #241246;
+  --color-cyan: #00E5FF;
+  --color-pink: #FF6FA5;
+  --color-gold: #FFD600;
+  --color-purple: #7B3FA0;
+  --color-lilac: #E8D9FF;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-cyan: var(--color-cyan);
+  --color-pink: var(--color-pink);
+  --color-gold: var(--color-gold);
+  --color-purple: var(--color-purple);
+  --color-lilac: var(--color-lilac);
+  --font-sans: var(--font-poppins);
+  --font-display: var(--font-bangers);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-poppins), system-ui, sans-serif;
 }

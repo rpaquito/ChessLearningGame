@@ -1,6 +1,25 @@
 import type { Metadata, Viewport } from 'next';
+import { Bangers, Poppins } from 'next/font/google';
 import './globals.css';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
+
+// Identidade visual "anime" (redesenho 2026-08-25, ver CLAUDE.md) — Bangers
+// só para títulos de impacto (`font-display`), Poppins para tudo o resto
+// (é o `font-sans` por omissão, ver globals.css). `latin-ext` a par de
+// `latin` porque o texto é todo em PT-PT — precisa dos acentos.
+const bangers = Bangers({
+  weight: '400',
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-bangers',
+  display: 'swap',
+});
+
+const poppins = Poppins({
+  weight: ['400', '500', '600', '700', '800'],
+  subsets: ['latin', 'latin-ext'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Xadrez — aprenda jogando',
@@ -22,12 +41,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#b45309',
+  themeColor: '#1A0B33',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-PT">
+    <html lang="pt-PT" className={`${bangers.variable} ${poppins.variable}`}>
       <body className="antialiased">
         <ServiceWorkerRegistration />
         {children}
