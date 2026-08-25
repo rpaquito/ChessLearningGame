@@ -97,7 +97,7 @@ function applyMove(pieces: DisplayPiece[], prevFen: string, nextFen: string): Di
 
 export function ChessBoard({
   fen,
-  boardTheme = 'carvalho',
+  boardTheme = 'nebulosa',
   pieceStyle = 'classico',
   orientation = 'white',
   selectedSquare = null,
@@ -167,7 +167,7 @@ export function ChessBoard({
               }}
               className={[
                 'relative flex items-center justify-center overflow-hidden aspect-square min-h-0 min-w-0',
-                isLight ? 'bg-amber-100' : 'bg-amber-700',
+                isLight ? 'bg-violet-200' : 'bg-violet-800',
                 isLastMove ? 'ring-4 ring-yellow-400 ring-inset' : '',
                 isSelected ? 'outline outline-4 outline-sky-500 -outline-offset-4' : '',
                 isThreatened ? 'outline outline-4 outline-red-500 -outline-offset-4' : '',

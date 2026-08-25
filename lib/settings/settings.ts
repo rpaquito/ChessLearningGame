@@ -1,7 +1,7 @@
 import type { Difficulty } from '@/lib/chess/difficulty';
 import type { PlayerColor } from '@/lib/chess/playerColor';
 
-export type BoardTheme = 'carvalho' | 'ebano-bordo';
+export type BoardTheme = 'sakura' | 'nebulosa' | 'neon';
 export type BackgroundTheme = 'classico' | 'noturno';
 export type PieceStyle = 'classico' | 'moderno';
 
@@ -16,7 +16,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   defaultDifficulty: 'facil',
   defaultColor: 'white',
-  boardTheme: 'carvalho',
+  boardTheme: 'nebulosa',
   backgroundTheme: 'classico',
   pieceStyle: 'classico',
 };
@@ -25,7 +25,7 @@ const STORAGE_KEY = 'xadrez-settings';
 
 const VALID_DIFFICULTIES: readonly Difficulty[] = ['facil', 'medio', 'dificil'];
 const VALID_COLORS: readonly PlayerColor[] = ['white', 'black', 'random'];
-const VALID_BOARD_THEMES: readonly BoardTheme[] = ['carvalho', 'ebano-bordo'];
+const VALID_BOARD_THEMES: readonly BoardTheme[] = ['sakura', 'nebulosa', 'neon'];
 const VALID_BACKGROUND_THEMES: readonly BackgroundTheme[] = ['classico', 'noturno'];
 const VALID_PIECE_STYLES: readonly PieceStyle[] = ['classico', 'moderno'];
 

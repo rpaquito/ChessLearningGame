@@ -17,15 +17,20 @@ export interface BackgroundThemeInfo {
  * app/page.tsx, app/jogar/page.tsx, app/opcoes/page.tsx).
  */
 export const BOARD_THEMES: Record<BoardTheme, BoardThemeInfo> = {
-  carvalho: {
-    label: 'Carvalho',
-    light: '/board/light-square.webp',
-    dark: '/board/dark-square.webp',
+  sakura: {
+    label: 'Sakura',
+    light: '/board/sakura-light-square.webp',
+    dark: '/board/sakura-dark-square.webp',
   },
-  'ebano-bordo': {
-    label: 'Ébano e bordo',
-    light: '/board/ebano-bordo-light-square.webp',
-    dark: '/board/ebano-bordo-dark-square.webp',
+  nebulosa: {
+    label: 'Nebulosa',
+    light: '/board/nebulosa-light-square.webp',
+    dark: '/board/nebulosa-dark-square.webp',
+  },
+  neon: {
+    label: 'Néon',
+    light: '/board/neon-light-square.webp',
+    dark: '/board/neon-dark-square.webp',
   },
 };
 

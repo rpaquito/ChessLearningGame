@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BOARD_THEMES, BACKGROUND_THEMES } from './themes';
 import type { BoardTheme, BackgroundTheme } from './settings';
 
-const ALL_BOARD_THEMES: BoardTheme[] = ['carvalho', 'ebano-bordo'];
+const ALL_BOARD_THEMES: BoardTheme[] = ['sakura', 'nebulosa', 'neon'];
 const ALL_BACKGROUND_THEMES: BackgroundTheme[] = ['classico', 'noturno'];
 
 describe('BOARD_THEMES', () => {

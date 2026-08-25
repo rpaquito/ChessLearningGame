@@ -20,16 +20,16 @@ afterEach(() => {
 });
 
 describe('ChessBoard', () => {
-  it('uses the carvalho texture by default', () => {
+  it('uses the nebulosa texture by default', () => {
     const { container } = render(<ChessBoard fen={START_FEN} />);
     const square = container.querySelector('button[data-square="a8"]') as HTMLButtonElement;
-    expect(square.style.backgroundImage).toContain('/board/light-square.webp');
+    expect(square.style.backgroundImage).toContain('/board/nebulosa-light-square.webp');
   });
 
   it('uses the given boardTheme texture', () => {
-    const { container } = render(<ChessBoard fen={START_FEN} boardTheme="ebano-bordo" />);
+    const { container } = render(<ChessBoard fen={START_FEN} boardTheme="neon" />);
     const dark = container.querySelector('button[data-square="a1"]') as HTMLButtonElement;
-    expect(dark.style.backgroundImage).toContain('/board/ebano-bordo-dark-square.webp');
+    expect(dark.style.backgroundImage).toContain('/board/neon-dark-square.webp');
   });
 
   it('defaults to the classico piece style', () => {

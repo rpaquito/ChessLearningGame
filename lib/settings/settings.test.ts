@@ -44,10 +44,10 @@ describe('loadSettings', () => {
   });
 
   it('returns previously saved theme choices', () => {
-    saveSettings({ ...DEFAULT_SETTINGS, boardTheme: 'ebano-bordo', backgroundTheme: 'noturno' });
+    saveSettings({ ...DEFAULT_SETTINGS, boardTheme: 'neon', backgroundTheme: 'noturno' });
     expect(loadSettings()).toEqual({
       ...DEFAULT_SETTINGS,
-      boardTheme: 'ebano-bordo',
+      boardTheme: 'neon',
       backgroundTheme: 'noturno',
     });
   });
