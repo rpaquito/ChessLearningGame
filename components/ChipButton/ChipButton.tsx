@@ -43,8 +43,8 @@ export function ChipButton({
   className = '',
 }: ChipButtonProps) {
   const style = { background: CHIP_GRADIENT[color], color: CHIP_TEXT[color] };
-  const disabledClasses = disabled ? 'opacity-40 pointer-events-none' : '';
-  const classes = `${BASE_CLASS} ${disabledClasses} ${className}`.trim();
+  const disabledClasses = disabled ? ' opacity-40 pointer-events-none' : '';
+  const classes = `${BASE_CLASS}${disabledClasses} ${className}`.trim();
 
   if (href) {
     return (

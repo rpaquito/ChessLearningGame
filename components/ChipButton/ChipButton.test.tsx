@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { ChipButton } from './ChipButton';
 
 describe('ChipButton', () => {
@@ -53,7 +53,7 @@ describe('ChipButton', () => {
     const button = screen.getByRole('button', { name: 'Seguinte' });
     expect(button).toBeDisabled();
     expect(button.className).toContain('opacity-40');
-    button.click();
+    fireEvent.click(button);
     expect(onClick).not.toHaveBeenCalled();
   });
 
