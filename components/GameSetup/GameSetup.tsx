@@ -6,6 +6,7 @@ import type { Difficulty } from '@/lib/chess/difficulty';
 import type { PlayerColor } from '@/lib/chess/playerColor';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
 import { useSettings } from '@/lib/settings/useSettings';
+import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
 
 const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
 const COLORS: [PlayerColor, string][] = [
@@ -13,11 +14,6 @@ const COLORS: [PlayerColor, string][] = [
   ['black', 'Pretas'],
   ['random', 'Aleatório'],
 ];
-
-// Mesmo estilo do botão ativo que app/opcoes/page.tsx (grupos de seleção
-// idênticos nas duas páginas) — inline em vez de bg-gradient-to-br, ver
-// nota lá.
-const ACTIVE_TOGGLE_STYLE = { background: 'linear-gradient(135deg, #00E5FF, #4EA8DE)', color: '#0B2E30' };
 
 // Dificuldade e cor pré-preenchem-se a partir das Definições guardadas,
 // mas escolher aqui é só para esta partida — não altera as Definições por

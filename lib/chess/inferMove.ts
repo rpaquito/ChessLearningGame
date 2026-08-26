@@ -1,10 +1,8 @@
-import { Chess, type Square, type PieceSymbol, type Color } from 'chess.js';
+import { Chess, type Square, type PieceSymbol } from 'chess.js';
 
 export interface InferredMove {
   from: Square;
   to: Square;
-  piece: PieceSymbol;
-  color: Color;
   promotion?: PieceSymbol;
   capturedSquare?: Square;
   castleRookFrom?: Square;
@@ -39,8 +37,6 @@ export function inferMove(prevFen: string, nextFen: string): InferredMove | null
   const result: InferredMove = {
     from: match.from,
     to: match.to,
-    piece: match.piece,
-    color: match.color,
   };
 
   if (match.isPromotion() && match.promotion) {

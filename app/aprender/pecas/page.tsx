@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Chess, type Square } from 'chess.js';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
+import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { legalTargetsFrom } from '@/lib/chess/legalMoves';
 
 interface PieceDemo {
   title: string;
@@ -52,10 +54,6 @@ const DEMOS: PieceDemo[] = [
     square: 'e3',
   },
 ];
-
-function legalTargetsFrom(fen: string, square: Square): Square[] {
-  return new Chess(fen).moves({ square, verbose: true }).map((m) => m.to as Square);
-}
 
 // Depois de chess.js aplicar o lance, o campo de "vez de jogar" do FEN
 // passa a "b" (é a regra normal do jogo) — mas aqui não há um segundo
@@ -124,23 +122,9 @@ function InteractiveDemo({ title, description, fen: initialFen, square: initialS
 export default function PecasPage() {
   return (
     <main className="relative min-h-screen max-w-3xl mx-auto p-8 flex flex-col gap-8 overflow-hidden bg-ink">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
-        style={{
-          background: 'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.2), transparent 55%)',
-        }}
-      />
+      <PageGlow position="fixed" pinkOpacity={0.2} />
       <div>
-        <h1
-          className="font-display text-4xl tracking-wide text-gold"
-          style={{
-            textShadow:
-              '-2px -2px 0 #1A0B33, 2px -2px 0 #1A0B33, -2px 2px 0 #1A0B33, 2px 2px 0 #1A0B33, 4px 4px 0 rgba(0,0,0,0.35)',
-          }}
-        >
-          COMO AS PEÇAS SE MOVEM
-        </h1>
+        <PageTitle>COMO AS PEÇAS SE MOVEM</PageTitle>
         <p className="mt-3">
           <ChipButton color="purple" href="/aprender">
             Voltar ao tutorial

@@ -7,7 +7,6 @@ export interface ChessGameState {
   fen: string;
   turn: 'w' | 'b';
   status: GameStatus;
-  history: string[];
   isGameOver: boolean;
   checkSquare: Square | null;
   lastMove: { from: Square; to: Square } | null;
@@ -65,7 +64,6 @@ function buildState(chess: Chess): ChessGameState {
     fen: chess.fen(),
     turn: chess.turn(),
     status,
-    history: chess.history(),
     isGameOver: chess.isGameOver(),
     checkSquare: status === 'check' || status === 'checkmate' ? findKingSquare(chess) : null,
     lastMove: last ? { from: last.from as Square, to: last.to as Square } : null,

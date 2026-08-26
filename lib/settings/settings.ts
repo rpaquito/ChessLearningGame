@@ -29,26 +29,12 @@ const VALID_BOARD_THEMES: readonly BoardTheme[] = ['sakura', 'nebulosa', 'neon']
 const VALID_BACKGROUND_THEMES: readonly BackgroundTheme[] = ['classico', 'noturno'];
 const VALID_PIECE_STYLES: readonly PieceStyle[] = ['classico', 'moderno', 'anime'];
 
-function isDifficulty(value: unknown): value is Difficulty {
-  return typeof value === 'string' && (VALID_DIFFICULTIES as readonly string[]).includes(value);
-}
-
-function isPlayerColor(value: unknown): value is PlayerColor {
-  return typeof value === 'string' && (VALID_COLORS as readonly string[]).includes(value);
-}
-
-function isBoardTheme(value: unknown): value is BoardTheme {
-  return typeof value === 'string' && (VALID_BOARD_THEMES as readonly string[]).includes(value);
-}
-
-function isBackgroundTheme(value: unknown): value is BackgroundTheme {
-  return (
-    typeof value === 'string' && (VALID_BACKGROUND_THEMES as readonly string[]).includes(value)
-  );
-}
-
-function isPieceStyle(value: unknown): value is PieceStyle {
-  return typeof value === 'string' && (VALID_PIECE_STYLES as readonly string[]).includes(value);
+/** Valida um valor guardado contra a lista de valores válidos de um campo,
+ * devolvendo-o (com o tipo estreitado) só se corresponder a um deles. */
+function pickValid<T extends string>(value: unknown, valid: readonly T[], fallback: T): T {
+  return typeof value === 'string' && (valid as readonly string[]).includes(value)
+    ? (value as T)
+    : fallback;
 }
 
 /**
@@ -66,21 +52,19 @@ export function loadSettings(): Settings {
     if (typeof parsed !== 'object' || parsed === null) return DEFAULT_SETTINGS;
     const candidate = parsed as Record<string, unknown>;
     return {
-      defaultDifficulty: isDifficulty(candidate.defaultDifficulty)
-        ? candidate.defaultDifficulty
-        : DEFAULT_SETTINGS.defaultDifficulty,
-      defaultColor: isPlayerColor(candidate.defaultColor)
-        ? candidate.defaultColor
-        : DEFAULT_SETTINGS.defaultColor,
-      boardTheme: isBoardTheme(candidate.boardTheme)
-        ? candidate.boardTheme
-        : DEFAULT_SETTINGS.boardTheme,
-      backgroundTheme: isBackgroundTheme(candidate.backgroundTheme)
-        ? candidate.backgroundTheme
-        : DEFAULT_SETTINGS.backgroundTheme,
-      pieceStyle: isPieceStyle(candidate.pieceStyle)
-        ? candidate.pieceStyle
-        : DEFAULT_SETTINGS.pieceStyle,
+      defaultDifficulty: pickValid(
+        candidate.defaultDifficulty,
+        VALID_DIFFICULTIES,
+        DEFAULT_SETTINGS.defaultDifficulty
+      ),
+      defaultColor: pickValid(candidate.defaultColor, VALID_COLORS, DEFAULT_SETTINGS.defaultColor),
+      boardTheme: pickValid(candidate.boardTheme, VALID_BOARD_THEMES, DEFAULT_SETTINGS.boardTheme),
+      backgroundTheme: pickValid(
+        candidate.backgroundTheme,
+        VALID_BACKGROUND_THEMES,
+        DEFAULT_SETTINGS.backgroundTheme
+      ),
+      pieceStyle: pickValid(candidate.pieceStyle, VALID_PIECE_STYLES, DEFAULT_SETTINGS.pieceStyle),
     };
   } catch {
     return DEFAULT_SETTINGS;

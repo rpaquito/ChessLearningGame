@@ -17,8 +17,6 @@ describe('inferMove', () => {
     expect(inferMove(prevFen, nextFen)).toEqual({
       from: 'e2',
       to: 'e4',
-      piece: 'p',
-      color: 'w',
     });
   });
 
@@ -27,8 +25,6 @@ describe('inferMove', () => {
     expect(inferMove(prevFen, nextFen)).toEqual({
       from: 'e4',
       to: 'd5',
-      piece: 'p',
-      color: 'w',
       capturedSquare: 'd5',
     });
   });
@@ -38,8 +34,6 @@ describe('inferMove', () => {
     expect(inferMove(prevFen, nextFen)).toEqual({
       from: 'e5',
       to: 'd6',
-      piece: 'p',
-      color: 'w',
       capturedSquare: 'd5',
     });
   });
@@ -57,8 +51,6 @@ describe('inferMove', () => {
     expect(inferMove(prevFen, nextFen)).toEqual({
       from: 'e1',
       to: 'g1',
-      piece: 'k',
-      color: 'w',
       castleRookFrom: 'h1',
       castleRookTo: 'f1',
     });
@@ -79,8 +71,6 @@ describe('inferMove', () => {
     expect(inferMove(prevFen, nextFen)).toEqual({
       from: 'e1',
       to: 'c1',
-      piece: 'k',
-      color: 'w',
       castleRookFrom: 'a1',
       castleRookTo: 'd1',
     });
@@ -91,8 +81,6 @@ describe('inferMove', () => {
     expect(inferMove(prevFen, nextFen)).toEqual({
       from: 'e7',
       to: 'e8',
-      piece: 'p',
-      color: 'w',
       promotion: 'q',
     });
   });

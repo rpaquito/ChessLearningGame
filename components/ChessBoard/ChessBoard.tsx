@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Chess, type Color, type PieceSymbol, type Square } from 'chess.js';
 import { BOARD_THEMES } from '@/lib/settings/themes';
 import type { BoardTheme, PieceStyle } from '@/lib/settings/settings';
@@ -112,7 +112,10 @@ export function ChessBoard({
   interactive = true,
   onSquareClick,
 }: ChessBoardProps) {
-  const board = new Chess(fen).board();
+  // ChessBoard também re-renderiza por mudanças em selectedSquare/
+  // legalTargets/etc. (independentes da posição) — sem useMemo, cada uma
+  // dessas re-renderizações reconstruía a grelha 8x8 do zero a partir do FEN.
+  const board = useMemo(() => new Chess(fen).board(), [fen]);
   const texture = BOARD_THEMES[boardTheme];
   const files = orientation === 'white' ? FILES : [...FILES].reverse();
   const ranks = orientation === 'white' ? RANKS : [...RANKS].reverse();

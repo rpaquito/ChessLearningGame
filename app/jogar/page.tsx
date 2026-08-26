@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
@@ -10,6 +10,7 @@ import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
+import { PageGlow } from '@/components/PageChrome/PageChrome';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
 import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
@@ -74,9 +75,21 @@ function JogarContent() {
   }, [mode]);
 
   const isHumanTurn = mode === 'local' || state.turn === humanColor;
-  const legalTargets = selectedSquare ? legalMovesFrom(selectedSquare) : [];
-  const threatenedSquares =
-    learningEnabled && mode === 'ai' ? findThreatenedSquares(state.fen, humanColor) : [];
+  // selectedSquare volta sempre a null assim que um lance é jogado (ver
+  // handleSquareClick), por isso nunca fica um valor a apontar para uma
+  // posição já ultrapassada — dependência só em selectedSquare chega.
+  const legalTargets = useMemo(
+    () => (selectedSquare ? legalMovesFrom(selectedSquare) : []),
+    [selectedSquare, legalMovesFrom]
+  );
+  // findThreatenedSquares varre as peças do adversário uma a uma — o cálculo
+  // mais caro deste componente por render — por isso só recalcula quando a
+  // posição/adversário/estado do modo de aprendizagem de facto mudam, não em
+  // qualquer re-render (ex.: abrir/fechar as regras, clicar numa casa vazia).
+  const threatenedSquares = useMemo(
+    () => (learningEnabled && mode === 'ai' ? findThreatenedSquares(state.fen, humanColor) : []),
+    [learningEnabled, mode, state.fen, humanColor]
+  );
 
   const handleSquareClick = useCallback(
     (square: Square) => {
@@ -191,15 +204,7 @@ function JogarContent() {
         aria-hidden="true"
       />
       {/* Mesma camada de identidade da página de menu — ver app/page.tsx. */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.25), transparent 55%), ' +
-            'linear-gradient(180deg, rgba(26,11,51,0.55) 0%, rgba(26,11,51,0.85) 100%)',
-        }}
-      />
+      <PageGlow position="fixed" pinkOpacity={0.25} darken={[0.55, 0.85]} />
       {/* Mesma fórmula min(vw,dvh,560px) do próprio ChessBoard (w-full
           max-w-[...]), repetida aqui de propósito — ver "Tamanho do
           tabuleiro colapsava" em CLAUDE.md: sem um width definido aqui,

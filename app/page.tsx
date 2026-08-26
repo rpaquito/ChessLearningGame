@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
+import { PageGlow, PageTitle, titleStroke } from '@/components/PageChrome/PageChrome';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
 
@@ -21,8 +22,7 @@ const TILE_CLASS =
   'transition-transform hover:scale-[1.02]';
 
 const TILE_LABEL_CLASS = 'relative z-10 text-lg font-bold text-center text-white';
-const TILE_LABEL_STROKE =
-  '-1px -1px 0 #1A0B33, 1px -1px 0 #1A0B33, -1px 1px 0 #1A0B33, 1px 1px 0 #1A0B33';
+const TILE_LABEL_STROKE = titleStroke(1);
 
 export default function HomePage() {
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -38,25 +38,11 @@ export default function HomePage() {
           para o cromo novo (título, tiles, chips) ficar coerente mesmo
           antes de a própria imagem de fundo ganhar arte nova (fase
           seguinte do redesenho). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(circle at 50% -10%, rgba(255,111,165,0.35), transparent 55%), ' +
-            'linear-gradient(180deg, rgba(26,11,51,0.55) 0%, rgba(26,11,51,0.85) 100%)',
-        }}
-      />
+      <PageGlow pinkOpacity={0.35} darken={[0.55, 0.85]} />
 
-      <h1
-        className="relative font-display text-5xl tracking-wide text-gold"
-        style={{
-          textShadow:
-            '-2px -2px 0 #1A0B33, 2px -2px 0 #1A0B33, -2px 2px 0 #1A0B33, 2px 2px 0 #1A0B33, 5px 5px 0 rgba(0,0,0,0.35)',
-        }}
-      >
+      <PageTitle size="text-5xl" softDrop={5} className="relative">
         XADREZ
-      </h1>
+      </PageTitle>
 
       <div className="relative flex flex-col gap-4 w-full max-w-sm">
         <Link

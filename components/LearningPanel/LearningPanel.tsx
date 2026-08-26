@@ -1,6 +1,7 @@
 'use client';
 
 import type { MoveQuality } from '@/lib/chess/moveClassification';
+import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
 
 export interface LearningPanelProps {
   enabled: boolean;
@@ -61,7 +62,7 @@ export function LearningPanel({
             onClick={onRequestSuggestion}
             disabled={suggestionLoading}
             className="rounded-lg px-3 py-2 font-semibold text-[#0B2E30] shadow-[3px_3px_0_rgba(0,0,0,0.35)] disabled:opacity-50 transition-transform enabled:hover:scale-[1.02]"
-            style={{ background: 'linear-gradient(135deg, #00E5FF, #4EA8DE)' }}
+            style={{ background: ACTIVE_TOGGLE_STYLE.background }}
           >
             {suggestionLoading ? 'A pensar…' : 'Sugerir jogada'}
           </button>

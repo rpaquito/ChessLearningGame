@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { PageTitle } from '@/components/PageChrome/PageChrome';
 
 export interface RulesModalProps {
   open: boolean;
@@ -114,15 +115,9 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
         className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2
-            className="font-display text-2xl tracking-wide text-gold"
-            style={{
-              textShadow:
-                '-1px -1px 0 #1A0B33, 1px -1px 0 #1A0B33, -1px 1px 0 #1A0B33, 1px 1px 0 #1A0B33',
-            }}
-          >
+          <PageTitle as="h2" size="text-2xl" strokeWidth={1}>
             Regras do xadrez
-          </h2>
+          </PageTitle>
           <button
             type="button"
             onClick={onClose}

@@ -11,7 +11,6 @@ describe('useChessGame', () => {
     const { result } = renderHook(() => useChessGame(false));
     expect(result.current.state.turn).toBe('w');
     expect(result.current.state.status).toBe('playing');
-    expect(result.current.state.history).toEqual([]);
     expect(result.current.state.checkSquare).toBeNull();
     expect(result.current.state.lastMove).toBeNull();
   });
@@ -23,17 +22,18 @@ describe('useChessGame', () => {
       expect(applied).toBe(true);
     });
     expect(result.current.state.turn).toBe('b');
-    expect(result.current.state.history).toEqual(['e4']);
     expect(result.current.state.lastMove).toEqual({ from: 'e2', to: 'e4' });
   });
 
   it('rejects an illegal move and keeps the state unchanged', () => {
     const { result } = renderHook(() => useChessGame(false));
+    const fenBefore = result.current.state.fen;
     act(() => {
       const applied = result.current.makeMove('e2', 'e5');
       expect(applied).toBe(false);
     });
-    expect(result.current.state.history).toEqual([]);
+    expect(result.current.state.turn).toBe('w');
+    expect(result.current.state.fen).toBe(fenBefore);
   });
 
   it('lists legal destination squares for a selected piece', () => {
@@ -56,11 +56,12 @@ describe('useChessGame', () => {
 
   it('resets to the starting position', () => {
     const { result } = renderHook(() => useChessGame(false));
+    const startingFen = result.current.state.fen;
     act(() => {
       result.current.makeMove('e2', 'e4');
       result.current.reset();
     });
-    expect(result.current.state.history).toEqual([]);
+    expect(result.current.state.fen).toBe(startingFen);
     expect(result.current.state.turn).toBe('w');
   });
 
