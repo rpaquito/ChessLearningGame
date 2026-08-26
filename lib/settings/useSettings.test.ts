@@ -1,11 +1,14 @@
 import { describe, expect, it, beforeEach } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { useSettings } from './useSettings';
+import { useSettings, __resetSettingsCacheForTests } from './useSettings';
 import { DEFAULT_SETTINGS, loadSettings } from './settings';
 
 describe('useSettings', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    // O cache por trás de useSettings é de módulo (ver useSettings.ts) —
+    // sobrevive entre testes deste ficheiro sem este reset.
+    __resetSettingsCacheForTests();
   });
 
   it('starts from the defaults when nothing is saved', () => {

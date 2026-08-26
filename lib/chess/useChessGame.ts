@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Chess, type PieceSymbol, type Square } from 'chess.js';
 
 export type GameStatus = 'playing' | 'check' | 'checkmate' | 'stalemate' | 'draw';
@@ -71,19 +71,34 @@ function buildState(chess: Chess): ChessGameState {
 }
 
 export function useChessGame(persist = true): UseChessGameResult {
-  const [chess] = useState(() => {
-    const instance = new Chess();
-    if (persist && typeof window !== 'undefined') {
-      try {
-        const saved = window.localStorage.getItem(STORAGE_KEY);
-        if (saved) instance.load(saved);
-      } catch {
-        // localStorage indisponível (ex.: modo privado) — começa do zero
-      }
-    }
-    return instance;
-  });
+  const [chess] = useState(() => new Chess());
   const [state, setState] = useState<ChessGameState>(() => buildState(chess));
+
+  // Tal como useSettings.ts, /jogar continua a ser renderizada no servidor
+  // (não escapa a SSR só por estar atrás de useSearchParams/<Suspense>) —
+  // ler o localStorage logo no inicializador do useState produzia HTML de
+  // servidor (posição inicial) e de cliente (partida gravada) diferentes
+  // sempre que já existisse uma partida guardada, um erro real de
+  // hidratação. Por isso `chess` nasce sempre na posição inicial (igual
+  // em servidor e cliente), e só este efeito — que só corre no cliente,
+  // depois de montar — carrega o FEN guardado, se existir.
+  useEffect(() => {
+    if (!persist || typeof window === 'undefined') return;
+    try {
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        chess.load(saved);
+        // Intentional: one-time hand-off from the SSR-safe starting
+        // position to the real persisted game, right after mount — the
+        // same "sync external store into React after hydration" case
+        // useSettings.ts already has.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setState(buildState(chess));
+      }
+    } catch {
+      // localStorage indisponível (ex.: modo privado) — começa do zero
+    }
+  }, [chess, persist]);
 
   const persistFen = useCallback(
     (fen: string) => {
