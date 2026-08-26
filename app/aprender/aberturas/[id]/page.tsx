@@ -25,7 +25,7 @@ export default async function OpeningPage({ params }: { params: Promise<{ id: st
           </ChipButton>
         </p>
       </div>
-      <OpeningStudy opening={opening} />
+      <OpeningStudy key={opening.id} opening={opening} />
     </main>
   );
 }

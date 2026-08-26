@@ -64,6 +64,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
           pieceStyle={settings.pieceStyle}
           lastMove={lastMove}
           checkSquare={checkSquare}
+          interactive={false}
         />
 
         <div className="flex items-center gap-3">
