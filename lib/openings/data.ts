@@ -72,7 +72,7 @@ export const OPENINGS: Opening[] = [
           { san: 'Nc6', explanation: 'Defende o peão e5.' },
           { san: 'Bb5', explanation: 'A Espanhola: pressiona o cavalo que defende e5.' },
           { san: 'Nf6', explanation: 'A Defesa Berlinense: contra-ataca o peão e4 em vez de responder a6.' },
-          { san: 'O-O', explanation: 'Ignora a ameaça momentânea a e4 — o peão está tacitamente protegido por uma combinação tática.' },
+          { san: 'O-O', explanation: 'Ignora a ameaça momentânea a e4: as pretas vão capturar este peão já a seguir, mas as brancas recuperam-no pouco depois com d4 e Re1.' },
           { san: 'Nxe4', explanation: 'As pretas capturam o peão e4, a linha principal da Berlinense.' },
           { san: 'd4', explanation: 'Abre o centro para explorar o cavalo avançado e preparar a recuperação do material.' },
           { san: 'Nd6', explanation: 'O cavalo recua, atacando o bispo em b5 e preparando um final de peças característico desta variante.' },
@@ -189,7 +189,7 @@ export const OPENINGS: Opening[] = [
           { san: 'd5', explanation: 'Desafia o peão e4.' },
           { san: 'e5', explanation: 'Variante do Avanço: ganha espaço fechando o centro.' },
           { san: 'Bf5', explanation: 'Desenvolve o bispo de casas claras antes de o fechar com ...e6 — a vantagem estrutural clássica da Caro-Kann face à Francesa.' },
-          { san: 'Nf3', explanation: 'Desenvolve, evitando por agora que ...Bg4 fixe o cavalo.' },
+          { san: 'Nf3', explanation: 'Desenvolve e reforça d4; se ...Bg4 fixar o cavalo, Be2 quebra a prisão a seguir.' },
           { san: 'e6', explanation: 'Abre espaço para o outro bispo e prepara o desenvolvimento do cavalo em direção ao centro.' },
           { san: 'Be2', explanation: 'Desenvolve com solidez, preparando o roque.' },
           { san: 'c5', explanation: 'Contra-ataca a base da cadeia de peões brancos, tal como na Francesa.' },
@@ -411,7 +411,7 @@ export const OPENINGS: Opening[] = [
       'Uma resposta direta e pouco convencional a 1.e4: as pretas desafiam o peão central logo no primeiro lance.',
     lines: [
       {
-        name: 'Linha principal (2...Dxd5)',
+        name: 'Linha principal (2...Qxd5)',
         eco: 'B01',
         moves: [
           { san: 'e4', explanation: 'Ocupa o centro.' },
@@ -426,7 +426,7 @@ export const OPENINGS: Opening[] = [
         ],
       },
       {
-        name: 'Variante Moderna (2...Cf6)',
+        name: 'Variante Moderna (2...Nf6)',
         eco: 'B01',
         moves: [
           { san: 'e4', explanation: 'Ocupa o centro.' },
@@ -437,7 +437,7 @@ export const OPENINGS: Opening[] = [
           { san: 'Nxd5', explanation: 'Recupera o peão com o cavalo, evitando expor a dama cedo demais.' },
           { san: 'Nf3', explanation: 'Desenvolve, protegendo o centro.' },
           { san: 'Bg4', explanation: 'Desenvolve o bispo antes de lhe fechar a saída, prendendo o cavalo à dama.' },
-          { san: 'Be2', explanation: 'Desenvolve com solidez, preparando quebrar a prisão com o roque e ...h3 mais tarde.' },
+          { san: 'Be2', explanation: 'Desenvolve com solidez, preparando quebrar a prisão com o roque e h3 mais tarde.' },
         ],
       },
     ],

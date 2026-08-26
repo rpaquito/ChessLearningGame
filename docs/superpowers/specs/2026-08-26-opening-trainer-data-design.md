@@ -119,8 +119,8 @@ conteúdo se necessário — não bloqueia nada.
 9. **Defesa Pirc** — Linha principal (B07); Variante Clássica (B08)
 10. **Abertura Escocesa** — Linha principal (C44); Gambito Göring
     (C44)
-11. **Defesa Escandinava** — Linha principal, `2...Dxd5` (B01);
-    Variante Moderna, `2...Cf6` (B01)
+11. **Defesa Escandinava** — Linha principal, `2...Qxd5` (B01);
+    Variante Moderna, `2...Nf6` (B01)
 12. **Sistema Londres** — Linha principal (D02); contra a Defesa
     Eslava (D02)
 
