@@ -25,8 +25,9 @@ app/
                                   # "Brevemente" (Idioma) para uma funcionalidade futura
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
-                             # fim-de-jogo, estrategia), cada uma com demos ChessBoard
-                             # não-interativos
+                             # fim-de-jogo, estrategia). Só /aprender/pecas é jogável —
+                             # as outras três continuam com demos ChessBoard fixos,
+                             # não-interativos (ver secção "Demo jogável" abaixo)
 components/
   ChessBoard/                # grelha 8x8 pura: recebe FEN + props de destaque, não
                               # sabe nada de regras — só desenha. PieceIcon.tsx escolhe
@@ -132,10 +133,10 @@ deformar o tabuleiro.
 
 Desde 2026-08-23, as peças deslizam visualmente da casa de origem até à de
 destino em vez de "saltarem" para a nova posição a cada mudança de `fen` —
-em `/jogar` e em qualquer futura sequência de posições em `/aprender`
-(hoje cada demo do tutorial usa um `fen` fixo que nunca muda depois de
-montado, por isso não há nada visível para animar aí ainda, mas o mecanismo
-já funciona para quando isso mudar).
+em `/jogar` e em `/aprender/pecas` (ver secção "Demo jogável" abaixo; as
+outras três subpáginas de `/aprender` continuam com um `fen` fixo que
+nunca muda depois de montado, por isso não há nada visível para animar aí
+ainda, mas o mecanismo já funciona para quando isso mudar).
 
 Duas peças novas, ambas em `lib/chess/`, tal como os outros módulos puros:
 
@@ -155,14 +156,18 @@ Duas peças novas, ambas em `lib/chess/`, tal como os outros módulos puros:
   textura), mas as peças passaram a ser uma camada `absolute inset-0
   pointer-events-none` por cima, com uma `<div>` por peça posicionada por
   percentagem (`left`/`top`, 12.5% por coluna/linha) e `transition-all
-  duration-200 motion-reduce:transition-none`. Cada peça mantém uma
+  duration-400 motion-reduce:transition-none` (400ms — era 200ms até
+  2026-08-26, aumentado a pedido explícito do utilizador, "mais lento").
+  Cada peça mantém uma
   identidade (`id`) estável entre posições — ao mudar `square` no estado
   interno em vez de desmontar/remontar a peça, é a mudança de `left`/`top`
   que a CSS anima, não um salto. No roque, a torre recebe a mesma
   atualização de `square` que o rei, na mesma transição. Uma peça
   capturada não desaparece logo: fica marcada `removing` (fade + encolhe,
-  `duration-150`) e só sai da lista ~150ms depois — a constante
-  `CAPTURE_FADE_MS` tem de bater certo com essa duração da classe Tailwind.
+  `duration-300`, também aumentada nesse pedido — era `duration-150`) e
+  só sai da lista ~300ms depois — a constante `CAPTURE_FADE_MS` tem de
+  bater certo com essa duração da classe Tailwind, nos dois sítios ao
+  mesmo tempo se voltares a afinar a velocidade.
   `motion-reduce:` (Tailwind v4, sem configuração extra) colapsa tudo isto
   para instantâneo quando o utilizador pede menos movimento.
 - Promoção é desenhada de forma simplificada: a peça que desliza já mostra
@@ -186,6 +191,50 @@ match"). Não foi corrigido aqui — pré-existia a esta sessão e é ortogonal
 à animação — mas está registado no backlog para uma correção futura
 (replicar o padrão "só ler localStorage num `useEffect`, depois de montar"
 de `useSettings.ts`).
+
+### `/aprender/pecas`: demo jogável, não é uma partida real
+
+Desde 2026-08-26 (a pedido do utilizador — "gostava que o tutorial fosse
+jogável"), as seis demos de `/aprender/pecas` deixaram de ter um `fen`
+fixo — cada `InteractiveDemo` (função interna de `page.tsx`, uma por
+peça) mantém o próprio `useState` (`fen`, `square` da peça em destaque,
+`lastMove`) e aceita cliques como o `ChessBoard` de `/jogar`: clicar num
+alvo destacado a verde move a peça, os alvos legais recalculam a partir
+da nova casa, e a animação de deslize (ver secção "Animação de lances"
+acima) funciona de graça — o mecanismo já existia, só nunca tinha uma
+demo com `fen` a mudar para o exercitar. Um botão "Reiniciar"
+(`ChipButton` cor `pink`) por demo volta à posição inicial.
+
+**Não é uma partida a duas** — só a peça branca em destaque de cada demo
+se move; o rei preto (e, na demo do peão, também o peão preto) são só
+alvos/props fixos, nunca jogam. As outras três subpáginas (regras-
+-especiais, fim-de-jogo, estratégia) continuam com demos fixas,
+não-interativas — ficou fora do pedido, que era só "o tutorial" no
+sentido do hub de movimento das peças.
+
+**Armadilha não óbvia, já apanhada por um teste:** depois de
+`chess.move()`, o campo de "vez de jogar" do FEN passa para `"b"` — é o
+comportamento normal do `chess.js` para uma partida a duas. Mas aqui não
+há segundo jogador: sem corrigir isto, `chess.moves({ square })` no
+próximo clique devolve sempre `[]` (chess.js só calcula lances para quem
+tem a vez), travando a demo permanentemente ao fim do primeiro lance.
+`forceWhiteToMove()` em `page.tsx` corrige o FEN manualmente a seguir a
+cada lance (campo de vez para `"w"`, en passant para `"-"`) — assume que
+a peça em destaque é sempre branca, o que é verdade nas seis demos
+atuais mas quebraria silenciosamente se alguma vier a usar uma peça
+preta como protagonista.
+
+**Outra armadilha, desta vez em testes:** `element.click()` direto (sem
+`fireEvent`) não é suficiente para observar o resultado de um clique
+que despoleta uma atualização de estado em React 19 — o `render()` da
+próxima posição só ocorre num microtask a seguir, por isso uma
+asserção síncrona logo depois do `.click()` continua a ver o DOM antigo
+(apanhado ao depurar `page.test.tsx`: o teste via a peça errada porque
+o clique "tinha funcionado" mas o estado ainda não tinha sido aplicado
+ao DOM na altura da leitura). `fireEvent.click()` do Testing Library
+(que envolve o disparo em `act()`) resolve isto — usar sempre
+`fireEvent`, não `.click()` cru, em qualquer teste que precise de ler o
+DOM logo a seguir a um clique que muda estado.
 
 ### Texturas das casas do tabuleiro: cor flat + grão subtil, geradas
 

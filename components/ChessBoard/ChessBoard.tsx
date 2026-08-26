@@ -28,8 +28,11 @@ const RANKS = ['8', '7', '6', '5', '4', '3', '2', '1'];
 // Duração das transições CSS das peças (classes duration-* mais abaixo) —
 // o timeout de remoção da peça capturada tem de bater certo com a duração
 // do fade, senão ou desaparece a meio da animação ou fica um instante a
-// mais sem animação nenhuma a correr.
-const CAPTURE_FADE_MS = 150;
+// mais sem animação nenhuma a correr. Lances a deslizar em 400ms e a
+// captura a desvanecer em 300ms (2026-08-26, a pedido do utilizador —
+// "mais lento" que os 200ms/150ms originais) — bater sempre certo com a
+// classe `!duration-*` correspondente mais abaixo se voltares a mexer aqui.
+const CAPTURE_FADE_MS = 300;
 
 interface DisplayPiece {
   id: string;
@@ -214,8 +217,8 @@ export function ChessBoard({
               style={{ left: `${fileIdx * 12.5}%`, top: `${rankIdx * 12.5}%` }}
               className={[
                 'absolute h-[12.5%] w-[12.5%] flex items-center justify-center',
-                'transition-all duration-200 ease-out motion-reduce:transition-none',
-                piece.removing ? 'opacity-0 scale-50 !duration-150 !ease-in' : 'opacity-100 scale-100',
+                'transition-all duration-400 ease-out motion-reduce:transition-none',
+                piece.removing ? 'opacity-0 scale-50 !duration-300 !ease-in' : 'opacity-100 scale-100',
                 piece.color === 'w'
                   ? 'text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.9)]'
                   : 'text-black drop-shadow-[0_0_2px_rgba(255,255,255,0.9)]',

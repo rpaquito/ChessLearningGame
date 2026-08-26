@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Chess, type Square } from 'chess.js';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
@@ -52,6 +53,74 @@ const DEMOS: PieceDemo[] = [
   },
 ];
 
+function legalTargetsFrom(fen: string, square: Square): Square[] {
+  return new Chess(fen).moves({ square, verbose: true }).map((m) => m.to as Square);
+}
+
+// Depois de chess.js aplicar o lance, o campo de "vez de jogar" do FEN
+// passa a "b" (é a regra normal do jogo) — mas aqui não há um segundo
+// jogador, é sempre a mesma peça branca em destaque a mover-se sozinha
+// pela demo. Sem forçar de volta a "w", `legalTargetsFrom` no próximo
+// clique devolveria sempre uma lista vazia (chess.js só calcula lances
+// para quem tem a vez), travando a demo ao fim do primeiro lance.
+function forceWhiteToMove(fen: string): string {
+  const parts = fen.split(' ');
+  parts[1] = 'w';
+  parts[3] = '-'; // en passant deixa de fazer sentido depois de "voltar a vez" a branco
+  return parts.join(' ');
+}
+
+// Demo jogável (2026-08-26, a pedido do utilizador): mantém o próprio
+// estado (fen + casa da peça em destaque) e usa chess.js só para
+// validar/aplicar o lance clicado. Não é uma partida real — só a peça
+// em destaque desta demo se move, nunca as peças pretas — mas usa a
+// mesma interação de clicar-na-peça-depois-no-destino do modo de jogo,
+// e reaproveita a animação de deslize do ChessBoard de graça (o slide
+// já funciona para qualquer mudança de fen, não só em /jogar).
+function InteractiveDemo({ title, description, fen: initialFen, square: initialSquare }: PieceDemo) {
+  const [fen, setFen] = useState(initialFen);
+  const [square, setSquare] = useState<Square>(initialSquare);
+  const [lastMove, setLastMove] = useState<{ from: Square; to: Square } | null>(null);
+  const legalTargets = legalTargetsFrom(fen, square);
+
+  function handleSquareClick(target: Square) {
+    if (!legalTargets.includes(target)) return;
+    const chess = new Chess(fen);
+    chess.move({ from: square, to: target, promotion: 'q' });
+    setFen(forceWhiteToMove(chess.fen()));
+    setLastMove({ from: square, to: target });
+    setSquare(target);
+  }
+
+  function handleReset() {
+    setFen(initialFen);
+    setSquare(initialSquare);
+    setLastMove(null);
+  }
+
+  return (
+    <section className="flex flex-col sm:flex-row gap-4 items-center">
+      <div className="w-full sm:w-64 flex flex-col items-center gap-3">
+        <ChessBoard
+          fen={fen}
+          selectedSquare={square}
+          legalTargets={legalTargets}
+          lastMove={lastMove}
+          interactive
+          onSquareClick={handleSquareClick}
+        />
+        <ChipButton color="pink" onClick={handleReset}>
+          Reiniciar
+        </ChipButton>
+      </div>
+      <div>
+        <h2 className="text-xl font-semibold text-cyan">{title}</h2>
+        <p className="text-lilac/80 mt-1">{description}</p>
+      </div>
+    </section>
+  );
+}
+
 export default function PecasPage() {
   return (
     <main className="relative min-h-screen max-w-3xl mx-auto p-8 flex flex-col gap-8 overflow-hidden bg-ink">
@@ -78,28 +147,9 @@ export default function PecasPage() {
           </ChipButton>
         </p>
       </div>
-      {DEMOS.map((demo) => {
-        const chess = new Chess(demo.fen);
-        const legalTargets = chess
-          .moves({ square: demo.square, verbose: true })
-          .map((m) => m.to as Square);
-        return (
-          <section key={demo.title} className="flex flex-col sm:flex-row gap-4 items-center">
-            <div className="w-full sm:w-64">
-              <ChessBoard
-                fen={demo.fen}
-                selectedSquare={demo.square}
-                legalTargets={legalTargets}
-                interactive={false}
-              />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-cyan">{demo.title}</h2>
-              <p className="text-lilac/80 mt-1">{demo.description}</p>
-            </div>
-          </section>
-        );
-      })}
+      {DEMOS.map((demo) => (
+        <InteractiveDemo key={demo.title} {...demo} />
+      ))}
     </main>
   );
 }

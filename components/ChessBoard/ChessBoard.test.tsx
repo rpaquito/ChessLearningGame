@@ -103,6 +103,34 @@ describe('ChessBoard', () => {
     expect(atD5[0]?.dataset.piece).toBe('wp');
   });
 
+  it('keeps a captured piece visible just before the fade-out delay elapses, gone just after', () => {
+    // Regression guard for the slower (300ms) fade requested 2026-08-26 —
+    // pins the actual delay instead of just "eventually gone" like the
+    // test above, so a future change to CAPTURE_FADE_MS gets caught here.
+    vi.useFakeTimers();
+    const { container, rerender } = render(<ChessBoard fen={fenAfter(['e4', 'd5'])} />);
+    rerender(<ChessBoard fen={fenAfter(['e4', 'd5', 'exd5'])} />);
+
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+    expect(pieceEls(container)).toHaveLength(32);
+
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    expect(pieceEls(container)).toHaveLength(31);
+  });
+
+  it('slides pieces with a slower transition than the default 200ms', () => {
+    const { container, rerender } = render(<ChessBoard fen={START_FEN} />);
+    rerender(<ChessBoard fen={fenAfter(['e4'])} />);
+
+    const moved = pieceEls(container).find((el) => el.dataset.square === 'e4');
+    expect(moved?.className).toContain('duration-400');
+    expect(moved?.className).not.toContain('duration-200');
+  });
+
   it('highlights both the origin and destination of a suggested move', () => {
     const { container } = render(
       <ChessBoard fen={START_FEN} suggestedMove={{ from: 'e2', to: 'e4' }} />
