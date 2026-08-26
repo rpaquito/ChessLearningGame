@@ -8,6 +8,7 @@ const TOPICS = [
   { href: '/aprender/fim-de-jogo', title: 'Fim de jogo', description: 'Xeque, xeque-mate, afogamento e empates.' },
   { href: '/aprender/estrategia', title: 'Princípios de estratégia', description: 'Ideias básicas para jogar melhor desde a abertura.' },
   { href: '/aprender/centipawns', title: 'Avaliação e centipawns', description: 'O que são centipawns e como interpretar "Boa jogada", "Imprecisão" e "Erro".' },
+  { href: '/aprender/aberturas', title: 'Aberturas', description: 'Estuda 12 aberturas populares, lance a lance, com explicação em português.' },
 ];
 
 export default function AprenderPage() {
