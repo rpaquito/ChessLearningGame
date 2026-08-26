@@ -1,6 +1,40 @@
-import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { InteractiveDemo, type PieceDemo } from '@/components/InteractiveDemo/InteractiveDemo';
+
+const DEMOS: PieceDemo[] = [
+  {
+    title: 'Roque',
+    description:
+      'Um lance especial do rei com uma das torres, feito uma única vez por partida. O rei anda ' +
+      'duas casas em direção à torre, e a torre salta para o outro lado do rei. Só é permitido se ' +
+      'nem o rei nem a torre envolvida já se moveram, se não houver peças entre eles, e se o rei ' +
+      'não estiver em xeque nem passar por uma casa atacada.',
+    fen: 'r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1',
+    square: 'e1',
+  },
+  {
+    title: 'En passant',
+    description:
+      'Se um peão adversário andar duas casas de uma vez e ficar ao lado de um peão teu, podes ' +
+      'capturá-lo como se ele tivesse andado apenas uma casa — mas só no lance imediatamente a ' +
+      'seguir.',
+    fen: '4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1',
+    square: 'e5',
+  },
+  {
+    title: 'Promoção',
+    description:
+      'Quando um peão chega à última fileira, é promovido a qualquer outra peça (menos rei) — na ' +
+      'grande maioria dos casos, a dama, por ser a peça mais forte.',
+    // O rei preto tem de ficar fora de e8 — nesta demo o peão precisa de
+    // conseguir mesmo empurrar até à última fileira e promover (ao
+    // contrário da versão estática original, que só ilustrava a ideia
+    // sem ninguém alguma vez tentar jogar o lance).
+    fen: 'k7/4P3/8/8/8/8/8/4K3 w - - 0 1',
+    square: 'e7',
+  },
+];
 
 export default function RegrasEspeciaisPage() {
   return (
@@ -14,48 +48,9 @@ export default function RegrasEspeciaisPage() {
           </ChipButton>
         </p>
       </div>
-
-      <section className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="w-full sm:w-64">
-          <ChessBoard fen="r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1" interactive={false} />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-cyan">Roque</h2>
-          <p className="text-lilac/80 mt-1">
-            Um lance especial do rei com uma das torres, feito uma única vez por partida. O rei
-            anda duas casas em direção à torre, e a torre salta para o outro lado do rei. Só é
-            permitido se nem o rei nem a torre envolvida já se moveram, se não houver peças entre
-            eles, e se o rei não estiver em xeque nem passar por uma casa atacada.
-          </p>
-        </div>
-      </section>
-
-      <section className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="w-full sm:w-64">
-          <ChessBoard fen="4k3/8/8/3pP3/8/8/8/4K3 w - d6 0 1" interactive={false} />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-cyan">En passant</h2>
-          <p className="text-lilac/80 mt-1">
-            Se um peão adversário andar duas casas de uma vez e ficar ao lado de um peão teu,
-            podes capturá-lo como se ele tivesse andado apenas uma casa — mas só no lance
-            imediatamente a seguir.
-          </p>
-        </div>
-      </section>
-
-      <section className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="w-full sm:w-64">
-          <ChessBoard fen="4k3/4P3/8/8/8/8/8/4K3 w - - 0 1" interactive={false} />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold text-cyan">Promoção</h2>
-          <p className="text-lilac/80 mt-1">
-            Quando um peão chega à última fileira, é promovido a qualquer outra peça (menos rei) —
-            na grande maioria dos casos, a dama, por ser a peça mais forte.
-          </p>
-        </div>
-      </section>
+      {DEMOS.map((demo) => (
+        <InteractiveDemo key={demo.title} {...demo} />
+      ))}
     </main>
   );
 }
