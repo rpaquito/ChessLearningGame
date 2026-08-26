@@ -37,12 +37,14 @@ describe('OpeningPractice', () => {
   it('is interactive on the user\'s first turn (White protagonist) and accepts the correct move', () => {
     const { container } = render(<OpeningPractice opening={italiana} />);
     expect(screen.getByText('A tua vez: encontra o lance da linha.')).toBeInTheDocument();
+    expect(container.querySelector('[data-square="e2"]')).not.toBeDisabled();
 
     clickSquare(container, 'e2');
     clickSquare(container, 'e4');
 
     expect(screen.queryByText('A tua vez: encontra o lance da linha.')).not.toBeInTheDocument();
     expect(screen.getByText('A pensar…')).toBeInTheDocument();
+    expect(container.querySelector('[data-square="e2"]')).toBeDisabled();
   });
 
   it('rejects a legal-but-wrong move and reveals the expected one', () => {
@@ -54,6 +56,7 @@ describe('OpeningPractice', () => {
     expect(
       screen.getByText('Não é esse — o lance da linha era e4. Tenta de novo.')
     ).toBeInTheDocument();
+    expect(container.querySelector('[data-square="e4"]')).toHaveAttribute('data-suggested', 'true');
   });
 
   it('auto-plays the opponent\'s move after a delay once the user plays correctly', () => {
