@@ -1,21 +1,22 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
-import { RulesModal } from '@/components/RulesModal/RulesModal';
-import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow, PageTitle, titleStroke } from '@/components/PageChrome/PageChrome';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
 
 // Sombra "carimbada" (efeito banda-desenhada) + corte diagonal — a mesma
-// linguagem visual das ChipButton, só a uma escala maior, para as três
-// ações principais. vs-cpu.webp/two-players.webp/options.webp já são a
-// arte anime gerada com Draw Things (substitui o "premium chess club"
-// antigo) — a camada de cor por cima (TILE_TINT) mantém a identidade de
-// cor de cada tile e garante contraste para o texto sobre qualquer parte
-// da ilustração, em vez de depender da própria imagem.
+// linguagem visual das ChipButton, só a uma escala maior, para as quatro
+// ações principais. vs-cpu.webp/two-players.webp/tutorial.webp/options.webp
+// já são a arte anime gerada com Draw Things (substitui o "premium chess
+// club" antigo) — a camada de cor por cima (TILE_TINT) mantém a identidade
+// de cor de cada tile e garante contraste para o texto sobre qualquer parte
+// da ilustração, em vez de depender da própria imagem. "Ver tutorial" e
+// "Regras do jogo" (chips secundários por baixo dos tiles, e o RulesModal
+// aberto a partir daqui) foram fundidos neste tile — o popup de regras
+// agora só existe a meio de uma partida (/jogar), o tutorial em /aprender
+// já cobre o resto (ver o tópico "Avaliação e centipawns" acrescentado lá).
 const TILE_CLASS =
   'relative flex items-center justify-center h-32 rounded-2xl px-6 overflow-hidden bg-cover bg-center ' +
   'shadow-[4px_4px_0_rgba(0,0,0,0.35)] [clip-path:polygon(0_0,100%_0,100%_88%,96%_100%,0_100%)] ' +
@@ -25,7 +26,6 @@ const TILE_LABEL_CLASS = 'relative z-10 text-lg font-bold text-center text-white
 const TILE_LABEL_STROKE = titleStroke(1);
 
 export default function HomePage() {
-  const [rulesOpen, setRulesOpen] = useState(false);
   const { settings } = useSettings();
 
   return (
@@ -79,6 +79,22 @@ export default function HomePage() {
         </Link>
 
         <Link
+          href="/aprender"
+          className={TILE_CLASS}
+          style={{ backgroundImage: 'url(/menu/tutorial.webp)' }}
+        >
+          <span
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(135deg, rgba(123,63,160,0.55), rgba(184,138,224,0.4))' }}
+          />
+          <span aria-hidden="true" className="absolute top-3 right-4 text-base z-10">📖</span>
+          <span className={TILE_LABEL_CLASS} style={{ textShadow: TILE_LABEL_STROKE }}>
+            Aprender a jogar
+          </span>
+        </Link>
+
+        <Link
           href="/opcoes"
           className={TILE_CLASS}
           style={{ backgroundImage: 'url(/menu/options.webp)' }}
@@ -93,17 +109,6 @@ export default function HomePage() {
           </span>
         </Link>
       </div>
-
-      <div className="relative flex items-center gap-3 flex-wrap justify-center">
-        <ChipButton color="purple" href="/aprender">
-          Ver tutorial
-        </ChipButton>
-        <ChipButton color="cyan" onClick={() => setRulesOpen(true)}>
-          Regras do jogo
-        </ChipButton>
-      </div>
-
-      <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
     </main>
   );
 }
