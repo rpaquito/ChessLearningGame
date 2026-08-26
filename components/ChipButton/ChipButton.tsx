@@ -26,6 +26,7 @@ export interface ChipButtonProps {
   children: ReactNode;
   href?: string;
   onClick?: () => void;
+  disabled?: boolean;
   className?: string;
 }
 
@@ -33,9 +34,17 @@ const BASE_CLASS =
   'inline-block font-semibold text-sm px-4 py-2 rounded-lg shadow-[3px_3px_0_rgba(0,0,0,0.35)] ' +
   '[clip-path:polygon(0_0,100%_0,100%_82%,93%_100%,0_100%)] transition-transform hover:scale-[1.03]';
 
-export function ChipButton({ color, children, href, onClick, className = '' }: ChipButtonProps) {
+export function ChipButton({
+  color,
+  children,
+  href,
+  onClick,
+  disabled = false,
+  className = '',
+}: ChipButtonProps) {
   const style = { background: CHIP_GRADIENT[color], color: CHIP_TEXT[color] };
-  const classes = `${BASE_CLASS} ${className}`.trim();
+  const disabledClasses = disabled ? 'opacity-40 pointer-events-none' : '';
+  const classes = `${BASE_CLASS} ${disabledClasses} ${className}`.trim();
 
   if (href) {
     return (
@@ -46,7 +55,7 @@ export function ChipButton({ color, children, href, onClick, className = '' }: C
   }
 
   return (
-    <button type="button" onClick={onClick} style={style} className={classes}>
+    <button type="button" onClick={onClick} disabled={disabled} style={style} className={classes}>
       {children}
     </button>
   );

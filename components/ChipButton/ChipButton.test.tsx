@@ -42,4 +42,40 @@ describe('ChipButton', () => {
 
     expect(purpleBg).not.toBe(cyanBg);
   });
+
+  it('supports a disabled state that blocks onClick and shows reduced opacity (button)', () => {
+    const onClick = vi.fn();
+    render(
+      <ChipButton color="pink" onClick={onClick} disabled>
+        Seguinte
+      </ChipButton>
+    );
+    const button = screen.getByRole('button', { name: 'Seguinte' });
+    expect(button).toBeDisabled();
+    expect(button.className).toContain('opacity-40');
+    button.click();
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('applies the disabled styling to a link too, since <a> has no native disabled', () => {
+    render(
+      <ChipButton color="purple" href="/aprender" disabled>
+        Ver tutorial
+      </ChipButton>
+    );
+    const link = screen.getByRole('link', { name: 'Ver tutorial' });
+    expect(link.className).toContain('opacity-40');
+    expect(link.className).toContain('pointer-events-none');
+  });
+
+  it('does not apply disabled styling when disabled is omitted', () => {
+    render(
+      <ChipButton color="gold" onClick={() => {}}>
+        Reiniciar
+      </ChipButton>
+    );
+    const button = screen.getByRole('button', { name: 'Reiniciar' });
+    expect(button).not.toBeDisabled();
+    expect(button.className).not.toContain('opacity-40');
+  });
 });
