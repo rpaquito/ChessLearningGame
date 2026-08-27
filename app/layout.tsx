@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Bangers, Poppins } from 'next/font/google';
 import './globals.css';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
+import { ToastProvider } from '@/components/Toast/ToastProvider';
 
 // Identidade visual "anime" (redesenho 2026-08-25, ver CLAUDE.md) — Bangers
 // só para títulos de impacto (`font-display`), Poppins para tudo o resto
@@ -49,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-PT" className={`${bangers.variable} ${poppins.variable}`}>
       <body className="antialiased">
         <ServiceWorkerRegistration />
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );
