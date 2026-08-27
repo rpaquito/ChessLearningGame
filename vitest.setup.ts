@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom/vitest';
-import { afterEach } from 'vitest';
+import { afterEach, beforeEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
+import { __resetSettingsCacheForTests } from '@/lib/settings/useSettings';
 
 // @testing-library/react only auto-registers its afterEach(cleanup) hook in
 // a Jest environment; under Vitest it must be wired up explicitly, or DOM
@@ -27,3 +28,13 @@ if (typeof window !== 'undefined' && jsdomGlobal) {
     configurable: true,
   });
 }
+
+// Set Portuguese as the default language for all tests to match the app's
+// default locale. Each test can override this by setting localStorage before
+// rendering. This ensures components using useTranslation() render with PT
+// dictionary by default, making tests match the hardcoded PT text they verify.
+beforeEach(() => {
+  window.localStorage.clear();
+  __resetSettingsCacheForTests();
+  window.localStorage.setItem('xadrez-settings', JSON.stringify({ language: 'pt' }));
+});
