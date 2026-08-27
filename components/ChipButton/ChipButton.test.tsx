@@ -68,6 +68,17 @@ describe('ChipButton', () => {
     expect(link.className).toContain('pointer-events-none');
   });
 
+  it('blocks keyboard activation on a disabled link, not just pointer clicks', () => {
+    render(
+      <ChipButton color="purple" href="/aprender" disabled>
+        Ver tutorial
+      </ChipButton>
+    );
+    const link = screen.getByRole('link', { name: 'Ver tutorial' });
+    expect(link).toHaveAttribute('aria-disabled', 'true');
+    expect(link).toHaveAttribute('tabIndex', '-1');
+  });
+
   it('does not apply disabled styling when disabled is omitted', () => {
     render(
       <ChipButton color="gold" onClick={() => {}}>

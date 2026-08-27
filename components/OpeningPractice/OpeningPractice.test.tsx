@@ -34,6 +34,14 @@ function clickSquare(container: HTMLElement, square: string) {
 }
 
 describe('OpeningPractice', () => {
+  it('marks the turn/feedback panel as a live region so screen readers hear turn changes', () => {
+    render(<OpeningPractice opening={italiana} />);
+    expect(screen.getByText('A tua vez: encontra o lance da linha.').closest('[aria-live]')).toHaveAttribute(
+      'aria-live',
+      'polite'
+    );
+  });
+
   it('is interactive on the user\'s first turn (White protagonist) and accepts the correct move', () => {
     const { container } = render(<OpeningPractice opening={italiana} />);
     expect(screen.getByText('A tua vez: encontra o lance da linha.')).toBeInTheDocument();

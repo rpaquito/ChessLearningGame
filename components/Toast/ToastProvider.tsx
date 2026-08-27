@@ -10,6 +10,14 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// Contador monótono em vez de Date.now(): duas chamadas a show() no mesmo
+// milissegundo (plausível — ex.: /opções, clicar em fácil → médio →
+// difícil em sucessão rápida) geravam o mesmo id, o que colidia com o
+// key={toast.id} do Toast.tsx e podia silenciosamente deixar de forçar o
+// remonte quando a mensagem repetida também coincidia — reintroduzindo o
+// próprio bug que esse key existe para evitar.
+let nextToastId = 0;
+
 /**
  * Único Context da app (decisão explícita do brainstorming — ver
  * docs/superpowers/specs/2026-08-27-popup-toast-feedback-design.md) —
@@ -22,7 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const show = useCallback((message: string, tone: ToastTone = 'info') => {
     // Novo toast substitui instantaneamente o anterior — nunca há fila.
-    setToast({ id: Date.now(), message, tone });
+    setToast({ id: nextToastId++, message, tone });
   }, []);
 
   const dismiss = useCallback(() => setToast(null), []);

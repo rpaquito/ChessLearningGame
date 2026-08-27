@@ -6,6 +6,15 @@ import { OPENINGS } from '@/lib/openings/data';
 const italiana = OPENINGS.find((o) => o.id === 'abertura-italiana')!;
 
 describe('OpeningStudy', () => {
+  it('has an aria-label on the line tablist and marks the explanation card as a live region', () => {
+    render(<OpeningStudy opening={italiana} />);
+    expect(screen.getByRole('tablist')).toHaveAttribute('aria-label', 'Linhas desta abertura');
+    expect(screen.getByText(/Posição inicial/).closest('[aria-live]')).toHaveAttribute(
+      'aria-live',
+      'polite'
+    );
+  });
+
   it('starts at the initial position with "Anterior" disabled', () => {
     render(<OpeningStudy opening={italiana} />);
     expect(screen.getByText(/Posição inicial/)).toBeInTheDocument();

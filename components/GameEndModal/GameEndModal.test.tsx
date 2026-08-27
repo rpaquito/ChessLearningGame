@@ -211,4 +211,19 @@ describe('GameEndModal', () => {
     );
     expect(screen.getByRole('link', { name: 'Menu inicial' })).toHaveAttribute('href', '/');
   });
+
+  it('moves focus into the dialog when it opens, keeping keyboard users off the board behind it', () => {
+    render(
+      <GameEndModal
+        open
+        status="draw"
+        mode="ai"
+        humanColor="w"
+        turn="w"
+        onClose={noop}
+        onPlayAgain={noop}
+      />
+    );
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
+  });
 });

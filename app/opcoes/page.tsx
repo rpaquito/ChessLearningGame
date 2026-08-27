@@ -127,7 +127,7 @@ export default function OpcoesPage() {
       <PageTitle className="relative">OPÇÕES</PageTitle>
       <div className="relative flex flex-col gap-6 max-w-sm w-full">
         <fieldset className="flex flex-col gap-2">
-          <legend className="font-medium mb-1 text-white">Dificuldade padrão</legend>
+          <legend className="font-medium mb-1 text-white">Dificuldade por omissão</legend>
           <div className="flex gap-2">
             {DIFFICULTIES.map((level) => (
               <button
@@ -152,7 +152,7 @@ export default function OpcoesPage() {
         </fieldset>
 
         <fieldset className="flex flex-col gap-2">
-          <legend className="font-medium mb-1 text-white">Cor padrão</legend>
+          <legend className="font-medium mb-1 text-white">Cor por omissão</legend>
           <div className="flex gap-2">
             {COLORS.map(([value, label]) => (
               <button

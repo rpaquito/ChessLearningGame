@@ -46,4 +46,9 @@ describe('RulesModal', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it('moves focus into the dialog when it opens, keeping keyboard users off the page behind it', () => {
+    render(<RulesModal open onClose={() => {}} />);
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
+  });
 });

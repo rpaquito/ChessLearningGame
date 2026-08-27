@@ -119,7 +119,10 @@ export function OpeningPractice({ opening }: { opening: Opening }) {
         />
 
         {completed ? (
-          <div className="w-full rounded-xl border-2 border-gold bg-ink-soft p-4 text-center flex flex-col gap-3">
+          <div
+            className="w-full rounded-xl border-2 border-gold bg-ink-soft p-4 text-center flex flex-col gap-3"
+            aria-live="polite"
+          >
             <p className="font-semibold text-gold">Linha completa!</p>
             <div className="flex flex-wrap gap-3 justify-center">
               <ChipButton color="pink" onClick={restartLine}>
@@ -131,7 +134,7 @@ export function OpeningPractice({ opening }: { opening: Opening }) {
             </div>
           </div>
         ) : (
-          <div className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center">
+          <div className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center" aria-live="polite">
             {isUserTurn ? (
               wrongAttempt ? (
                 <p className="text-lilac/80">

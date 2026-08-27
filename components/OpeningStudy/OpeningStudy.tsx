@@ -39,7 +39,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex flex-wrap gap-2 justify-center" role="tablist">
+      <div className="flex flex-wrap gap-2 justify-center" role="tablist" aria-label="Linhas desta abertura">
         {opening.lines.map((line, index) => (
           <button
             key={line.name}
@@ -83,7 +83,10 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
           </ChipButton>
         </div>
 
-        <div className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center">
+        <div
+          className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center"
+          aria-live="polite"
+        >
           {current ? (
             <>
               <p className="font-semibold text-cyan">

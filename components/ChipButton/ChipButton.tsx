@@ -47,8 +47,18 @@ export function ChipButton({
   const classes = `${BASE_CLASS}${disabledClasses} ${className}`.trim();
 
   if (href) {
+    // <a> não tem `disabled` nativo — `pointer-events-none` (em
+    // `disabledClasses`) já bloqueia o clique, mas sem isto o link
+    // continua alcançável e ativável por Tab+Enter.
     return (
-      <Link href={href} style={style} className={classes} onClick={onClick}>
+      <Link
+        href={href}
+        style={style}
+        className={classes}
+        onClick={onClick}
+        aria-disabled={disabled || undefined}
+        tabIndex={disabled ? -1 : undefined}
+      >
         {children}
       </Link>
     );

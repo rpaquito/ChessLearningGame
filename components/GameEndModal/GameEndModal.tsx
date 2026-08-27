@@ -5,6 +5,7 @@ import type { GameStatus } from '@/lib/chess/useChessGame';
 import { describeGameEnd } from '@/lib/chess/gameEndMessage';
 import { PageTitle } from '@/components/PageChrome/PageChrome';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
+import { useFocusTrap } from '@/lib/ui/useFocusTrap';
 
 export interface GameEndModalProps {
   open: boolean;
@@ -31,6 +32,8 @@ export function GameEndModal({
   onClose,
   onPlayAgain,
 }: GameEndModalProps) {
+  const panelRef = useFocusTrap(open);
+
   useEffect(() => {
     if (!open) return;
     function handleKeyDown(event: KeyboardEvent) {
@@ -51,11 +54,13 @@ export function GameEndModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
     >
       <div
+        ref={panelRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         onClick={(event) => event.stopPropagation()}
-        className="w-full max-w-sm rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac"
+        className="w-full max-w-sm rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac outline-none"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <PageTitle as="h2" size="text-xl" strokeWidth={1}>

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { PageTitle } from '@/components/PageChrome/PageChrome';
+import { useFocusTrap } from '@/lib/ui/useFocusTrap';
 
 export interface RulesModalProps {
   open: boolean;
@@ -84,6 +85,8 @@ const SECTIONS: { title: string; items: { title: string; text: string }[] }[] = 
 ];
 
 export function RulesModal({ open, onClose }: RulesModalProps) {
+  const panelRef = useFocusTrap(open);
+
   useEffect(() => {
     if (!open) return;
     function handleKeyDown(event: KeyboardEvent) {
@@ -108,11 +111,13 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
           bg-white/prefers-color-scheme, o hábito de nunca confiar só na
           herança do body fica). */}
       <div
+        ref={panelRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Regras do xadrez"
         onClick={(event) => event.stopPropagation()}
-        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac"
+        className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac outline-none"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <PageTitle as="h2" size="text-2xl" strokeWidth={1}>

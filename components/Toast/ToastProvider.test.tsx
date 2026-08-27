@@ -88,6 +88,19 @@ describe('ToastProvider / useToast', () => {
     expect(screen.queryByTestId('toast-card')).not.toBeInTheDocument();
   });
 
+  it('gives each toast a unique id even when shown back to back, so an identical repeated message still remounts (and re-announces)', () => {
+    render(
+      <ToastProvider>
+        <Trigger message="Dificuldade por omissão alterada." tone="info" />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('trigger: Dificuldade por omissão alterada.'));
+    const firstCard = screen.getByTestId('toast-card');
+    fireEvent.click(screen.getByText('trigger: Dificuldade por omissão alterada.'));
+    const secondCard = screen.getByTestId('toast-card');
+    expect(secondCard).not.toBe(firstCard);
+  });
+
   it('throws when useToast() is called outside a ToastProvider', () => {
     expect(() => render(<BadConsumer />)).toThrow(
       'useToast() só pode ser usado dentro de <ToastProvider>.'
