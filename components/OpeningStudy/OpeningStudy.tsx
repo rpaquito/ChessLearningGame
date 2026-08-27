@@ -1,10 +1,10 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
-import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
+import { LineTabs } from '@/components/LineTabs/LineTabs';
 import { useSettings } from '@/lib/settings/useSettings';
 import { replayLine, type ReplayedMove } from '@/lib/openings/replayLine';
 import { checkedKingSquare } from '@/lib/chess/legalMoves';
@@ -31,74 +31,79 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
   const fen = current?.fen ?? START_FEN;
   const lastMove = current ? { from: current.from, to: current.to } : null;
   const checkSquare = checkedKingSquare(fen);
+  const prevButtonRef = useRef<HTMLButtonElement>(null);
+  const nextButtonRef = useRef<HTMLButtonElement>(null);
 
   function selectLine(index: number) {
     setLineIndex(index);
     setStepIndex(0);
   }
 
+  // Um <button disabled> nativo que tem o foco perde-o para <body> assim
+  // que fica disabled (o browser faz isto sozinho, de forma assíncrona —
+  // tentar apanhar isso depois, num useEffect, perde a corrida: o efeito
+  // corre antes do browser ainda ter desativado/desfocado o botão). Em
+  // vez disso, ao clicar num botão que vai atingir o limite da linha,
+  // passa o foco para o irmão ainda ativo ANTES de o React o desativar —
+  // assim o browser nunca chega a ter de "atirar" o foco para <body>.
+  function goToStep(next: number) {
+    if (next === 0) nextButtonRef.current?.focus();
+    else if (next === replayed.length) prevButtonRef.current?.focus();
+    setStepIndex(next);
+  }
+
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex flex-wrap gap-2 justify-center" role="tablist" aria-label="Linhas desta abertura">
-        {opening.lines.map((line, index) => (
-          <button
-            key={line.name}
-            type="button"
-            role="tab"
-            aria-selected={index === lineIndex}
-            onClick={() => selectLine(index)}
-            style={index === lineIndex ? ACTIVE_TOGGLE_STYLE : undefined}
-            className={`rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-transform hover:scale-[1.02] ${
-              index === lineIndex ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]' : 'border-purple/40 text-lilac'
-            }`}
+      <LineTabs lines={opening.lines} activeIndex={lineIndex} onSelect={selectLine}>
+        <div className="w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)] flex flex-col items-center gap-3">
+          <ChessBoard
+            fen={fen}
+            boardTheme={settings.boardTheme}
+            pieceStyle={settings.pieceStyle}
+            lastMove={lastMove}
+            checkSquare={checkSquare}
+            interactive={false}
+          />
+
+          <div className="flex items-center gap-3">
+            <ChipButton
+              ref={prevButtonRef}
+              color="pink"
+              onClick={() => goToStep(Math.max(0, stepIndex - 1))}
+              disabled={stepIndex === 0}
+            >
+              Anterior
+            </ChipButton>
+            <span className="text-sm text-lilac/80">
+              {stepIndex} / {replayed.length}
+            </span>
+            <ChipButton
+              ref={nextButtonRef}
+              color="cyan"
+              onClick={() => goToStep(Math.min(replayed.length, stepIndex + 1))}
+              disabled={stepIndex === replayed.length}
+            >
+              Seguinte
+            </ChipButton>
+          </div>
+
+          <div
+            className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center"
+            aria-live="polite"
           >
-            {line.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)] flex flex-col items-center gap-3">
-        <ChessBoard
-          fen={fen}
-          boardTheme={settings.boardTheme}
-          pieceStyle={settings.pieceStyle}
-          lastMove={lastMove}
-          checkSquare={checkSquare}
-          interactive={false}
-        />
-
-        <div className="flex items-center gap-3">
-          <ChipButton color="pink" onClick={() => setStepIndex((s) => Math.max(0, s - 1))} disabled={stepIndex === 0}>
-            Anterior
-          </ChipButton>
-          <span className="text-sm text-lilac/80">
-            {stepIndex} / {replayed.length}
-          </span>
-          <ChipButton
-            color="cyan"
-            onClick={() => setStepIndex((s) => Math.min(replayed.length, s + 1))}
-            disabled={stepIndex === replayed.length}
-          >
-            Seguinte
-          </ChipButton>
+            {current ? (
+              <>
+                <p className="font-semibold text-cyan">
+                  {moveLabel(stepIndex)}{current.san}
+                </p>
+                <p className="text-lilac/80 mt-1">{current.explanation}</p>
+              </>
+            ) : (
+              <p className="text-lilac/80">Posição inicial — carrega em &quot;Seguinte&quot; para começar.</p>
+            )}
+          </div>
         </div>
-
-        <div
-          className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center"
-          aria-live="polite"
-        >
-          {current ? (
-            <>
-              <p className="font-semibold text-cyan">
-                {moveLabel(stepIndex)}{current.san}
-              </p>
-              <p className="text-lilac/80 mt-1">{current.explanation}</p>
-            </>
-          ) : (
-            <p className="text-lilac/80">Posição inicial — carrega em &quot;Seguinte&quot; para começar.</p>
-          )}
-        </div>
-      </div>
+      </LineTabs>
     </div>
   );
 }

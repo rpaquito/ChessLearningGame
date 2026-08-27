@@ -41,6 +41,56 @@ describe('replayLine', () => {
     expect(() => replayLine(line)).toThrow(/Lance ilegal/);
   });
 
+  it('populates the promotion field for a promoting move', () => {
+    // Nenhuma linha real de OPENINGS chega a promover (são todas de
+    // abertura) — linha sintética só para exercitar o campo, que nunca
+    // tinha teste próprio (ver backlog).
+    const line: OpeningLine = {
+      name: 'Linha de promoção (teste)',
+      moves: [
+        { san: 'a4', explanation: '' },
+        { san: 'e6', explanation: '' },
+        { san: 'a5', explanation: '' },
+        { san: 'e5', explanation: '' },
+        { san: 'a6', explanation: '' },
+        { san: 'e4', explanation: '' },
+        { san: 'axb7', explanation: '' },
+        { san: 'e3', explanation: '' },
+        { san: 'bxa8=Q', explanation: 'Promove o peão a dama, capturando a torre.' },
+      ],
+    };
+
+    const result = replayLine(line);
+    const promotingMove = result[result.length - 1];
+
+    expect(promotingMove.san).toBe('bxa8=Q');
+    expect(promotingMove.from).toBe('b7');
+    expect(promotingMove.to).toBe('a8');
+    expect(promotingMove.promotion).toBe('q');
+  });
+
+  it('gives the king its own from/to on castling, with no separate rook field', () => {
+    const line: OpeningLine = {
+      name: 'Linha de roque (teste)',
+      moves: [
+        { san: 'e4', explanation: '' },
+        { san: 'e5', explanation: '' },
+        { san: 'Nf3', explanation: '' },
+        { san: 'Nc6', explanation: '' },
+        { san: 'Bc4', explanation: '' },
+        { san: 'Bc5', explanation: '' },
+        { san: 'O-O', explanation: 'Roca.' },
+      ],
+    };
+
+    const result = replayLine(line);
+    const castlingMove = result[result.length - 1];
+
+    expect(castlingMove.san).toBe('O-O');
+    expect(castlingMove.from).toBe('e1');
+    expect(castlingMove.to).toBe('g1');
+  });
+
   it('replays every line of every real opening without throwing', () => {
     for (const opening of OPENINGS) {
       for (const line of opening.lines) {

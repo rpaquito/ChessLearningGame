@@ -21,6 +21,16 @@ describe('OPENINGS', () => {
     }
   });
 
+  it('gives every defined eco code a valid ECO-classification shape (letter A-E + 2 digits)', () => {
+    for (const opening of OPENINGS) {
+      for (const line of opening.lines) {
+        if (line.eco !== undefined) {
+          expect(line.eco).toMatch(/^[A-E]\d{2}$/);
+        }
+      }
+    }
+  });
+
   it('gives every opening 1-3 lines, each with 8-12 moves and a name', () => {
     for (const opening of OPENINGS) {
       expect(opening.lines.length).toBeGreaterThan(0);

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Chess, type Square } from 'chess.js';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
-import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
+import { LineTabs } from '@/components/LineTabs/LineTabs';
 import { useSettings } from '@/lib/settings/useSettings';
 import { replayLine } from '@/lib/openings/replayLine';
 import { legalTargetsFrom, checkedKingSquare } from '@/lib/chess/legalMoves';
@@ -57,14 +57,19 @@ export function OpeningPractice({ opening }: { opening: Opening }) {
   }
 
   // O adversário joga sempre o lance da própria linha, automaticamente.
+  // `lineIndex` entra nas deps mesmo não sendo lido no corpo do efeito:
+  // sem ele, trocar de linha *enquanto* este temporizador já está a
+  // contar (mesmo plyIndex/isUserTurn/completed de antes e depois, ex.:
+  // 0→0 ao trocar logo no início) não reinicia o temporizador — o
+  // lance do adversário da linha nova acaba por disparar mais cedo do
+  // que os OPPONENT_MOVE_DELAY_MS prometidos.
   useEffect(() => {
     if (completed || isUserTurn) return;
     const timer = setTimeout(() => {
       setPlyIndex((p) => p + 1);
-      setWrongAttempt(false);
     }, OPPONENT_MOVE_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [completed, isUserTurn, plyIndex]);
+  }, [completed, isUserTurn, plyIndex, lineIndex]);
 
   function handleSquareClick(square: Square) {
     if (!isUserTurn || !expected) return;
@@ -79,76 +84,64 @@ export function OpeningPractice({ opening }: { opening: Opening }) {
       setSelectedSquare(null);
       return;
     }
+    // Não limpa wrongAttempt aqui — só quando um lance é de facto jogado
+    // (certo ou um novo erro), nunca por reselecionar uma casa. Mesmo
+    // padrão de app/jogar/page.tsx: escolher a peça sugerida (o primeiro
+    // passo natural para a jogar) não pode apagar a pista antes de
+    // chegar à casa de destino.
     setSelectedSquare(square);
-    setWrongAttempt(false);
   }
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex flex-wrap gap-2 justify-center" role="tablist">
-        {opening.lines.map((line, index) => (
-          <button
-            key={line.name}
-            type="button"
-            role="tab"
-            aria-selected={index === lineIndex}
-            onClick={() => selectLine(index)}
-            style={index === lineIndex ? ACTIVE_TOGGLE_STYLE : undefined}
-            className={`rounded-xl border-2 px-3 py-2 text-sm font-semibold transition-transform hover:scale-[1.02] ${
-              index === lineIndex ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]' : 'border-purple/40 text-lilac'
-            }`}
-          >
-            {line.name}
-          </button>
-        ))}
-      </div>
+      <LineTabs lines={opening.lines} activeIndex={lineIndex} onSelect={selectLine}>
+        <div className="w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)] flex flex-col items-center gap-3">
+          <ChessBoard
+            fen={fen}
+            boardTheme={settings.boardTheme}
+            pieceStyle={settings.pieceStyle}
+            orientation={protagonistColor === 'w' ? 'white' : 'black'}
+            selectedSquare={selectedSquare}
+            legalTargets={legalTargets}
+            lastMove={lastMove}
+            checkSquare={checkSquare}
+            suggestedMove={wrongAttempt && expected ? { from: expected.from, to: expected.to } : null}
+            interactive={isUserTurn}
+            onSquareClick={handleSquareClick}
+          />
 
-      <div className="w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)] flex flex-col items-center gap-3">
-        <ChessBoard
-          fen={fen}
-          boardTheme={settings.boardTheme}
-          pieceStyle={settings.pieceStyle}
-          orientation={protagonistColor === 'w' ? 'white' : 'black'}
-          selectedSquare={selectedSquare}
-          legalTargets={legalTargets}
-          lastMove={lastMove}
-          checkSquare={checkSquare}
-          suggestedMove={wrongAttempt && expected ? { from: expected.from, to: expected.to } : null}
-          interactive={isUserTurn}
-          onSquareClick={handleSquareClick}
-        />
-
-        {completed ? (
-          <div
-            className="w-full rounded-xl border-2 border-gold bg-ink-soft p-4 text-center flex flex-col gap-3"
-            aria-live="polite"
-          >
-            <p className="font-semibold text-gold">Linha completa!</p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <ChipButton color="pink" onClick={restartLine}>
-                Praticar outra vez
-              </ChipButton>
-              <ChipButton color="purple" href="/aprender/aberturas">
-                Voltar às aberturas
-              </ChipButton>
+          {completed ? (
+            <div
+              className="w-full rounded-xl border-2 border-gold bg-ink-soft p-4 text-center flex flex-col gap-3"
+              aria-live="polite"
+            >
+              <p className="font-semibold text-gold">Linha completa!</p>
+              <div className="flex flex-wrap gap-3 justify-center">
+                <ChipButton color="pink" onClick={restartLine}>
+                  Praticar outra vez
+                </ChipButton>
+                <ChipButton color="purple" href="/aprender/aberturas">
+                  Voltar às aberturas
+                </ChipButton>
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center" aria-live="polite">
-            {isUserTurn ? (
-              wrongAttempt ? (
-                <p className="text-lilac/80">
-                  Não é esse — o lance da linha era {expected!.san}. Tenta de novo.
-                </p>
+          ) : (
+            <div className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center" aria-live="polite">
+              {isUserTurn ? (
+                wrongAttempt ? (
+                  <p className="text-lilac/80">
+                    Não é esse — o lance da linha é {expected!.san}. Tenta de novo.
+                  </p>
+                ) : (
+                  <p className="text-lilac/80">A tua vez: encontra o lance da linha.</p>
+                )
               ) : (
-                <p className="text-lilac/80">A tua vez: encontra o lance da linha.</p>
-              )
-            ) : (
-              <p className="text-lilac/80">A pensar…</p>
-            )}
-          </div>
-        )}
-      </div>
+                <p className="text-lilac/80">A pensar…</p>
+              )}
+            </div>
+          )}
+        </div>
+      </LineTabs>
     </div>
   );
 }

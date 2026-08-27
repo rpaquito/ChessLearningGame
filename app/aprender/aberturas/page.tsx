@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
+import { NavCard } from '@/components/NavCard/NavCard';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
 import { OPENINGS } from '@/lib/openings/data';
 
@@ -18,16 +18,12 @@ export default function AberturasPage() {
       <ul className="flex flex-col gap-3">
         {OPENINGS.map((opening) => (
           <li key={opening.id}>
-            <Link
+            <NavCard
               href={`/aprender/aberturas/${opening.id}`}
-              className="block rounded-xl border-2 border-purple/40 bg-ink-soft p-4 transition-colors hover:border-cyan"
-            >
-              <p className="font-semibold text-white">{opening.name}</p>
-              <p className="text-sm text-lilac/80">{opening.description}</p>
-              <p className="text-xs text-lilac/60 mt-1">
-                {opening.lines.map((line) => line.name).join(' · ')}
-              </p>
-            </Link>
+              title={opening.name}
+              description={opening.description}
+              meta={opening.lines.map((line) => line.name).join(' · ')}
+            />
           </li>
         ))}
       </ul>

@@ -24,10 +24,15 @@ app/
                                   # temas de tabuleiro/fundo/peças, e um placeholder
                                   # "Brevemente" (Idioma) para uma funcionalidade futura
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
-  aprender/                 # hub do tutorial + 4 subpáginas (pecas, regras-especiais,
-                             # fim-de-jogo, estrategia). Só /aprender/pecas é jogável —
-                             # as outras três continuam com demos ChessBoard fixos,
-                             # não-interativos (ver secção "Demo jogável" abaixo)
+  aprender/                 # hub do tutorial + subpáginas (pecas, regras-especiais,
+                             # fim-de-jogo, estrategia, centipawns, aberturas). pecas/
+                             # regras-especiais/fim-de-jogo são jogáveis; estrategia e
+                             # centipawns são só texto (ver secção "Demo jogável"
+                             # abaixo). aberturas/ é o hub de aberturas — ver secção
+                             # "Treino de aberturas" abaixo
+    aberturas/page.tsx        # lista as OPENINGS (NavCard por abertura)
+    aberturas/[id]/page.tsx    # estudo de uma abertura (OpeningStudy)
+    aberturas/[id]/praticar/page.tsx  # prática de uma abertura (OpeningPractice)
 components/
   ChessBoard/                # grelha 8x8 pura: recebe FEN + props de destaque, não
                               # sabe nada de regras — só desenha. PieceIcon.tsx escolhe
@@ -42,10 +47,21 @@ components/
   LearningPanel/              # painel lateral do modo de aprendizagem (toggle, botão
                                # "sugerir jogada", badge de qualidade do lance, frases
                                # de explicação de lances — tudo gratuito)
+  LineTabs/                # tablist partilhado (aba por linha de abertura) — usado por
+                            # OpeningStudy e OpeningPractice, ver secção "Treino de
+                            # aberturas" abaixo
+  NavCard/                # cartão-link "título + descrição [+ meta]" partilhado pela
+                           # hub de /aprender e por /aprender/aberturas
+  OpeningStudy/            # modo de estudo de uma abertura — ver "Treino de aberturas"
+  OpeningPractice/         # modo de prática de uma abertura — ver "Treino de aberturas"
   RulesModal/                    # popup fechável com resumo das regras — usado no
                                   # menu inicial e a meio da partida, sem mexer no
                                   # estado do jogo
   ServiceWorkerRegistration.tsx   # regista public/sw.js + lógica de auto-refresh
+lib/openings/
+  types.ts               # OpeningMove/OpeningLine/Opening — ver "Treino de aberturas"
+  data.ts                  # OPENINGS: 12 aberturas ECO-codificadas, PT-PT
+  replayLine.ts              # OpeningLine -> ReplayedMove[] via chess.js
 lib/chess/
   useChessGame.ts        # estado do jogo (wrapper de chess.js), persiste o FEN em
                           # localStorage (STORAGE_KEY)
@@ -235,6 +251,70 @@ ao DOM na altura da leitura). `fireEvent.click()` do Testing Library
 (que envolve o disparo em `act()`) resolve isto — usar sempre
 `fireEvent`, não `.click()` cru, em qualquer teste que precise de ler o
 DOM logo a seguir a um clique que muda estado.
+
+### Treino de aberturas (`lib/openings/`, `/aprender/aberturas`)
+
+Construído em 3 sub-projetos (2026-08-26 noite → 2026-08-27): modelo de
+dados, modo de estudo, modo de prática. Fluxo: Menu → Aprender a jogar →
+Aberturas → escolher abertura → estudar linha a linha OU "Praticar esta
+abertura".
+
+- **`lib/openings/types.ts`**: `OpeningMove { san, explanation }`,
+  `OpeningLine { name, eco?, moves }`, `Opening { id, name, description,
+  lines }`. Cada `OpeningLine` é uma sequência completa desde o lance 1
+  — não é um ramo de uma árvore de variações, mesmo que partilhe os
+  primeiros lances com outra linha da mesma abertura (decisão
+  deliberada, mais simples).
+- **`lib/openings/data.ts`**: `OPENINGS`, 12 aberturas ECO-codificadas
+  (Italiana, Espanhola, Siciliana, Francesa, Caro-Kann, Gambito da
+  Dama, Eslava, Inglesa, Pirc, Escocesa, Escandinava, Sistema Londres),
+  ~220 explicações PT-PT escritas à mão. `eco` é só informativo, não
+  validado por nenhuma lógica de jogo — só pelo formato
+  (`replayLine.test.ts` garante `/^[A-E]\d{2}$/`, letra+2 dígitos).
+- **`lib/openings/replayLine.ts`**: `replayLine(line)` reproduz uma
+  linha desde a posição inicial via `chess.js`, devolvendo
+  `{fen, from, to, promotion?, san, explanation}[]` — a forma de que
+  tanto o estudo (desenhar tabuleiro + explicação) como a prática
+  (comparar o lance do utilizador com `{from,to,promotion}` esperado)
+  precisam. `promotion` é tipado `PieceSymbol` (não `string`) — vem
+  direto de `move.promotion` do `chess.js`.
+- **`components/OpeningStudy/`**: passo a passo com "Anterior"/
+  "Seguinte", tabuleiro não-interativo (`interactive={false}`). Um
+  `<button disabled>` nativo que tem o foco perde-o para `<body>`
+  assim que fica disabled — o browser faz isto de forma **assíncrona**,
+  por isso apanhar isso depois num `useEffect` perde a corrida (o
+  efeito corre antes do browser ainda ter desfocado o botão). A
+  correção fica no próprio `onClick`: ao avançar para um passo que vai
+  desativar o botão que tem o foco, o código move o foco para o botão
+  irmão *antes* de o React o desativar — nunca há nada para o browser
+  "atirar" para `<body>`. Precisou de `ChipButton` ganhar
+  encaminhamento de `ref` (só na variante `<button>`, sem `href`).
+- **`components/OpeningPractice/`**: o "adversário" não usa nenhum
+  motor — replica deterministicamente os lances da própria linha
+  escolhida (`OPPONENT_MOVE_DELAY_MS`, temporizador). A cor do
+  utilizador vem de uma heurística de uma linha (`id.startsWith
+  ('defesa-')` → pretas, senão brancas), sem campo novo em `Opening`.
+  Um lance errado (mas legal) é bloqueado-e-revelado via a prop
+  `suggestedMove` do `ChessBoard` — **a pista só desaparece quando um
+  lance é de facto jogado** (certo ou um novo erro), nunca só por
+  reselecionar uma casa; mesmo padrão que `app/jogar/page.tsx` já
+  usava para a sugestão do Stockfish (comentário em
+  `handleSquareClick` lá). Zero chamadas a `chess.move()` no
+  componente — user e adversário avançam o mesmo `plyIndex` sobre o
+  array pré-computado de `replayLine`.
+- **`components/LineTabs/`**: tablist partilhado por `OpeningStudy` e
+  `OpeningPractice` (era markup quase byte-idêntico duplicado nos
+  dois). Padrão ARIA APG "tabs" com ativação automática — `tabIndex`
+  em rodízio (só a aba ativa é alcançável por Tab) e as setas
+  ArrowLeft/Right/Up/Down + Home/End movem o foco *e* selecionam,
+  sem precisar de Enter a seguir. Também é dono do `role="tabpanel"`
+  que envolve o `children` recebido (tabuleiro + controlos +
+  explicação) — usa `className="contents"` para não interferir no
+  layout flex à volta.
+- **`components/NavCard/`**: cartão-link "título + descrição [+
+  meta]", partilhado entre a hub de `/aprender` e a lista de
+  `/aprender/aberturas` (`meta` é a lista de nomes das linhas de cada
+  abertura, só usada pela segunda).
 
 ### Texturas das casas do tabuleiro: cor flat + grão subtil, geradas
 

@@ -312,7 +312,7 @@ export const OPENINGS: Opening[] = [
       },
       {
         name: 'Quatro Cavalos',
-        eco: 'A28',
+        eco: 'A29',
         moves: [
           { san: 'c4', explanation: 'A Inglesa: ocupa o centro pelo flanco.' },
           { san: 'c5', explanation: 'Resposta simétrica.' },

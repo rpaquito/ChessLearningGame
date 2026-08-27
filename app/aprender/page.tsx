@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
+import { NavCard } from '@/components/NavCard/NavCard';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
 import { OPENINGS } from '@/lib/openings/data';
 
@@ -31,13 +31,7 @@ export default function AprenderPage() {
       <ul className="flex flex-col gap-3">
         {TOPICS.map((topic) => (
           <li key={topic.href}>
-            <Link
-              href={topic.href}
-              className="block rounded-xl border-2 border-purple/40 bg-ink-soft p-4 transition-colors hover:border-cyan"
-            >
-              <p className="font-semibold text-white">{topic.title}</p>
-              <p className="text-sm text-lilac/80">{topic.description}</p>
-            </Link>
+            <NavCard href={topic.href} title={topic.title} description={topic.description} />
           </li>
         ))}
       </ul>

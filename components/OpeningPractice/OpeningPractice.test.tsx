@@ -62,9 +62,32 @@ describe('OpeningPractice', () => {
     clickSquare(container, 'e3');
 
     expect(
-      screen.getByText('Não é esse — o lance da linha era e4. Tenta de novo.')
+      screen.getByText('Não é esse — o lance da linha é e4. Tenta de novo.')
     ).toBeInTheDocument();
     expect(container.querySelector('[data-square="e4"]')).toHaveAttribute('data-suggested', 'true');
+  });
+
+  it('keeps the revealed hint visible while reselecting a piece, only clearing it once a move is played', () => {
+    const { container } = render(<OpeningPractice opening={italiana} />);
+
+    clickSquare(container, 'e2');
+    clickSquare(container, 'e3');
+    expect(
+      screen.getByText('Não é esse — o lance da linha é e4. Tenta de novo.')
+    ).toBeInTheDocument();
+
+    // Selecionar a peça sugerida de novo (o passo natural para a
+    // jogar) não pode apagar a pista antes de completar o lance — mesmo
+    // padrão de app/jogar/page.tsx.
+    clickSquare(container, 'e2');
+    expect(
+      screen.getByText('Não é esse — o lance da linha é e4. Tenta de novo.')
+    ).toBeInTheDocument();
+
+    clickSquare(container, 'e4');
+    expect(
+      screen.queryByText('Não é esse — o lance da linha é e4. Tenta de novo.')
+    ).not.toBeInTheDocument();
   });
 
   it('auto-plays the opponent\'s move after a delay once the user plays correctly', () => {

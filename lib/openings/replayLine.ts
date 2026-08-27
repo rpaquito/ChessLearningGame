@@ -1,11 +1,11 @@
-import { Chess, type Square } from 'chess.js';
+import { Chess, type PieceSymbol, type Square } from 'chess.js';
 import type { OpeningLine } from './types';
 
 export interface ReplayedMove {
   fen: string;
   from: Square;
   to: Square;
-  promotion?: string;
+  promotion?: PieceSymbol;
   san: string;
   explanation: string;
 }
