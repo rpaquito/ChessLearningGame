@@ -246,6 +246,11 @@ export const pt: Dictionary = {
       },
     ],
     levelsHeading: 'Os três níveis que vês durante uma partida',
+    qualityTexts: {
+      boa: 'Perda até 30 centipawns — praticamente ao nível do melhor lance disponível.',
+      imprecisao: 'Perda entre 31 e 100 centipawns — um lance que cede uma pequena vantagem, sem ser grave.',
+      erro: 'Perda acima de 100 centipawns — um lance que troca uma vantagem real, por exemplo perder material ou uma posição muito melhor.',
+    },
   },
   openings: {
     hubTitle: 'ABERTURAS',

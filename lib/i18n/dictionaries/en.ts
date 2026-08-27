@@ -258,6 +258,11 @@ export const en: Dictionary = {
       },
     ],
     levelsHeading: "The three levels you'll see during a game",
+    qualityTexts: {
+      boa: 'Loss of up to 30 centipawns — practically at the level of the best available move.',
+      imprecisao: 'Loss between 31 and 100 centipawns — a move that gives up a small advantage, without being serious.',
+      erro: 'Loss above 100 centipawns — a move that trades away a real advantage, for example losing material or a much better position.',
+    },
   },
   openings: {
     hubTitle: 'OPENINGS',

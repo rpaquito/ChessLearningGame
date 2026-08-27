@@ -127,6 +127,7 @@ export interface Dictionary {
     title: string;
     concepts: { title: string; text: string }[];
     levelsHeading: string;
+    qualityTexts: { boa: string; imprecisao: string; erro: string };
   };
   openings: {
     hubTitle: string;
