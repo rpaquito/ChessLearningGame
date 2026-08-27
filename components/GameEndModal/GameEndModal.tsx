@@ -6,6 +6,7 @@ import { describeGameEnd } from '@/lib/chess/gameEndMessage';
 import { PageTitle } from '@/components/PageChrome/PageChrome';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { useFocusTrap } from '@/lib/ui/useFocusTrap';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export interface GameEndModalProps {
   open: boolean;
@@ -32,6 +33,7 @@ export function GameEndModal({
   onClose,
   onPlayAgain,
 }: GameEndModalProps) {
+  const { t, locale } = useTranslation();
   const panelRef = useFocusTrap(open);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export function GameEndModal({
   }, [open, onClose]);
 
   if (!open) return null;
-  const title = describeGameEnd(status, mode, humanColor, turn);
+  const title = describeGameEnd(status, mode, humanColor, turn, locale);
   if (!title) return null;
 
   return (
@@ -69,7 +71,7 @@ export function GameEndModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={t.common.close}
             className="rounded-full h-8 w-8 shrink-0 bg-pink text-[#3A0B1F] font-bold hover:scale-110 transition-transform"
           >
             ✕
@@ -77,10 +79,10 @@ export function GameEndModal({
         </div>
         <div className="flex gap-3">
           <ChipButton color="pink" onClick={onPlayAgain}>
-            Jogar de novo
+            {t.gameEnd.playAgain}
           </ChipButton>
           <ChipButton color="purple" href="/">
-            Menu inicial
+            {t.common.mainMenu}
           </ChipButton>
         </div>
       </div>
