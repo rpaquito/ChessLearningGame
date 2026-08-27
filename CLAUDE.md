@@ -844,6 +844,18 @@ mostrado) depois de montar. É o mesmo compromisso arquitetural já
 documentado noutros pontos desta secção, só nunca antes ligado a este
 sintoma visível em concreto.
 
+**Fase 2 (2026-08-28) — `lib/chess/moveExplanation.ts` bilingue:**
+`describeMove`/`explainMoveQuality` ganharam um parâmetro `locale`
+obrigatório — cada fragmento de frase (nome de peça, cláusula de
+captura/xeque/roque/etc., a grandeza de perda de centipawns em
+`centipawnFeel`) tem agora uma variante PT e uma EN, nunca texto livre
+gerado. Inglês não tem concordância de género, por isso `withArticle`
+simplifica para `"the <peça>"` fixo do lado inglês. Único consumidor,
+`app/jogar/page.tsx`, já lia `locale` de `useTranslation()` desde a Fase
+1 (só não o usava ainda) — passou a repassá-lo aos dois call sites.
+`lib/openings/data.ts` (as explicações das aberturas) continua PT-only —
+essa é a Fase 3, ainda não construída.
+
 ### Service worker / PWA: estratégia de cache e atualização
 
 `public/sw.js` tem duas estratégias, por tipo de pedido:

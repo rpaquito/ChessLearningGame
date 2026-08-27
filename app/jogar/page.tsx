@@ -40,7 +40,7 @@ function LoadingFallback() {
 }
 
 function JogarContent() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const params = useSearchParams();
   const mode = params.get('mode') === 'local' ? 'local' : 'ai';
   const difficulty = (params.get('difficulty') as Difficulty) ?? 'facil';
@@ -160,8 +160,8 @@ function JogarContent() {
                   from: selectedSquare,
                   to: square,
                   promotion: 'q',
-                });
-                setLastMoveExplanation(explainMoveQuality(quality, tagSentence, loss));
+                }, locale);
+                setLastMoveExplanation(explainMoveQuality(quality, tagSentence, loss, locale));
               } catch {
                 setLastMoveExplanation(null);
               }
@@ -174,7 +174,7 @@ function JogarContent() {
       }
       setSelectedSquare(square);
     },
-    [isHumanTurn, state.isGameOver, state.fen, selectedSquare, legalMovesFrom, makeMove, mode, learningEnabled]
+    [isHumanTurn, state.isGameOver, state.fen, selectedSquare, legalMovesFrom, makeMove, mode, learningEnabled, locale]
   );
 
   // IA joga automaticamente quando é a vez dela
@@ -212,7 +212,7 @@ function JogarContent() {
         setSuggestion({ from: from as Square, to: to as Square });
         try {
           setSuggestionExplanation(
-            describeMove(fenBefore, { from: from as Square, to: to as Square })
+            describeMove(fenBefore, { from: from as Square, to: to as Square }, locale)
           );
         } catch {
           setSuggestionExplanation(null);
@@ -223,7 +223,7 @@ function JogarContent() {
         setSuggestionLoading(false);
         setEngineUnavailable(true);
       });
-  }, [state.fen]);
+  }, [state.fen, locale]);
 
   function handleReset() {
     reset();
