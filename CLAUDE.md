@@ -854,7 +854,13 @@ simplifica para `"the <peça>"` fixo do lado inglês. Único consumidor,
 `app/jogar/page.tsx`, já lia `locale` de `useTranslation()` desde a Fase
 1 (só não o usava ainda) — passou a repassá-lo aos dois call sites.
 `lib/openings/data.ts` (as explicações das aberturas) continua PT-only —
-essa é a Fase 3, ainda não construída.
+essa é a Fase 3, ainda não construída. Ao contrário de
+`gameEndMessage.ts` (que resolve frases inteiras via
+`DICTIONARIES[locale].gameEnd.*`), aqui os fragmentos ficam inline
+(`locale === 'en' ? ... : ...`) porque cada um interpola `move.to`/
+nomes de peças e está indissociável da condição que o desencadeia —
+uma tabela `Record<Locale, ...>` à parte duplicaria essa lógica
+condicional sem ganhar nada.
 
 ### Service worker / PWA: estratégia de cache e atualização
 

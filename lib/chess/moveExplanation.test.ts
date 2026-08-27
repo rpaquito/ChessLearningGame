@@ -164,6 +164,13 @@ describe('explainMoveQuality — pt', () => {
         '(mais do que uma dama).'
     );
   });
+
+  it('describes a loss as worth about a rook', () => {
+    expect(explainMoveQuality('erro', 'Move o rei para e2.', 600, 'pt')).toBe(
+      'Move o rei para e2. Foi um erro: perdeste cerca de 600 centipawns de vantagem ' +
+        '(cerca de uma torre).'
+    );
+  });
 });
 
 describe('explainMoveQuality — en', () => {
@@ -196,6 +203,13 @@ describe('explainMoveQuality — en', () => {
     expect(explainMoveQuality('erro', 'Moves the king to e2.', 950, 'en')).toBe(
       'Moves the king to e2. That was a mistake: you lost about 950 centipawns of advantage ' +
         '(more than a queen).'
+    );
+  });
+
+  it('describes a loss as worth about a rook', () => {
+    expect(explainMoveQuality('erro', 'Moves the king to e2.', 600, 'en')).toBe(
+      'Moves the king to e2. That was a mistake: you lost about 600 centipawns of advantage ' +
+        '(about a rook).'
     );
   });
 });

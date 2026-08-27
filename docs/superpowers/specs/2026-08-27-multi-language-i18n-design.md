@@ -240,9 +240,9 @@ de género (`withArticle` simplifica para `'a'`/`'the'` fixo em EN), mas a
 composição por cláusulas mantém-se idêntica — continua a combinar frases
 feitas, nunca texto livre gerado, em qualquer dos dois idiomas.
 
-Consumidores (`LearningPanel`, `OpeningStudy`, `OpeningPractice`) passam
-a ler `locale` de `useTranslation()` e a repassá-lo a estas funções, em
-vez de assumirem PT-PT implicitamente.
+O único consumidor, `app/jogar/page.tsx`, passa a ler `locale` de
+`useTranslation()` e a repassá-lo a estas funções, em vez de assumir
+PT-PT implicitamente.
 
 ## Testes
 
