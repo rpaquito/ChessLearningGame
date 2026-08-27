@@ -6,6 +6,7 @@ import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { LineTabs } from '@/components/LineTabs/LineTabs';
 import { useSettings } from '@/lib/settings/useSettings';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { replayLine } from '@/lib/openings/replayLine';
 import { legalTargetsFrom, checkedKingSquare } from '@/lib/chess/legalMoves';
 import type { Opening } from '@/lib/openings/types';
@@ -25,6 +26,7 @@ function protagonistColorFor(opening: Opening): 'w' | 'b' {
 
 export function OpeningPractice({ opening }: { opening: Opening }) {
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const protagonistColor = useMemo(() => protagonistColorFor(opening), [opening]);
   const replayedLines = useMemo(() => opening.lines.map((line) => replayLine(line)), [opening]);
 
@@ -115,13 +117,13 @@ export function OpeningPractice({ opening }: { opening: Opening }) {
               className="w-full rounded-xl border-2 border-gold bg-ink-soft p-4 text-center flex flex-col gap-3"
               aria-live="polite"
             >
-              <p className="font-semibold text-gold">Linha completa!</p>
+              <p className="font-semibold text-gold">{t.openings.lineComplete}</p>
               <div className="flex flex-wrap gap-3 justify-center">
                 <ChipButton color="pink" onClick={restartLine}>
-                  Praticar outra vez
+                  {t.openings.practiceAgain}
                 </ChipButton>
                 <ChipButton color="purple" href="/aprender/aberturas">
-                  Voltar às aberturas
+                  {t.openings.backToOpenings}
                 </ChipButton>
               </div>
             </div>
@@ -129,14 +131,12 @@ export function OpeningPractice({ opening }: { opening: Opening }) {
             <div className="w-full rounded-xl border-2 border-purple/40 bg-ink-soft p-4 text-center" aria-live="polite">
               {isUserTurn ? (
                 wrongAttempt ? (
-                  <p className="text-lilac/80">
-                    Não é esse — o lance da linha é {expected!.san}. Tenta de novo.
-                  </p>
+                  <p className="text-lilac/80">{t.openings.wrongMove(expected!.san)}</p>
                 ) : (
-                  <p className="text-lilac/80">A tua vez: encontra o lance da linha.</p>
+                  <p className="text-lilac/80">{t.openings.yourTurn}</p>
                 )
               ) : (
-                <p className="text-lilac/80">A pensar…</p>
+                <p className="text-lilac/80">{t.common.thinking}</p>
               )}
             </div>
           )}

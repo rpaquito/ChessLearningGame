@@ -6,6 +6,7 @@ import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { LineTabs } from '@/components/LineTabs/LineTabs';
 import { useSettings } from '@/lib/settings/useSettings';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { replayLine, type ReplayedMove } from '@/lib/openings/replayLine';
 import { checkedKingSquare } from '@/lib/chess/legalMoves';
 import type { Opening } from '@/lib/openings/types';
@@ -22,6 +23,7 @@ function moveLabel(stepIndex: number): string {
 
 export function OpeningStudy({ opening }: { opening: Opening }) {
   const { settings } = useSettings();
+  const { t } = useTranslation();
   const replayedLines = useMemo(() => opening.lines.map((line) => replayLine(line)), [opening]);
   const [lineIndex, setLineIndex] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
@@ -72,7 +74,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
               onClick={() => goToStep(Math.max(0, stepIndex - 1))}
               disabled={stepIndex === 0}
             >
-              Anterior
+              {t.openings.previous}
             </ChipButton>
             <span className="text-sm text-lilac/80">
               {stepIndex} / {replayed.length}
@@ -83,7 +85,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
               onClick={() => goToStep(Math.min(replayed.length, stepIndex + 1))}
               disabled={stepIndex === replayed.length}
             >
-              Seguinte
+              {t.openings.next}
             </ChipButton>
           </div>
 
@@ -99,7 +101,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
                 <p className="text-lilac/80 mt-1">{current.explanation}</p>
               </>
             ) : (
-              <p className="text-lilac/80">Posição inicial — carrega em &quot;Seguinte&quot; para começar.</p>
+              <p className="text-lilac/80">{t.openings.startPosition}</p>
             )}
           </div>
         </div>

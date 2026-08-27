@@ -2,6 +2,7 @@
 
 import { useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 /**
  * Tablist partilhado por OpeningStudy e OpeningPractice — era markup
@@ -29,6 +30,7 @@ export function LineTabs({
   onSelect: (index: number) => void;
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
   const baseId = useId();
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
@@ -55,7 +57,7 @@ export function LineTabs({
 
   return (
     <>
-      <div className="flex flex-wrap gap-2 justify-center" role="tablist" aria-label="Linhas desta abertura">
+      <div className="flex flex-wrap gap-2 justify-center" role="tablist" aria-label={t.openings.linesTablistLabel}>
         {lines.map((line, index) => (
           <button
             key={line.name}
