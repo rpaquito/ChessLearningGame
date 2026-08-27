@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { loadSettings, saveSettings, DEFAULT_SETTINGS } from './settings';
 
 const STORAGE_KEY = 'xadrez-settings';
@@ -6,6 +6,11 @@ const STORAGE_KEY = 'xadrez-settings';
 describe('loadSettings', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    // Estes testes não são sobre deteção de idioma — fixar o browser em
+    // português evita que dependam do valor por omissão de `navigator.language`
+    // do ambiente jsdom ('en-US'), que faria `language` divergir de
+    // DEFAULT_SETTINGS.language ('pt') nas comparações abaixo.
+    vi.stubGlobal('navigator', { language: 'pt-PT' });
   });
 
   it('returns the defaults when nothing is saved', () => {
@@ -71,6 +76,64 @@ describe('loadSettings', () => {
       JSON.stringify({ ...DEFAULT_SETTINGS, pieceStyle: 'nao-existe' })
     );
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
+  });
+});
+
+describe('loadSettings — language', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it('deteta e grava o idioma quando não há nada guardado', () => {
+    vi.stubGlobal('navigator', { language: 'en-US' });
+    const settings = loadSettings();
+    expect(settings.language).toBe('en');
+    // gravou logo, para não voltar a detetar no próximo load
+    const saved = JSON.parse(window.localStorage.getItem('xadrez-settings')!);
+    expect(saved.language).toBe('en');
+  });
+
+  it('deteta português quando o browser pede português', () => {
+    vi.stubGlobal('navigator', { language: 'pt-PT' });
+    expect(loadSettings().language).toBe('pt');
+  });
+
+  it('usa o idioma guardado sem voltar a detetar', () => {
+    window.localStorage.setItem('xadrez-settings', JSON.stringify({ language: 'en' }));
+    vi.stubGlobal('navigator', { language: 'pt-PT' }); // deteção diria 'pt' — não deve ser usada
+    expect(loadSettings().language).toBe('en');
+  });
+
+  it('trata um idioma guardado inválido como se estivesse em falta', () => {
+    window.localStorage.setItem('xadrez-settings', JSON.stringify({ language: 'fr' }));
+    vi.stubGlobal('navigator', { language: 'pt-PT' });
+    expect(loadSettings().language).toBe('pt');
+  });
+
+  it('DEFAULT_SETTINGS.language é "pt"', () => {
+    expect(DEFAULT_SETTINGS.language).toBe('pt');
+  });
+
+  it('deteta o idioma numa instalação anterior a esta feature, preservando os outros campos já guardados', () => {
+    // Formato realista de uma instalação antiga: outros campos gravados,
+    // mas sem a chave `language` (não existia antes desta feature).
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ defaultDifficulty: 'dificil', pieceStyle: 'anime' })
+    );
+    vi.stubGlobal('navigator', { language: 'pt-PT' });
+
+    const settings = loadSettings();
+    expect(settings.language).toBe('pt');
+    expect(settings.defaultDifficulty).toBe('dificil');
+    expect(settings.pieceStyle).toBe('anime');
+
+    // A gravação que a deteção despoleta não pode perder os outros campos
+    // já guardados — só a chave `language` estava em falta.
+    const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY)!);
+    expect(saved.language).toBe('pt');
+    expect(saved.defaultDifficulty).toBe('dificil');
+    expect(saved.pieceStyle).toBe('anime');
   });
 });
 

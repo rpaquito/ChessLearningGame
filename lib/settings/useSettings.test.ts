@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useSettings, __resetSettingsCacheForTests } from './useSettings';
 import { DEFAULT_SETTINGS, loadSettings } from './settings';
@@ -9,6 +9,11 @@ describe('useSettings', () => {
     // O cache por trás de useSettings é de módulo (ver useSettings.ts) —
     // sobrevive entre testes deste ficheiro sem este reset.
     __resetSettingsCacheForTests();
+    // Estes testes não são sobre deteção de idioma — fixar o browser em
+    // português evita que dependam do valor por omissão de `navigator.language`
+    // do ambiente jsdom ('en-US'), que faria `language` divergir de
+    // DEFAULT_SETTINGS.language ('pt') nas comparações abaixo.
+    vi.stubGlobal('navigator', { language: 'pt-PT' });
   });
 
   it('starts from the defaults when nothing is saved', () => {
