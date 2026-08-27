@@ -11,6 +11,8 @@ import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow } from '@/components/PageChrome/PageChrome';
+import { useToast } from '@/components/Toast/ToastProvider';
+import { GameEndModal } from '@/components/GameEndModal/GameEndModal';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
 import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
@@ -56,6 +58,30 @@ function JogarContent() {
   const [lastMoveExplanation, setLastMoveExplanation] = useState<string | null>(null);
   const [engineUnavailable, setEngineUnavailable] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
+  const toast = useToast();
+  const [gameEndOpen, setGameEndOpen] = useState(false);
+  const prevStatus = useRef<typeof state.status>('playing');
+
+  // Dispara toast/modal só em MUDANÇAS de state.status, nunca a cada
+  // render — ver docs/superpowers/specs/2026-08-27-popup-toast-feedback-design.md.
+  useEffect(() => {
+    if (state.status === prevStatus.current) return;
+    prevStatus.current = state.status;
+
+    if (state.status === 'check') {
+      toast.show('Xeque!', 'check');
+    } else if (
+      state.status === 'checkmate' ||
+      state.status === 'stalemate' ||
+      state.status === 'draw'
+    ) {
+      // Intentional: notifying the UI of a one-off transition (game just
+      // ended), not deriving render state from props — same case as the
+      // hand-off effect in lib/chess/useChessGame.ts.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setGameEndOpen(true);
+    }
+  }, [state.status, toast]);
 
   const engineRef = useRef<StockfishClient | null>(null);
   useEffect(() => {
@@ -194,6 +220,8 @@ function JogarContent() {
     setSuggestionExplanation(null);
     setLastMoveQuality(null);
     setLastMoveExplanation(null);
+    setGameEndOpen(false);
+    prevStatus.current = 'playing';
   }
 
   return (
@@ -273,6 +301,15 @@ function JogarContent() {
       </div>
 
       <RulesModal open={rulesOpen} onClose={() => setRulesOpen(false)} />
+      <GameEndModal
+        open={gameEndOpen}
+        status={state.status}
+        mode={mode}
+        humanColor={humanColor}
+        turn={state.turn}
+        onClose={() => setGameEndOpen(false)}
+        onPlayAgain={handleReset}
+      />
     </main>
   );
 }
