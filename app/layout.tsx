@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Bangers, Poppins } from 'next/font/google';
 import './globals.css';
+import { LanguageSync } from '@/components/LanguageSync/LanguageSync';
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 import { ToastProvider } from '@/components/Toast/ToastProvider';
 
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-PT" className={`${bangers.variable} ${poppins.variable}`}>
       <body className="antialiased">
+        <LanguageSync />
         <ServiceWorkerRegistration />
         <ToastProvider>{children}</ToastProvider>
       </body>
