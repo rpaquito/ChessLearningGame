@@ -5,6 +5,7 @@ import { clearSavedGame } from '@/lib/chess/useChessGame';
 import { PageGlow, PageTitle, titleStroke } from '@/components/PageChrome/PageChrome';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 // Sombra "carimbada" (efeito banda-desenhada) + corte diagonal — a mesma
 // linguagem visual das ChipButton, só a uma escala maior, para as quatro
@@ -35,36 +36,6 @@ interface TileData {
   onClick?: () => void;
 }
 
-const TILES: TileData[] = [
-  {
-    href: '/configurar',
-    image: '/menu/vs-cpu.webp',
-    gradient: 'linear-gradient(135deg, rgba(0,229,255,0.55), rgba(78,168,222,0.4))',
-    emoji: '⚔️',
-    label: 'Jogar contra o computador',
-  },
-  {
-    href: '/jogar?mode=local',
-    image: '/menu/two-players.webp',
-    gradient: 'linear-gradient(135deg, rgba(255,111,165,0.55), rgba(255,154,194,0.4))',
-    emoji: '✨',
-    label: 'Dois jogadores',
-    onClick: () => clearSavedGame(),
-  },
-  {
-    href: '/aprender',
-    image: '/menu/tutorial.webp',
-    gradient: 'linear-gradient(135deg, rgba(123,63,160,0.55), rgba(184,138,224,0.4))',
-    emoji: '📖',
-    label: 'Aprender a jogar',
-  },
-  {
-    href: '/opcoes',
-    image: '/menu/options.webp',
-    gradient: 'linear-gradient(135deg, rgba(255,214,0,0.5), rgba(255,168,0,0.35))',
-    label: 'Opções',
-  },
-];
 
 function MenuTile({ href, image, gradient, emoji, label, onClick }: TileData) {
   return (
@@ -84,6 +55,38 @@ function MenuTile({ href, image, gradient, emoji, label, onClick }: TileData) {
 
 export default function HomePage() {
   const { settings } = useSettings();
+  const { t } = useTranslation();
+
+  const TILES: TileData[] = [
+    {
+      href: '/configurar',
+      image: '/menu/vs-cpu.webp',
+      gradient: 'linear-gradient(135deg, rgba(0,229,255,0.55), rgba(78,168,222,0.4))',
+      emoji: '⚔️',
+      label: t.menu.playVsComputer,
+    },
+    {
+      href: '/jogar?mode=local',
+      image: '/menu/two-players.webp',
+      gradient: 'linear-gradient(135deg, rgba(255,111,165,0.55), rgba(255,154,194,0.4))',
+      emoji: '✨',
+      label: t.menu.twoPlayers,
+      onClick: () => clearSavedGame(),
+    },
+    {
+      href: '/aprender',
+      image: '/menu/tutorial.webp',
+      gradient: 'linear-gradient(135deg, rgba(123,63,160,0.55), rgba(184,138,224,0.4))',
+      emoji: '📖',
+      label: t.menu.learnToPlay,
+    },
+    {
+      href: '/opcoes',
+      image: '/menu/options.webp',
+      gradient: 'linear-gradient(135deg, rgba(255,214,0,0.5), rgba(255,168,0,0.35))',
+      label: t.menu.options,
+    },
+  ];
 
   return (
     <main
@@ -98,7 +101,7 @@ export default function HomePage() {
       <PageGlow pinkOpacity={0.35} darken={[0.55, 0.85]} />
 
       <PageTitle size="text-5xl" softDrop={5} className="relative">
-        XADREZ
+        {t.menu.title}
       </PageTitle>
 
       <div className="relative flex flex-col gap-4 w-full max-w-sm">
