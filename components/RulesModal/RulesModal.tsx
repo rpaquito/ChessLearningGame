@@ -3,89 +3,39 @@
 import { useEffect } from 'react';
 import { PageTitle } from '@/components/PageChrome/PageChrome';
 import { useFocusTrap } from '@/lib/ui/useFocusTrap';
+import { useTranslation } from '@/lib/i18n/useTranslation';
+import type { Dictionary } from '@/lib/i18n/dictionaries';
 
 export interface RulesModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-const SECTIONS: { title: string; items: { title: string; text: string }[] }[] = [
-  {
-    title: 'Como as peças se movem',
-    items: [
-      { title: 'Peão', text: 'Anda uma casa em frente (duas no primeiro lance) e captura na diagonal.' },
-      { title: 'Cavalo', text: 'Move-se em "L". É a única peça que salta por cima de outras.' },
-      { title: 'Bispo', text: 'Move-se livremente na diagonal, sempre na mesma cor de casa.' },
-      { title: 'Torre', text: 'Move-se livremente na horizontal ou na vertical.' },
-      { title: 'Dama', text: 'Combina o movimento da torre com o do bispo.' },
-      {
-        title: 'Rei',
-        text: 'Move-se uma casa em qualquer direção. Nunca pode ir para uma casa atacada pelo adversário.',
-      },
-    ],
-  },
-  {
-    title: 'Regras especiais',
-    items: [
-      {
-        title: 'Roque',
-        text:
-          'O rei e uma torre movem-se em conjunto, uma única vez por partida — só é permitido se nenhuma das ' +
-          'duas peças já se tiver mexido, não houver peças entre elas e o rei não estiver em xeque nem passar ' +
-          'por uma casa atacada.',
-      },
-      {
-        title: 'En passant',
-        text:
-          'Se um peão adversário andar duas casas e ficar ao lado de um peão teu, podes capturá-lo como se ' +
-          'tivesse andado só uma casa — mas apenas no lance seguinte.',
-      },
-      {
-        title: 'Promoção',
-        text:
-          'Quando um peão chega à última fileira, é promovido a qualquer peça (exceto rei) — normalmente a dama.',
-      },
-    ],
-  },
-  {
-    title: 'Fim de jogo',
-    items: [
-      {
-        title: 'Xeque',
-        text: 'O rei está sob ataque direto. Tens de sair do xeque logo no lance seguinte.',
-      },
-      {
-        title: 'Xeque-mate',
-        text: 'Um xeque sem escapatória — o jogo termina de imediato e quem dá o mate vence.',
-      },
-      {
-        title: 'Afogamento (empate)',
-        text: 'Quando não estás em xeque, mas não tens nenhum lance legal disponível.',
-      },
-      {
-        title: 'Outros empates',
-        text:
-          'Repetição tripla da mesma posição, regra dos 50 lances sem captura nem movimento de peão, ou ' +
-          'material insuficiente no tabuleiro para dar mate.',
-      },
-    ],
-  },
-  {
-    title: 'Modo de aprendizagem',
-    items: [
-      {
-        title: 'Centipawns',
-        text:
-          'É a unidade que o motor de xadrez usa para avaliar uma posição — 100 centipawns valem cerca de ' +
-          'um peão. Perder poucos é normal; perder uma centena ou mais costuma significar que havia uma ' +
-          'jogada bastante melhor disponível.',
-      },
-    ],
-  },
-];
+function buildSections(t: Dictionary) {
+  return [
+    {
+      title: t.rulesModal.movementTitle,
+      items: [t.rulesModal.pawn, t.rulesModal.knight, t.rulesModal.bishop, t.rulesModal.rook, t.rulesModal.queen, t.rulesModal.king],
+    },
+    {
+      title: t.rulesModal.specialTitle,
+      items: [t.rulesModal.castling, t.rulesModal.enPassant, t.rulesModal.promotion],
+    },
+    {
+      title: t.rulesModal.endgameTitle,
+      items: [t.rulesModal.check, t.rulesModal.checkmate, t.rulesModal.stalemate, t.rulesModal.otherDraws],
+    },
+    {
+      title: t.rulesModal.learningTitle,
+      items: [t.rulesModal.centipawns],
+    },
+  ];
+}
 
 export function RulesModal({ open, onClose }: RulesModalProps) {
+  const { t } = useTranslation();
   const panelRef = useFocusTrap(open);
+  const SECTIONS = buildSections(t);
 
   useEffect(() => {
     if (!open) return;
@@ -115,18 +65,18 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label="Regras do xadrez"
+        aria-label={t.rulesModal.title}
         onClick={(event) => event.stopPropagation()}
         className="max-h-[85dvh] w-full max-w-lg overflow-y-auto rounded-2xl border-2 border-purple bg-ink-soft p-6 text-lilac outline-none"
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <PageTitle as="h2" size="text-2xl" strokeWidth={1}>
-            Regras do xadrez
+            {t.rulesModal.title}
           </PageTitle>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar"
+            aria-label={t.common.close}
             className="rounded-full h-8 w-8 shrink-0 bg-pink text-[#3A0B1F] font-bold hover:scale-110 transition-transform"
           >
             ✕
