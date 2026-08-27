@@ -7,6 +7,7 @@ import type { BackgroundTheme, BoardTheme, PieceStyle } from '@/lib/settings/set
 import { BACKGROUND_THEMES, BOARD_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import { DICTIONARIES } from '@/lib/i18n/dictionaries';
 import type { Locale } from '@/lib/i18n/types';
 import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
@@ -181,7 +182,11 @@ export default function OpcoesPage() {
           value={settings.language}
           onChange={(language) => {
             updateSettings({ language });
-            toast.show(t.opcoes.toastLanguageChanged);
+            // `t` continua a apontar para o dicionário ANTIGO aqui — updateSettings
+            // agenda um re-render (useSyncExternalStore) que só acontece depois
+            // deste handler síncrono terminar. `language` já é o valor novo, por
+            // isso lê-se o dicionário certo diretamente em vez de esperar por `t`.
+            toast.show(DICTIONARIES[language].opcoes.toastLanguageChanged);
           }}
         />
       </div>
