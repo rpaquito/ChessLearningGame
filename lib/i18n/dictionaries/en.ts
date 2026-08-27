@@ -45,6 +45,7 @@ export const en: Dictionary = {
       stalemate: 'Stalemate (draw)',
       draw: 'Draw',
     },
+    checkToast: 'Check!',
     engineUnavailable:
       "The chess engine couldn't be loaded. Try again later, or play in Two Players mode.",
     restart: 'Restart game',

@@ -37,6 +37,7 @@ export interface Dictionary {
   jogar: {
     loading: string;
     status: { playing: string; check: string; checkmate: string; stalemate: string; draw: string };
+    checkToast: string;
     engineUnavailable: string;
     restart: string;
     rules: string;

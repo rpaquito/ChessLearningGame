@@ -48,6 +48,7 @@ export const pt: Dictionary = {
       stalemate: 'Afogamento (empate)',
       draw: 'Empate',
     },
+    checkToast: 'Xeque!',
     engineUnavailable:
       'O motor de xadrez não pôde ser carregado. Tenta novamente mais tarde, ou joga no modo Dois jogadores.',
     restart: 'Reiniciar partida',

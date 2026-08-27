@@ -6,6 +6,7 @@ import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { LearningPanel } from '@/components/LearningPanel/LearningPanel';
 import { RulesModal } from '@/components/RulesModal/RulesModal';
@@ -20,23 +21,26 @@ import { findThreatenedSquares } from '@/lib/chess/threats';
 import { createStockfishClient, type StockfishClient } from '@/lib/chess/stockfishClient';
 import { parseUciMove } from '@/lib/chess/uciParser';
 
-const STATUS_LABEL: Record<string, string> = {
-  playing: 'Em andamento',
-  check: 'Xeque',
-  checkmate: 'Xeque-mate',
-  stalemate: 'Afogamento (empate)',
-  draw: 'Empate',
-};
-
 export default function JogarPage() {
   return (
-    <Suspense fallback={<p className="p-8">A carregar…</p>}>
+    <Suspense fallback={<LoadingFallback />}>
       <JogarContent />
     </Suspense>
   );
 }
 
+// Componente à parte porque precisa de useTranslation(), e o próprio
+// Suspense boundary não pode chamar hooks que dependam de dados ainda a
+// carregar dentro do fallback — mas useTranslation() não depende de
+// nenhum dado assíncrono, só de useSettings() (síncrono), por isso isto
+// funciona sem problema.
+function LoadingFallback() {
+  const { t } = useTranslation();
+  return <p className="p-8">{t.jogar.loading}</p>;
+}
+
 function JogarContent() {
+  const { t } = useTranslation();
   const params = useSearchParams();
   const mode = params.get('mode') === 'local' ? 'local' : 'ai';
   const difficulty = (params.get('difficulty') as Difficulty) ?? 'facil';
@@ -62,6 +66,14 @@ function JogarContent() {
   const [gameEndOpen, setGameEndOpen] = useState(false);
   const prevStatus = useRef<typeof state.status>('playing');
 
+  const STATUS_LABEL: Record<string, string> = {
+    playing: t.jogar.status.playing,
+    check: t.jogar.status.check,
+    checkmate: t.jogar.status.checkmate,
+    stalemate: t.jogar.status.stalemate,
+    draw: t.jogar.status.draw,
+  };
+
   // Dispara toast/modal só em MUDANÇAS de state.status, nunca a cada
   // render — ver docs/superpowers/specs/2026-08-27-popup-toast-feedback-design.md.
   useEffect(() => {
@@ -69,7 +81,7 @@ function JogarContent() {
     prevStatus.current = state.status;
 
     if (state.status === 'check') {
-      toast.show('Xeque!', 'check');
+      toast.show(t.jogar.checkToast, 'check');
     } else if (
       state.status === 'checkmate' ||
       state.status === 'stalemate' ||
@@ -81,7 +93,7 @@ function JogarContent() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setGameEndOpen(true);
     }
-  }, [state.status, toast]);
+  }, [state.status, toast, t]);
 
   const engineRef = useRef<StockfishClient | null>(null);
   useEffect(() => {
@@ -260,8 +272,7 @@ function JogarContent() {
         />
         {mode === 'ai' && engineUnavailable && (
           <p className="max-w-sm rounded-2xl border-2 border-gold bg-ink-soft px-4 py-3 text-sm text-lilac">
-            O motor de xadrez não pôde ser carregado. Tenta novamente mais tarde, ou joga no
-            modo Dois jogadores.
+            {t.jogar.engineUnavailable}
           </p>
         )}
       </div>
@@ -291,13 +302,13 @@ function JogarContent() {
           jogo (shrink-to-fit com `items-center` duas vezes seguidas). */}
       <div className="flex items-center gap-3 flex-wrap justify-center md:w-full">
         <ChipButton color="purple" href="/">
-          Menu inicial
+          {t.common.mainMenu}
         </ChipButton>
         <ChipButton color="pink" onClick={handleReset}>
-          Reiniciar partida
+          {t.jogar.restart}
         </ChipButton>
         <ChipButton color="cyan" onClick={() => setRulesOpen(true)}>
-          Regras
+          {t.jogar.rules}
         </ChipButton>
       </div>
 
