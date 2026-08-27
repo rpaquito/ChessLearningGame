@@ -1,30 +1,31 @@
+'use client';
+
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { NavCard } from '@/components/NavCard/NavCard';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
 import { OPENINGS } from '@/lib/openings/data';
-
-const TOPICS = [
-  { href: '/aprender/pecas', title: 'Como as peças se movem', description: 'O movimento de cada peça, do peão ao rei.' },
-  { href: '/aprender/regras-especiais', title: 'Regras especiais', description: 'Roque, en passant e promoção do peão.' },
-  { href: '/aprender/fim-de-jogo', title: 'Fim de jogo', description: 'Xeque, xeque-mate, afogamento e empates.' },
-  { href: '/aprender/estrategia', title: 'Princípios de estratégia', description: 'Ideias básicas para jogar melhor desde a abertura.' },
-  { href: '/aprender/centipawns', title: 'Avaliação e centipawns', description: 'O que são centipawns e como interpretar "Boa jogada", "Imprecisão" e "Erro".' },
-  {
-    href: '/aprender/aberturas',
-    title: 'Aberturas',
-    description: `Estuda ${OPENINGS.length} aberturas populares, lance a lance, com explicação em português.`,
-  },
-];
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export default function AprenderPage() {
+  const { t } = useTranslation();
+
+  const TOPICS = [
+    { href: '/aprender/pecas', title: t.aprenderHub.piecesTitle, description: t.aprenderHub.piecesDesc },
+    { href: '/aprender/regras-especiais', title: t.aprenderHub.specialRulesTitle, description: t.aprenderHub.specialRulesDesc },
+    { href: '/aprender/fim-de-jogo', title: t.aprenderHub.endgameTitle, description: t.aprenderHub.endgameDesc },
+    { href: '/aprender/estrategia', title: t.aprenderHub.strategyTitle, description: t.aprenderHub.strategyDesc },
+    { href: '/aprender/centipawns', title: t.aprenderHub.centipawnsTitle, description: t.aprenderHub.centipawnsDesc },
+    { href: '/aprender/aberturas', title: t.aprenderHub.openingsTitle, description: t.aprenderHub.openingsDesc(OPENINGS.length) },
+  ];
+
   return (
     <main className="relative min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6 overflow-hidden bg-ink">
       <PageGlow position="fixed" pinkOpacity={0.2} />
       <div>
-        <PageTitle>APRENDA A JOGAR XADREZ</PageTitle>
+        <PageTitle>{t.aprenderHub.title}</PageTitle>
         <p className="mt-3">
           <ChipButton color="purple" href="/">
-            Voltar para o início
+            {t.aprenderHub.backToHome}
           </ChipButton>
         </p>
       </div>
