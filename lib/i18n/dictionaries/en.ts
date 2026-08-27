@@ -6,6 +6,7 @@ export const en: Dictionary = {
     close: 'Close',
     backToTutorial: 'Back to tutorial',
     thinking: 'Thinking…',
+    chessBoard: 'Chess board',
   },
   menu: {
     title: 'CHESS',
@@ -138,7 +139,7 @@ export const en: Dictionary = {
     centipawnsTitle: 'Evaluation and centipawns',
     centipawnsDesc: 'What centipawns are and how to interpret "Good move", "Inaccuracy" and "Mistake".',
     openingsTitle: 'Openings',
-    openingsDesc: (count: number) => `Study ${count} popular openings, move by move, with explanations in English.`,
+    openingsDesc: (count: number) => `Study ${count} popular openings, move by move.`,
   },
   pecas: {
     title: 'HOW THE PIECES MOVE',

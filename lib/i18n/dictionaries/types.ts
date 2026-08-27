@@ -4,6 +4,7 @@ export interface Dictionary {
     close: string;
     backToTutorial: string;
     thinking: string;
+    chessBoard: string;
   };
   menu: {
     title: string;

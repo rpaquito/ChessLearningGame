@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslation } from '@/lib/i18n/useTranslation';
+
 export type ToastTone = 'info' | 'check';
 
 export interface ToastState {
@@ -35,6 +37,7 @@ const TONE_ACCENT: Record<ToastTone, string> = {
  * visível, sem reanúncio a leitores de ecrã na segunda chamada.
  */
 export function Toast({ toast, onDismiss }: ToastProps) {
+  const { t } = useTranslation();
   return (
     <div
       role="status"
@@ -51,7 +54,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
           <button
             type="button"
             onClick={onDismiss}
-            aria-label="Fechar"
+            aria-label={t.common.close}
             className="rounded-full h-6 w-6 shrink-0 bg-pink text-[#3A0B1F] font-bold hover:scale-110 transition-transform"
           >
             ✕

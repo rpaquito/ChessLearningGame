@@ -9,6 +9,7 @@ export const pt: Dictionary = {
     close: 'Fechar',
     backToTutorial: 'Voltar ao tutorial',
     thinking: 'A pensar…',
+    chessBoard: 'Tabuleiro de xadrez',
   },
   menu: {
     title: 'XADREZ',

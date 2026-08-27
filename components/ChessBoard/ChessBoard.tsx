@@ -6,6 +6,7 @@ import { BOARD_THEMES } from '@/lib/settings/themes';
 import type { BoardTheme, PieceStyle } from '@/lib/settings/settings';
 import { PieceIcon } from './PieceIcon';
 import { inferMove } from '@/lib/chess/inferMove';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export interface ChessBoardProps {
   fen: string;
@@ -112,6 +113,7 @@ export function ChessBoard({
   interactive = true,
   onSquareClick,
 }: ChessBoardProps) {
+  const { t } = useTranslation();
   // ChessBoard também re-renderiza por mudanças em selectedSquare/
   // legalTargets/etc. (independentes da posição) — sem useMemo, cada uma
   // dessas re-renderizações reconstruía a grelha 8x8 do zero a partir do FEN.
@@ -141,7 +143,7 @@ export function ChessBoard({
   return (
     <div
       role="grid"
-      aria-label="Tabuleiro de xadrez"
+      aria-label={t.common.chessBoard}
       className="relative grid grid-cols-8 grid-rows-8 aspect-square w-full max-w-[min(98vw,62dvh,560px)] sm:max-w-[min(92vw,62dvh,560px)] select-none border-4 border-stone-800 rounded-md overflow-hidden"
     >
       {ranks.map((rank, rankIdx) =>

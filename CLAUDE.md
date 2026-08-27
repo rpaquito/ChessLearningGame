@@ -816,20 +816,33 @@ para o desenho completo.
   abertura e as explicações de lances continuam em PT-PT, tal como
   esperado.
 
-**Descoberta durante este trabalho, não relacionada com o âmbito desta
-tarefa:** o `onChange` do `ToggleGroup` de idioma em `app/opcoes/
-page.tsx` chama `updateSettings({ language })` e logo a seguir
-`toast.show(t.opcoes.toastLanguageChanged)` — mas `t` aí é o valor já
-capturado no closure do render *anterior* à mudança (React só
-re-renderiza depois), por isso o toast de confirmação aparece
-sempre no idioma que se estava a abandonar, não no que se acabou de
-escolher (ex.: mudar de inglês para português mostra "Language
-changed.", não "Idioma alterado."). Não foi corrigido aqui — está fora
-da lista de ficheiros desta tarefa (`app/opcoes/page.tsx` pertence à
-Tarefa 7) — mas fica registado para uma correção futura (ler
-`DICTIONARIES[language].opcoes.toastLanguageChanged` diretamente em
-vez de `t.opcoes...` nesse `onChange`, já que `language` ali é o valor
-novo, não o antigo).
+**Armadilha já apanhada:** dentro de um `onChange` que também muda o
+próprio idioma (o toggle de "Idioma" em `/opções`), `t` continua a
+apontar para o dicionário de ANTES da mudança — `updateSettings({
+language })` agenda um re-render que só corre depois deste handler
+síncrono terminar, por isso `t.opcoes.toastLanguageChanged` no mesmo
+handler mostraria a mensagem no idioma que se está a abandonar (ex.:
+mudar de inglês para português mostrava "Language changed.", não
+"Idioma alterado."). A correção lê
+`DICTIONARIES[language].opcoes.toastLanguageChanged` diretamente —
+`language` (o valor novo) já é conhecido nesse ponto, sem esperar pelo
+re-render. Corrigido no commit `8b1b239`, com teste de regressão em
+`app/opcoes/page.test.tsx`.
+
+Duas limitações relacionadas, da mesma arquitetura "sem rota por
+idioma, tudo via `localStorage`", que valem a pena ter escritas:
+metadata do `<head>` renderizada no servidor (`title`/`description`/
+`appleWebApp.title` em `app/layout.tsx`) fica sempre em português,
+qualquer que seja o idioma escolhido — Server Components não podem ler
+`localStorage`, e os não-objetivos da spec só nomeavam explicitamente
+o `manifest.json` como estático; é a mesma limitação, só não estava
+escrita até agora. E o primeiro paint é sempre em português, mesmo
+para quem escolheu inglês — o `getServerSnapshot()` de `useSettings()`
+devolve `DEFAULT_SETTINGS` (`language: 'pt'`) durante SSR/hidratação, e
+o `LanguageSync` só corrige `<html lang>` (e, por extensão, o que é
+mostrado) depois de montar. É o mesmo compromisso arquitetural já
+documentado noutros pontos desta secção, só nunca antes ligado a este
+sintoma visível em concreto.
 
 ### Service worker / PWA: estratégia de cache e atualização
 
