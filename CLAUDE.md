@@ -12,7 +12,10 @@ Sem backend/API routes próprias nem autenticação — tudo corre no browser.
 
 ```
 app/
-  layout.tsx              # <html lang="pt-PT">, metadata/PWA, monta ServiceWorkerRegistration
+  layout.tsx              # <html lang="pt-PT"> por omissão no HTML estático, mas
+                           # sincronizado no cliente pelo LanguageSync (ver "Múltiplos
+                           # idiomas" abaixo); metadata/PWA, monta
+                           # ServiceWorkerRegistration + LanguageSync + ToastProvider
   page.tsx                 # menu inicial: três tiles ilustrados ("Jogar contra o
                             # computador", "Dois jogadores", "Opções"), link
                             # "Regras do jogo"
@@ -21,8 +24,9 @@ app/
                                   # para esta partida — escolher aqui não altera as
                                   # definições por omissão, isso só acontece em /opcoes
   opcoes/page.tsx                 # dificuldade/cor por omissão (persistem de facto),
-                                  # temas de tabuleiro/fundo/peças, e um placeholder
-                                  # "Brevemente" (Idioma) para uma funcionalidade futura
+                                  # temas de tabuleiro/fundo/peças, e o seletor de
+                                  # idioma (Português/English) — ver secção "Múltiplos
+                                  # idiomas" abaixo
   jogar/page.tsx                # a partida em si — client component "grande", liga tudo
   aprender/                 # hub do tutorial + subpáginas (pecas, regras-especiais,
                              # fim-de-jogo, estrategia, centipawns, aberturas). pecas/
@@ -122,8 +126,22 @@ copy nova. Regras concretas já aplicadas no código:
   de 3ª pessoa (ex.: "quem está em xeque... no seu próximo lance" está correto)
 - Instruções/dicas em infinitivo, não em imperativo "à você": "Controlar o
   centro", não "Controle o centro"
-- `<html lang="pt-PT">` (`app/layout.tsx`) e `"lang": "pt-PT"`
-  (`public/manifest.json`) devem manter-se assim
+- Isto continua a valer para todo o texto PT (a maioria da app, ver
+  secção "Múltiplos idiomas" abaixo para a exceção inglesa) — não
+  regredir para hábitos de PT-BR também na tradução inglesa por
+  analogia, cada dicionário tem as suas próprias convenções (inglês
+  americano, ver essa secção)
+- `<html lang="...">` (`app/layout.tsx`) **já não é fixo** desde a
+  introdução de múltiplos idiomas (ver secção "Múltiplos idiomas"
+  abaixo) — o valor inicial no HTML servido continua `"pt-PT"` (é o
+  que o servidor pode saber sem ler `localStorage`), mas o
+  `LanguageSync` corrige-o no cliente para `"pt-PT"`/`"en"` conforme
+  `settings.language`, depois da hidratação. `"lang": "pt-PT"` em
+  `public/manifest.json` **continua fixo, deliberadamente** — o
+  manifest é lido pelo SO ao instalar a PWA, antes de qualquer
+  `localStorage` da app existir, por isso não há como o tornar dinâmico
+  com a arquitetura atual (sem backend/API routes); ficou fora do
+  âmbito da Fase 1 do i18n
 
 ### Peças do tabuleiro: SVG inline, nunca glifos Unicode
 
@@ -494,14 +512,15 @@ gradiente translúcido por cima (`TILE_LABEL_STROKE`/cor de acento por
 tile) para o texto se manter legível sobre qualquer parte da
 ilustração, em vez de depender do contraste da própria imagem.
 
-Dos quatro espaços originalmente reservados em `/opcoes`, três já têm
-seletores reais: tema do tabuleiro e imagem de fundo usam `ThemePicker`
-(miniaturas clicáveis lidas de `lib/settings/themes.ts`); estilo das
-peças usa `PieceStylePicker`, próprio (ver secção "Estilos de peças"
-acima — as peças são SVG desenhado à mão, não imagens, por isso não
-cabem no `ThemePicker` genérico). Só "Idioma" continua como
-"Brevemente" (`ComingSoonSection`, `opacity-60` + `aria-disabled="true"`)
-— um sub-projeto futuro (i18n completo), não um bug.
+Dos quatro espaços originalmente reservados em `/opcoes`, todos têm
+agora seletores reais: tema do tabuleiro e imagem de fundo usam
+`ThemePicker` (miniaturas clicáveis lidas de `lib/settings/themes.ts`);
+estilo das peças usa `PieceStylePicker`, próprio (ver secção "Estilos
+de peças" acima — as peças são SVG desenhado à mão, não imagens, por
+isso não cabem no `ThemePicker` genérico); idioma usa um `ToggleGroup`
+simples (Português/English) — ver secção "Múltiplos idiomas" abaixo.
+Já não há nenhum placeholder "Brevemente" (`ComingSoonSection`) em
+`/opcoes`.
 
 **Hidratação:** ao contrário de `useChessGame` (cuja página `/jogar`
 nunca é pré-renderizada, por estar atrás de `useSearchParams` dentro de
@@ -696,6 +715,121 @@ sempre visível, contextual, embutido na página, como `STATUS_LABEL`
 em `/jogar`), toast (confirmação leve, não bloqueia) e modal
 (bloqueia, exige reconhecimento explícito) — usar o mais leve que
 resolva o caso antes de subir para o próximo.
+
+### Múltiplos idiomas (`lib/i18n/`, PT-PT/English, Fase 1 — 2026-08-27)
+
+A app passou a suportar dois idiomas de interface — português de
+Portugal (por omissão) e inglês — a pedido explícito do utilizador.
+Esta foi a "Fase 1" de um plano em 3 fases (mecanismo + UI primeiro;
+conteúdo gerado por dados — aberturas, explicações de lances — fica
+para as Fases 2/3); ver `docs/superpowers/specs/2026-08-27-multi-
+language-i18n-design.md` e o plano em
+`docs/superpowers/plans/2026-08-27-i18n-phase1-mechanism-and-ui.md`
+para o desenho completo.
+
+- **`lib/i18n/types.ts`**: `Locale = 'pt' | 'en'`, `VALID_LOCALES`.
+- **`lib/i18n/detectLocale.ts`**: `detectLocale(navigatorLanguage?)` —
+  qualquer `navigator.language` que não comece por `"pt"` (incluindo
+  deteção falhada/`undefined`) cai em **inglês**, não em português;
+  decisão deliberada, inverte o resto de `DEFAULT_SETTINGS` (que é
+  todo PT-first) só neste campo.
+- **`lib/settings/settings.ts`**: `Settings.language: Locale`, guardado
+  como qualquer outro campo de definições (mesmo `localStorage`,
+  mesma chave). Tem uma regra própria em `loadSettings()`, diferente
+  dos outros campos: se `language` não estiver guardado, em vez de
+  cair só em `DEFAULT_SETTINGS.language` ('pt'), chama
+  `detectLocale(navigator.language)` — deteção do idioma do browser
+  **na primeira visita**, e grava o resultado de volta (para não
+  repetir a deteção a cada leitura). Uma vez guardado (por deteção ou
+  por escolha explícita em `/opções`), esse valor é definitivo até o
+  utilizador o mudar — a deteção nunca sobrepõe uma escolha já feita.
+- **`lib/i18n/dictionaries/`**: `types.ts` define a interface
+  `Dictionary` (uma árvore de strings — e, nalguns pontos, funções
+  `(arg) => string` para texto com interpolação, ex.:
+  `openings.wrongMove: (san: string) => string`,
+  `aprenderHub.openingsDesc: (count: number) => string`); `pt.ts` e `en.ts`
+  implementam-na; `index.ts` exporta `DICTIONARIES: Record<Locale,
+  Dictionary>`. `pt.ts` foi transcrito byte-a-byte do texto PT que já
+  estava espalhado pelo código antes deste trabalho — não é copy nova,
+  é extração; `en.ts` é tradução nova, em inglês americano (não
+  britânico), com o mesmo rigor de idioma que a secção "Idioma:
+  português de Portugal" acima exige do lado PT (gerúndio, 2ª pessoa,
+  etc. não se aplicam ao inglês, mas a mesma disciplina de "nunca
+  misturar registos" aplica-se). `dictionaries.test.ts` garante que
+  `pt`/`en` têm exatamente as mesmas chaves-folha (nenhum idioma pode
+  ficar com uma chave a menos) e que nenhum valor de string está
+  vazio.
+- **`lib/i18n/useTranslation.ts`**: `useTranslation()` devolve `{ t,
+  locale }` — `t` é o dicionário completo do idioma atual,
+  `locale` é o `Locale` em si (para lógica que precisa dele
+  diretamente, não só de texto — ex.: `LanguageSync`,
+  `gameEndMessage.ts`). **Não criou nenhum `Context` novo** — lê
+  `settings.language` através do `useSettings()` já existente, tal
+  como qualquer outro campo de definições; o único `Context` da app
+  continua a ser o do `Toast` (ver secção "Toasts e modal de fim de
+  jogo" acima), e este hook não é precedente para mudar isso.
+- **`components/LanguageSync/`**: componente sem UI própria (mesmo
+  padrão do `ServiceWorkerRegistration.tsx`), montado uma vez em
+  `app/layout.tsx`. Um `useEffect` (nunca durante o render, para não
+  arriscar o mesmo tipo de mismatch de hidratação já visto noutros
+  sítios do projeto — ver nota sobre `useChessGame`/hidratação acima)
+  escreve `document.documentElement.lang` (`"pt-PT"` ou `"en"`)
+  sempre que `locale` muda. O HTML servido pelo Next.js continua com
+  `lang="pt-PT"` fixo (é tudo o que o servidor pode saber sem
+  `localStorage`) — o `LanguageSync` é o que o corrige no cliente
+  depois de montar.
+- **Uso geral**: qualquer componente/página com texto estático para o
+  utilizador chama `const { t } = useTranslation()` e lê
+  `t.<secção>.<chave>` em vez de escrever a string diretamente. Todas
+  as páginas afetadas ganharam `'use client'` quando ainda não a
+  tinham (`useTranslation` é um hook, só corre no cliente) — com
+  **duas exceções deliberadas**: `app/aprender/aberturas/[id]/page.tsx`
+  e `.../[id]/praticar/page.tsx` exportam `generateStaticParams`, o
+  que Next.js não permite combinar com `'use client'`. Para esses dois,
+  o texto traduzido (título, botões "Voltar"/"Praticar") foi extraído
+  para um componente-filho `'use client'` próprio,
+  `components/OpeningPageHeader/OpeningPageHeader.tsx`, que consome
+  `useTranslation()` sozinho — a página em si continua Server
+  Component, só passa `opening`/`variant` como props.
+- **Duas chaves de dicionário acrescentadas retroativamente**, já
+  depois de `types.ts`/`pt.ts`/`en.ts` estarem "fechados": `jogar.
+  checkToast` (ao ligar o toast de xeque em `/jogar`) e
+  `centipawnsPage.qualityTexts` (ao ligar `/aprender/centipawns`).
+  Ambas foram acrescentadas dentro da própria tarefa que precisava
+  delas, não uma dependência escondida entre tarefas — mas é o sítio a
+  olhar se `pt.ts`/`en.ts` parecerem incompletos face a `types.ts` num
+  diff antigo.
+- **`lib/chess/gameEndMessage.ts`**: `describeGameEnd(status, mode,
+  humanColor, turn, locale)` — a única função fora de `lib/i18n/` que
+  recebe `locale` como parâmetro explícito em vez de chamar
+  `useTranslation()` (não é um componente React), indexando
+  diretamente em `DICTIONARIES[locale].gameEnd`.
+- **Limitação conhecida, intencional nesta fase**: conteúdo que vem de
+  *dados* em vez de *strings de UI* continua só em português —
+  `opening.name`/`opening.description`/`OpeningMove.explanation` (`lib/
+  openings/data.ts`, ~220 explicações escritas à mão) e as frases de
+  `lib/chess/moveExplanation.ts` (`suggestionExplanation`/
+  `lastMoveExplanation`) não mudam com o idioma escolhido, mesmo com a
+  UI à volta toda traduzida — traduzir esse conteúdo é trabalho das
+  Fases 2/3 do plano, fora do âmbito desta fase. Confirmado
+  manualmente: com o idioma em inglês, o nome/descrição de cada
+  abertura e as explicações de lances continuam em PT-PT, tal como
+  esperado.
+
+**Descoberta durante este trabalho, não relacionada com o âmbito desta
+tarefa:** o `onChange` do `ToggleGroup` de idioma em `app/opcoes/
+page.tsx` chama `updateSettings({ language })` e logo a seguir
+`toast.show(t.opcoes.toastLanguageChanged)` — mas `t` aí é o valor já
+capturado no closure do render *anterior* à mudança (React só
+re-renderiza depois), por isso o toast de confirmação aparece
+sempre no idioma que se estava a abandonar, não no que se acabou de
+escolher (ex.: mudar de inglês para português mostra "Language
+changed.", não "Idioma alterado."). Não foi corrigido aqui — está fora
+da lista de ficheiros desta tarefa (`app/opcoes/page.tsx` pertence à
+Tarefa 7) — mas fica registado para uma correção futura (ler
+`DICTIONARIES[language].opcoes.toastLanguageChanged` diretamente em
+vez de `t.opcoes...` nesse `onChange`, já que `language` ali é o valor
+novo, não o antigo).
 
 ### Service worker / PWA: estratégia de cache e atualização
 

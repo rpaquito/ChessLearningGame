@@ -5,6 +5,7 @@ import { Chess, type Square } from 'chess.js';
 import { ChessBoard } from '@/components/ChessBoard/ChessBoard';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { legalTargetsFrom, forceTurnFor, checkedKingSquare } from '@/lib/chess/legalMoves';
+import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export interface PieceDemo {
   title: string;
@@ -30,6 +31,7 @@ export interface PieceDemo {
  * `forceTurnFor` (não `forceWhiteToMove`) aceitar qualquer cor.
  */
 export function InteractiveDemo({ title, description, fen: initialFen, square: initialSquare }: PieceDemo) {
+  const { t } = useTranslation();
   const protagonistColor = new Chess(initialFen).get(initialSquare)?.color ?? 'w';
   const [fen, setFen] = useState(initialFen);
   const [square, setSquare] = useState<Square>(initialSquare);
@@ -65,7 +67,7 @@ export function InteractiveDemo({ title, description, fen: initialFen, square: i
           onSquareClick={handleSquareClick}
         />
         <ChipButton color="pink" onClick={handleReset}>
-          Reiniciar
+          {t.interactiveDemo.reset}
         </ChipButton>
       </div>
       <div>
