@@ -6,41 +6,13 @@ import type { PlayerColor } from '@/lib/chess/playerColor';
 import type { BackgroundTheme, BoardTheme, PieceStyle } from '@/lib/settings/settings';
 import { BACKGROUND_THEMES, BOARD_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
+import { useTranslation } from '@/lib/i18n/useTranslation';
+import type { Locale } from '@/lib/i18n/types';
 import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
 import { ToggleGroup } from '@/components/ToggleGroup/ToggleGroup';
 import { useToast } from '@/components/Toast/ToastProvider';
-
-const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
-  { value: 'facil', label: 'facil' },
-  { value: 'medio', label: 'medio' },
-  { value: 'dificil', label: 'dificil' },
-];
-const COLOR_OPTIONS: { value: PlayerColor; label: string }[] = [
-  { value: 'white', label: 'Brancas' },
-  { value: 'black', label: 'Pretas' },
-  { value: 'random', label: 'Aleatório' },
-];
-
-// Secção ainda sem funcionalidade — reserva o lugar na interface para os
-// sub-projetos seguintes (biblioteca de temas, i18n) sem os implementar
-// aqui. Ver docs/superpowers/specs/2026-08-22-menu-settings-redesign-design.md.
-function ComingSoonSection({ title }: { title: string }) {
-  return (
-    <fieldset className="flex flex-col gap-2 opacity-60" aria-disabled="true">
-      <legend className="font-medium mb-1 flex items-center gap-2 text-white">
-        {title}
-        <span className="text-xs rounded-full bg-purple/40 text-lilac px-2 py-0.5 font-normal">
-          Brevemente
-        </span>
-      </legend>
-      <div className="rounded-xl border border-dashed border-purple/50 px-3 py-4 text-sm text-lilac/70">
-        Ainda não disponível.
-      </div>
-    </fieldset>
-  );
-}
 
 // Shell de botão partilhado por todos os seletores de opção desta página
 // (tema do tabuleiro, imagem de fundo, estilo das peças) — só a miniatura
@@ -115,60 +87,75 @@ const BACKGROUND_THEME_OPTIONS: { id: BackgroundTheme; label: string; previewIma
   Object.keys(BACKGROUND_THEMES) as BackgroundTheme[]
 ).map((id) => ({ id, label: BACKGROUND_THEMES[id].label, previewImage: BACKGROUND_THEMES[id].image }));
 
-const PIECE_STYLE_OPTIONS: { id: PieceStyle; label: string }[] = [
-  { id: 'classico', label: 'Clássico' },
-  { id: 'moderno', label: 'Moderno' },
-  { id: 'anime', label: 'Anime' },
-];
-
 export default function OpcoesPage() {
   const { settings, updateSettings } = useSettings();
+  const { t } = useTranslation();
   const toast = useToast();
+
+  const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+    { value: 'facil', label: t.difficulty.facil },
+    { value: 'medio', label: t.difficulty.medio },
+    { value: 'dificil', label: t.difficulty.dificil },
+  ];
+  const COLOR_OPTIONS: { value: PlayerColor; label: string }[] = [
+    { value: 'white', label: t.color.white },
+    { value: 'black', label: t.color.black },
+    { value: 'random', label: t.color.random },
+  ];
+  const PIECE_STYLE_OPTIONS: { id: PieceStyle; label: string }[] = [
+    { id: 'classico', label: t.pieceStyleLabel.classico },
+    { id: 'moderno', label: t.pieceStyleLabel.moderno },
+    { id: 'anime', label: t.pieceStyleLabel.anime },
+  ];
+  const LANGUAGE_OPTIONS: { value: Locale; label: string }[] = [
+    { value: 'pt', label: t.opcoes.portuguese },
+    { value: 'en', label: t.opcoes.english },
+  ];
 
   return (
     <main className="relative min-h-dvh flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
-      <PageTitle className="relative">OPÇÕES</PageTitle>
+      <PageTitle className="relative">{t.opcoes.title}</PageTitle>
       <div className="relative flex flex-col gap-6 max-w-sm w-full">
         <ToggleGroup
-          legend="Dificuldade por omissão"
+          legend={t.opcoes.defaultDifficultyLegend}
           options={DIFFICULTY_OPTIONS}
           value={settings.defaultDifficulty}
           onChange={(level) => {
             updateSettings({ defaultDifficulty: level });
-            toast.show('Dificuldade por omissão alterada.');
+            toast.show(t.opcoes.toastDifficultyChanged);
           }}
         />
 
         <ToggleGroup
-          legend="Cor por omissão"
+          legend={t.opcoes.defaultColorLegend}
           options={COLOR_OPTIONS}
           value={settings.defaultColor}
           onChange={(value) => {
             updateSettings({ defaultColor: value });
-            toast.show('Cor por omissão alterada.');
+            toast.show(t.opcoes.toastColorChanged);
           }}
         />
 
         <OptionPicker
-          legend="Tema do tabuleiro"
+          legend={t.opcoes.boardTheme}
           options={BOARD_THEME_OPTIONS}
           value={settings.boardTheme}
           onChange={(boardTheme) => {
             updateSettings({ boardTheme });
-            toast.show('Tema do tabuleiro alterado.');
+            toast.show(t.opcoes.toastBoardThemeChanged);
           }}
           renderPreview={(opt) => (
             <ThemeSwatch previewImage={opt.previewImage} previewImage2={opt.previewImage2} />
           )}
         />
         <OptionPicker
-          legend="Estilo das peças"
+          legend={t.opcoes.pieceStyle}
           options={PIECE_STYLE_OPTIONS}
           value={settings.pieceStyle}
           onChange={(pieceStyle) => {
             updateSettings({ pieceStyle });
-            toast.show('Estilo das peças alterado.');
+            toast.show(t.opcoes.toastPieceStyleChanged);
           }}
           renderPreview={(opt) => (
             <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-ink">
@@ -179,20 +166,28 @@ export default function OpcoesPage() {
           )}
         />
         <OptionPicker
-          legend="Imagem de fundo"
+          legend={t.opcoes.backgroundImage}
           options={BACKGROUND_THEME_OPTIONS}
           value={settings.backgroundTheme}
           onChange={(backgroundTheme) => {
             updateSettings({ backgroundTheme });
-            toast.show('Imagem de fundo alterada.');
+            toast.show(t.opcoes.toastBackgroundChanged);
           }}
           renderPreview={(opt) => <ThemeSwatch previewImage={opt.previewImage} />}
         />
-        <ComingSoonSection title="Idioma" />
+        <ToggleGroup
+          legend={t.opcoes.language}
+          options={LANGUAGE_OPTIONS}
+          value={settings.language}
+          onChange={(language) => {
+            updateSettings({ language });
+            toast.show(t.opcoes.toastLanguageChanged);
+          }}
+        />
       </div>
 
       <ChipButton color="purple" href="/" className="relative">
-        Menu inicial
+        {t.common.mainMenu}
       </ChipButton>
     </main>
   );
