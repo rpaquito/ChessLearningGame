@@ -9,14 +9,18 @@ import { useSettings } from '@/lib/settings/useSettings';
 import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { ToggleGroup } from '@/components/ToggleGroup/ToggleGroup';
 import { useToast } from '@/components/Toast/ToastProvider';
-import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
 
-const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
-const COLORS: [PlayerColor, string][] = [
-  ['white', 'Brancas'],
-  ['black', 'Pretas'],
-  ['random', 'Aleatório'],
+const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'facil', label: 'facil' },
+  { value: 'medio', label: 'medio' },
+  { value: 'dificil', label: 'dificil' },
+];
+const COLOR_OPTIONS: { value: PlayerColor; label: string }[] = [
+  { value: 'white', label: 'Brancas' },
+  { value: 'black', label: 'Pretas' },
+  { value: 'random', label: 'Aleatório' },
 ];
 
 // Secção ainda sem funcionalidade — reserva o lugar na interface para os
@@ -126,55 +130,25 @@ export default function OpcoesPage() {
       <PageGlow pinkOpacity={0.25} />
       <PageTitle className="relative">OPÇÕES</PageTitle>
       <div className="relative flex flex-col gap-6 max-w-sm w-full">
-        <fieldset className="flex flex-col gap-2">
-          <legend className="font-medium mb-1 text-white">Dificuldade por omissão</legend>
-          <div className="flex gap-2">
-            {DIFFICULTIES.map((level) => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => {
-                  updateSettings({ defaultDifficulty: level });
-                  toast.show('Dificuldade por omissão alterada.');
-                }}
-                aria-pressed={settings.defaultDifficulty === level}
-                style={settings.defaultDifficulty === level ? ACTIVE_TOGGLE_STYLE : undefined}
-                className={`flex-1 rounded-xl border-2 px-3 py-2 capitalize font-semibold transition-transform hover:scale-[1.02] ${
-                  settings.defaultDifficulty === level
-                    ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]'
-                    : 'border-purple/40 text-lilac'
-                }`}
-              >
-                {level}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <ToggleGroup
+          legend="Dificuldade por omissão"
+          options={DIFFICULTY_OPTIONS}
+          value={settings.defaultDifficulty}
+          onChange={(level) => {
+            updateSettings({ defaultDifficulty: level });
+            toast.show('Dificuldade por omissão alterada.');
+          }}
+        />
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="font-medium mb-1 text-white">Cor por omissão</legend>
-          <div className="flex gap-2">
-            {COLORS.map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => {
-                  updateSettings({ defaultColor: value });
-                  toast.show('Cor por omissão alterada.');
-                }}
-                aria-pressed={settings.defaultColor === value}
-                style={settings.defaultColor === value ? ACTIVE_TOGGLE_STYLE : undefined}
-                className={`flex-1 rounded-xl border-2 px-3 py-2 font-semibold transition-transform hover:scale-[1.02] ${
-                  settings.defaultColor === value
-                    ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]'
-                    : 'border-purple/40 text-lilac'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </fieldset>
+        <ToggleGroup
+          legend="Cor por omissão"
+          options={COLOR_OPTIONS}
+          value={settings.defaultColor}
+          onChange={(value) => {
+            updateSettings({ defaultColor: value });
+            toast.show('Cor por omissão alterada.');
+          }}
+        />
 
         <OptionPicker
           legend="Tema do tabuleiro"

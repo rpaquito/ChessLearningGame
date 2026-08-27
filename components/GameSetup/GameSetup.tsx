@@ -6,13 +6,17 @@ import type { Difficulty } from '@/lib/chess/difficulty';
 import type { PlayerColor } from '@/lib/chess/playerColor';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
 import { useSettings } from '@/lib/settings/useSettings';
-import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
+import { ToggleGroup } from '@/components/ToggleGroup/ToggleGroup';
 
-const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
-const COLORS: [PlayerColor, string][] = [
-  ['white', 'Brancas'],
-  ['black', 'Pretas'],
-  ['random', 'Aleatório'],
+const DIFFICULTY_OPTIONS: { value: Difficulty; label: string }[] = [
+  { value: 'facil', label: 'facil' },
+  { value: 'medio', label: 'medio' },
+  { value: 'dificil', label: 'dificil' },
+];
+const COLOR_OPTIONS: { value: PlayerColor; label: string }[] = [
+  { value: 'white', label: 'Brancas' },
+  { value: 'black', label: 'Pretas' },
+  { value: 'random', label: 'Aleatório' },
 ];
 
 // Dificuldade e cor pré-preenchem-se a partir das Definições guardadas,
@@ -32,45 +36,9 @@ export function GameSetup() {
 
   return (
     <div className="flex flex-col gap-6 max-w-sm mx-auto w-full">
-      <fieldset className="flex flex-col gap-2">
-        <legend className="font-medium mb-1 text-white">Dificuldade</legend>
-        <div className="flex gap-2">
-          {DIFFICULTIES.map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => setDifficulty(level)}
-              aria-pressed={difficulty === level}
-              style={difficulty === level ? ACTIVE_TOGGLE_STYLE : undefined}
-              className={`flex-1 rounded-xl border-2 px-3 py-2 capitalize font-semibold transition-transform hover:scale-[1.02] ${
-                difficulty === level ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]' : 'border-purple/40 text-lilac'
-              }`}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <ToggleGroup legend="Dificuldade" options={DIFFICULTY_OPTIONS} value={difficulty} onChange={setDifficulty} />
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="font-medium mb-1 text-white">As tuas peças</legend>
-        <div className="flex gap-2">
-          {COLORS.map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setColor(value)}
-              aria-pressed={color === value}
-              style={color === value ? ACTIVE_TOGGLE_STYLE : undefined}
-              className={`flex-1 rounded-xl border-2 px-3 py-2 font-semibold transition-transform hover:scale-[1.02] ${
-                color === value ? 'border-transparent shadow-[3px_3px_0_rgba(0,0,0,0.35)]' : 'border-purple/40 text-lilac'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </fieldset>
+      <ToggleGroup legend="As tuas peças" options={COLOR_OPTIONS} value={color} onChange={setColor} />
 
       <button
         type="button"
