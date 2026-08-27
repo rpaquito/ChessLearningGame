@@ -9,6 +9,7 @@ import { useSettings } from '@/lib/settings/useSettings';
 import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { useToast } from '@/components/Toast/ToastProvider';
 import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
 
 const DIFFICULTIES: Difficulty[] = ['facil', 'medio', 'dificil'];
@@ -118,6 +119,7 @@ const PIECE_STYLE_OPTIONS: { id: PieceStyle; label: string }[] = [
 
 export default function OpcoesPage() {
   const { settings, updateSettings } = useSettings();
+  const toast = useToast();
 
   return (
     <main className="relative min-h-dvh flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
@@ -131,7 +133,10 @@ export default function OpcoesPage() {
               <button
                 key={level}
                 type="button"
-                onClick={() => updateSettings({ defaultDifficulty: level })}
+                onClick={() => {
+                  updateSettings({ defaultDifficulty: level });
+                  toast.show('Dificuldade por omissão alterada.');
+                }}
                 aria-pressed={settings.defaultDifficulty === level}
                 style={settings.defaultDifficulty === level ? ACTIVE_TOGGLE_STYLE : undefined}
                 className={`flex-1 rounded-xl border-2 px-3 py-2 capitalize font-semibold transition-transform hover:scale-[1.02] ${
@@ -153,7 +158,10 @@ export default function OpcoesPage() {
               <button
                 key={value}
                 type="button"
-                onClick={() => updateSettings({ defaultColor: value })}
+                onClick={() => {
+                  updateSettings({ defaultColor: value });
+                  toast.show('Cor por omissão alterada.');
+                }}
                 aria-pressed={settings.defaultColor === value}
                 style={settings.defaultColor === value ? ACTIVE_TOGGLE_STYLE : undefined}
                 className={`flex-1 rounded-xl border-2 px-3 py-2 font-semibold transition-transform hover:scale-[1.02] ${
@@ -172,7 +180,10 @@ export default function OpcoesPage() {
           legend="Tema do tabuleiro"
           options={BOARD_THEME_OPTIONS}
           value={settings.boardTheme}
-          onChange={(boardTheme) => updateSettings({ boardTheme })}
+          onChange={(boardTheme) => {
+            updateSettings({ boardTheme });
+            toast.show('Tema do tabuleiro alterado.');
+          }}
           renderPreview={(opt) => (
             <ThemeSwatch previewImage={opt.previewImage} previewImage2={opt.previewImage2} />
           )}
@@ -181,7 +192,10 @@ export default function OpcoesPage() {
           legend="Estilo das peças"
           options={PIECE_STYLE_OPTIONS}
           value={settings.pieceStyle}
-          onChange={(pieceStyle) => updateSettings({ pieceStyle })}
+          onChange={(pieceStyle) => {
+            updateSettings({ pieceStyle });
+            toast.show('Estilo das peças alterado.');
+          }}
           renderPreview={(opt) => (
             <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-ink">
               <span className="h-12 w-12 text-white drop-shadow-[0_0_2px_rgba(0,0,0,0.9)]">
@@ -194,7 +208,10 @@ export default function OpcoesPage() {
           legend="Imagem de fundo"
           options={BACKGROUND_THEME_OPTIONS}
           value={settings.backgroundTheme}
-          onChange={(backgroundTheme) => updateSettings({ backgroundTheme })}
+          onChange={(backgroundTheme) => {
+            updateSettings({ backgroundTheme });
+            toast.show('Imagem de fundo alterada.');
+          }}
           renderPreview={(opt) => <ThemeSwatch previewImage={opt.previewImage} />}
         />
         <ComingSoonSection title="Idioma" />
