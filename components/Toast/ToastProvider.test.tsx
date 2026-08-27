@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ToastProvider } from './ToastProvider';
-import { useToast } from './ToastProvider';
+import { ToastProvider, useToast } from './ToastProvider';
 
 function Trigger({ message, tone }: { message: string; tone?: 'info' | 'check' }) {
   const { show } = useToast();
@@ -12,19 +11,35 @@ function Trigger({ message, tone }: { message: string; tone?: 'info' | 'check' }
   );
 }
 
+function TriggerWithDismiss({ message }: { message: string }) {
+  const { show, dismiss } = useToast();
+  return (
+    <>
+      <button type="button" onClick={() => show(message)}>
+        trigger: {message}
+      </button>
+      <button type="button" onClick={dismiss}>
+        dismiss from consumer
+      </button>
+    </>
+  );
+}
+
 function BadConsumer() {
   useToast();
   return null;
 }
 
 describe('ToastProvider / useToast', () => {
-  it('renders no toast initially', () => {
+  it('renders no toast card initially', () => {
     render(
       <ToastProvider>
         <Trigger message="Xeque!" />
       </ToastProvider>
     );
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    // O wrapper role="status" fica sempre montado (ver Toast.tsx) — o que
+    // não existe antes de show() é o cartão/mensagem/botão lá dentro.
+    expect(screen.queryByTestId('toast-card')).not.toBeInTheDocument();
   });
 
   it('shows a toast when show() is called', () => {
@@ -58,7 +73,19 @@ describe('ToastProvider / useToast', () => {
     );
     fireEvent.click(screen.getByText('trigger: Xeque!'));
     fireEvent.click(screen.getByRole('button', { name: 'Fechar' }));
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('toast-card')).not.toBeInTheDocument();
+  });
+
+  it('dismisses the toast when a consumer calls the exposed dismiss()', () => {
+    render(
+      <ToastProvider>
+        <TriggerWithDismiss message="Xeque!" />
+      </ToastProvider>
+    );
+    fireEvent.click(screen.getByText('trigger: Xeque!'));
+    expect(screen.getByRole('status')).toHaveTextContent('Xeque!');
+    fireEvent.click(screen.getByText('dismiss from consumer'));
+    expect(screen.queryByTestId('toast-card')).not.toBeInTheDocument();
   });
 
   it('throws when useToast() is called outside a ToastProvider', () => {

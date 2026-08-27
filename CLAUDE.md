@@ -584,6 +584,39 @@ tabuleiro crescer para preencher todo o espaço da linha, empurrando o
 `LearningPanel` para a margem direita em vez de ficarem juntos e
 centrados como grupo.
 
+### Toasts e modal de fim de jogo (feedback de eventos, 2026-08-27)
+
+`components/Toast/` (`Toast.tsx`, cartão de apresentação puro; `ToastProvider.tsx`,
+que expõe `useToast()`) é o **primeiro e único `React.Context` da app**,
+montado uma vez em `app/layout.tsx` a envolver `{children}`. É
+deliberadamente estreito — só guarda o toast atual (`show`/`dismiss`) —
+e não é precedente para mover mais estado para Context: `useChessGame`
+e `useSettings` continuam hooks por página, de propósito.
+
+Sem auto-dismiss em lado nenhum, por decisão de design: todo o toast e
+o `GameEndModal` fecham só por ação explícita do utilizador (botão ✕,
+Escape, ou — só no modal — clique no backdrop). Não há nenhum
+temporizador a procurar se um toast "desaparecer sozinho" parecer
+estranho.
+
+`components/GameEndModal/` (xeque-mate/afogamento/empate em `/jogar`)
+**não** passa pelo Context do toast — segue o mesmo padrão autocontido
+do `RulesModal` (só `/jogar` precisa dele, e precisa de callbacks
+próprios da página, como `onPlayAgain` a chamar `handleReset`).
+
+Contrato de camadas: o `Toast` renderiza a `z-[60]`, acima do `z-50`
+do backdrop do `RulesModal`/`GameEndModal` — um toast fica sempre
+visível mesmo com um modal aberto por cima. `handleReset` em
+`app/jogar/page.tsx` chama `toast.dismiss()` (além de limpar
+`gameEndOpen`/`prevStatus`) para um toast de xeque não sobreviver a um
+"Jogar de novo" nem seguir o utilizador para fora da partida.
+
+A app tem agora três idiomas de feedback — texto inline (estado
+sempre visível, contextual, embutido na página, como `STATUS_LABEL`
+em `/jogar`), toast (confirmação leve, não bloqueia) e modal
+(bloqueia, exige reconhecimento explícito) — usar o mais leve que
+resolva o caso antes de subir para o próximo.
+
 ### Service worker / PWA: estratégia de cache e atualização
 
 `public/sw.js` tem duas estratégias, por tipo de pedido:

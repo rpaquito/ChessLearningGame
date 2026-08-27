@@ -222,6 +222,7 @@ function JogarContent() {
     setLastMoveExplanation(null);
     setGameEndOpen(false);
     prevStatus.current = 'playing';
+    toast.dismiss();
   }
 
   return (

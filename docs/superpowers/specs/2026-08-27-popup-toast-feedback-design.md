@@ -161,9 +161,9 @@ precisar de mudar.)
 
 ### 2. `Toast` — cartão de apresentação
 
-Sem temporizador, sem animação além de um fade/slide de entrada
-simples. Fixo ao topo do ecrã, `z-[60]` — acima do `z-50` do backdrop
-do `RulesModal`, para nunca ficar escondido atrás de um modal aberto.
+Sem temporizador, sem animação de entrada. Fixo ao topo do ecrã,
+`z-[60]` — acima do `z-50` do backdrop do `RulesModal`, para nunca
+ficar escondido atrás de um modal aberto.
 
 ```tsx
 // components/Toast/Toast.tsx

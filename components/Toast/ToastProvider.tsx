@@ -5,6 +5,7 @@ import { Toast, type ToastState, type ToastTone } from './Toast';
 
 interface ToastContextValue {
   show: (message: string, tone?: ToastTone) => void;
+  dismiss: () => void;
 }
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -26,14 +27,16 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const dismiss = useCallback(() => setToast(null), []);
 
-  // `show` nunca muda de identidade (useCallback, sem dependências
-  // reativas) — memorizar o valor do Context com base nela garante que
-  // a sua própria identidade também nunca muda. Sem isto, `{ show }`
-  // seria recriado a cada render do provider (ou seja, a cada
-  // show()/dismiss()), obrigando toda a app — o ToastProvider envolve
-  // `{children}` na raiz — a voltar a renderizar de cada vez que um
-  // toast aparece ou desaparece.
-  const value = useMemo(() => ({ show }), [show]);
+  // `show`/`dismiss` nunca mudam de identidade (useCallback, sem
+  // dependências reativas) — memorizar o objeto do Context com base
+  // nelas garante que a sua própria identidade também nunca muda. Isto
+  // não poupa a app de voltar a renderizar (React já ignora `{children}`
+  // por ser um elemento com identidade estável, memo ou não) — o que
+  // isto poupa é `app/jogar/page.tsx`, cujo `useEffect` de xeque/fim de
+  // jogo depende do objeto `toast` devolvido por `useToast()`: sem esta
+  // memorização, esse array de dependências veria um objeto novo a cada
+  // render do provider e o efeito voltaria a correr sem motivo.
+  const value = useMemo(() => ({ show, dismiss }), [show, dismiss]);
 
   return (
     <ToastContext.Provider value={value}>

@@ -114,6 +114,21 @@ describe('GameEndModal', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
+  it('renders the backdrop below the toast layer via z-50', () => {
+    render(
+      <GameEndModal
+        open
+        status="draw"
+        mode="ai"
+        humanColor="w"
+        turn="w"
+        onClose={noop}
+        onPlayAgain={noop}
+      />
+    );
+    expect(screen.getByTestId('game-end-modal-backdrop').className).toContain('z-50');
+  });
+
   it('calls onClose when the backdrop is clicked', () => {
     const onClose = vi.fn();
     render(
