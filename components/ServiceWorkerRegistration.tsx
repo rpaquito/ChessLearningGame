@@ -1,5 +1,6 @@
 'use client';
 
+import { Capacitor } from '@capacitor/core';
 import { useEffect } from 'react';
 
 /**
@@ -21,6 +22,11 @@ import { useEffect } from 'react';
  */
 export function ServiceWorkerRegistration() {
   useEffect(() => {
+    // Inside the native Capacitor shell, the bundle already ships on disk
+    // (webDir: 'out', see capacitor.config.ts) — there's nothing for the
+    // service worker to cache, and no reason to risk one behaving oddly
+    // inside a WKWebView.
+    if (Capacitor.isNativePlatform()) return;
     if (!('serviceWorker' in navigator)) return;
 
     let registration: ServiceWorkerRegistration | null = null;
