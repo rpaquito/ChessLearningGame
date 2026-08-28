@@ -68,4 +68,23 @@ describe('OPENINGS', () => {
       }
     }
   });
+
+  it('has a genuinely different English name/description for every opening and line, except documented loanwords', () => {
+    // "Najdorf" is a chess player's surname, used as a line name — a loanword
+    // that is correctly identical in Portuguese and English. Any other
+    // pt === en match here is a real bug (an untranslated copy-paste).
+    const IDENTICAL_BY_DESIGN = new Set(['Najdorf']);
+
+    for (const opening of OPENINGS) {
+      if (!IDENTICAL_BY_DESIGN.has(opening.name.pt)) {
+        expect(opening.name.en).not.toBe(opening.name.pt);
+      }
+      expect(opening.description.en).not.toBe(opening.description.pt);
+      for (const line of opening.lines) {
+        if (!IDENTICAL_BY_DESIGN.has(line.name.pt)) {
+          expect(line.name.en).not.toBe(line.name.pt);
+        }
+      }
+    }
+  });
 });

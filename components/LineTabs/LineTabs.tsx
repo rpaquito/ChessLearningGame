@@ -60,7 +60,7 @@ export function LineTabs({
       <div className="flex flex-wrap gap-2 justify-center" role="tablist" aria-label={t.openings.linesTablistLabel}>
         {lines.map((line, index) => (
           <button
-            key={line.name}
+            key={index}
             ref={(el) => {
               tabRefs.current[index] = el;
             }}
