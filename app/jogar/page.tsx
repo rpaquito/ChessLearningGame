@@ -21,6 +21,7 @@ import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
 import { findThreatenedSquares } from '@/lib/chess/threats';
 import { createStockfishClient, type StockfishClient } from '@/lib/chess/stockfishClient';
 import { parseUciMove } from '@/lib/chess/uciParser';
+import { hapticCapture, hapticCheck, hapticMove } from '@/lib/native/haptics';
 
 export default function JogarPage() {
   return (
@@ -89,6 +90,7 @@ function JogarContent() {
 
     if (state.status === 'check') {
       showToast(t.jogar.checkToast, 'check');
+      hapticCheck();
     } else if (
       state.status === 'checkmate' ||
       state.status === 'stalemate' ||
@@ -152,6 +154,14 @@ function JogarContent() {
         const previewMove = preview.move({ from: selectedSquare, to: square, promotion: 'q' });
         const moved = makeMove(selectedSquare, square, 'q');
         setSelectedSquare(null);
+
+        if (moved && previewMove) {
+          if (previewMove.isCapture()) {
+            hapticCapture();
+          } else {
+            hapticMove();
+          }
+        }
 
         if (moved && previewMove && mode === 'ai' && learningEnabled && engineRef.current) {
           const engine = engineRef.current;
