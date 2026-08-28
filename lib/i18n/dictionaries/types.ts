@@ -5,6 +5,7 @@ export interface Dictionary {
     backToTutorial: string;
     thinking: string;
     chessBoard: string;
+    cancel: string;
   };
   menu: {
     title: string;
@@ -42,6 +43,12 @@ export interface Dictionary {
     engineUnavailable: string;
     restart: string;
     rules: string;
+    confirmRestartTitle: string;
+    confirmRestartMessage: string;
+    confirmRestartButton: string;
+    confirmMenuTitle: string;
+    confirmMenuMessage: string;
+    confirmMenuButton: string;
   };
   learningPanel: {
     toggleLabel: string;

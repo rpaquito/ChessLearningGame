@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Chess, type Square } from 'chess.js';
 import { useChessGame } from '@/lib/chess/useChessGame';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
@@ -14,6 +14,7 @@ import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { PageGlow } from '@/components/PageChrome/PageChrome';
 import { useToast } from '@/components/Toast/ToastProvider';
 import { GameEndModal } from '@/components/GameEndModal/GameEndModal';
+import { ConfirmModal } from '@/components/ConfirmModal/ConfirmModal';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
 import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
 import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
@@ -41,6 +42,7 @@ function LoadingFallback() {
 
 function JogarContent() {
   const { t, locale } = useTranslation();
+  const router = useRouter();
   const params = useSearchParams();
   const mode = params.get('mode') === 'local' ? 'local' : 'ai';
   const difficulty = (params.get('difficulty') as Difficulty) ?? 'facil';
@@ -62,9 +64,14 @@ function JogarContent() {
   const [lastMoveExplanation, setLastMoveExplanation] = useState<string | null>(null);
   const [engineUnavailable, setEngineUnavailable] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
-  const toast = useToast();
+  const { toast: currentToast, show: showToast, dismiss: dismissToast } = useToast();
   const [gameEndOpen, setGameEndOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'restart' | 'menu' | null>(null);
   const prevStatus = useRef<typeof state.status>('playing');
+  // Só pede confirmação quando há de facto progresso a perder — uma
+  // partida ainda na posição inicial não tem nada para "Reiniciar"/"Menu
+  // inicial" deitarem fora.
+  const hasProgress = state.lastMove !== null && !state.isGameOver;
 
   const STATUS_LABEL: Record<string, string> = {
     playing: t.jogar.status.playing,
@@ -81,7 +88,7 @@ function JogarContent() {
     prevStatus.current = state.status;
 
     if (state.status === 'check') {
-      toast.show(t.jogar.checkToast, 'check');
+      showToast(t.jogar.checkToast, 'check');
     } else if (
       state.status === 'checkmate' ||
       state.status === 'stalemate' ||
@@ -93,7 +100,7 @@ function JogarContent() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setGameEndOpen(true);
     }
-  }, [state.status, toast, t]);
+  }, [state.status, showToast, t]);
 
   const engineRef = useRef<StockfishClient | null>(null);
   useEffect(() => {
@@ -234,7 +241,38 @@ function JogarContent() {
     setLastMoveExplanation(null);
     setGameEndOpen(false);
     prevStatus.current = 'playing';
-    toast.dismiss();
+    dismissToast();
+  }
+
+  // "Reiniciar partida" e "Menu inicial" só pedem confirmação quando há
+  // progresso a perder (hasProgress) — sem isso, agem de imediato.
+  function handleRestartClick() {
+    if (hasProgress) {
+      setConfirmAction('restart');
+    } else {
+      handleReset();
+    }
+  }
+
+  function handleMenuClick() {
+    if (hasProgress) {
+      setConfirmAction('menu');
+    } else {
+      router.push('/');
+    }
+  }
+
+  function handleConfirmAction() {
+    if (confirmAction === 'restart') {
+      handleReset();
+    } else if (confirmAction === 'menu') {
+      router.push('/');
+    }
+    setConfirmAction(null);
+  }
+
+  function handleCancelConfirm() {
+    setConfirmAction(null);
   }
 
   return (
@@ -267,7 +305,7 @@ function JogarContent() {
           checkSquare={state.checkSquare}
           threatenedSquares={threatenedSquares}
           suggestedMove={learningEnabled ? suggestion : null}
-          interactive={isHumanTurn && !state.isGameOver}
+          interactive={isHumanTurn && !state.isGameOver && currentToast?.tone !== 'check'}
           onSquareClick={handleSquareClick}
         />
         {mode === 'ai' && engineUnavailable && (
@@ -301,10 +339,10 @@ function JogarContent() {
           `w-full` do tabuleiro colapsar antes de o max-width entrar em
           jogo (shrink-to-fit com `items-center` duas vezes seguidas). */}
       <div className="flex items-center gap-3 flex-wrap justify-center md:w-full">
-        <ChipButton color="purple" href="/">
+        <ChipButton color="purple" onClick={handleMenuClick}>
           {t.common.mainMenu}
         </ChipButton>
-        <ChipButton color="pink" onClick={handleReset}>
+        <ChipButton color="pink" onClick={handleRestartClick}>
           {t.jogar.restart}
         </ChipButton>
         <ChipButton color="cyan" onClick={() => setRulesOpen(true)}>
@@ -321,6 +359,15 @@ function JogarContent() {
         turn={state.turn}
         onClose={() => setGameEndOpen(false)}
         onPlayAgain={handleReset}
+      />
+      <ConfirmModal
+        open={confirmAction !== null}
+        title={confirmAction === 'restart' ? t.jogar.confirmRestartTitle : t.jogar.confirmMenuTitle}
+        message={confirmAction === 'restart' ? t.jogar.confirmRestartMessage : t.jogar.confirmMenuMessage}
+        confirmLabel={confirmAction === 'restart' ? t.jogar.confirmRestartButton : t.jogar.confirmMenuButton}
+        cancelLabel={t.common.cancel}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCancelConfirm}
       />
     </main>
   );

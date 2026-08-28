@@ -10,6 +10,7 @@ export const pt: Dictionary = {
     backToTutorial: 'Voltar ao tutorial',
     thinking: 'A pensar…',
     chessBoard: 'Tabuleiro de xadrez',
+    cancel: 'Cancelar',
   },
   menu: {
     title: 'XADREZ',
@@ -54,6 +55,12 @@ export const pt: Dictionary = {
       'O motor de xadrez não pôde ser carregado. Tenta novamente mais tarde, ou joga no modo Dois jogadores.',
     restart: 'Reiniciar partida',
     rules: 'Regras',
+    confirmRestartTitle: 'Reiniciar partida?',
+    confirmRestartMessage: 'Vais perder o progresso desta partida. Tens a certeza?',
+    confirmRestartButton: 'Reiniciar',
+    confirmMenuTitle: 'Sair para o menu inicial?',
+    confirmMenuMessage: 'Vais perder o progresso desta partida. Tens a certeza?',
+    confirmMenuButton: 'Sair',
   },
   learningPanel: {
     toggleLabel: 'Modo de aprendizagem',

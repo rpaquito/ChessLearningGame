@@ -7,6 +7,7 @@ export const en: Dictionary = {
     backToTutorial: 'Back to tutorial',
     thinking: 'Thinking…',
     chessBoard: 'Chess board',
+    cancel: 'Cancel',
   },
   menu: {
     title: 'CHESS',
@@ -51,6 +52,12 @@ export const en: Dictionary = {
       "The chess engine couldn't be loaded. Try again later, or play in Two Players mode.",
     restart: 'Restart game',
     rules: 'Rules',
+    confirmRestartTitle: 'Restart the game?',
+    confirmRestartMessage: "You'll lose this game's progress. Are you sure?",
+    confirmRestartButton: 'Restart',
+    confirmMenuTitle: 'Go to the main menu?',
+    confirmMenuMessage: "You'll lose this game's progress. Are you sure?",
+    confirmMenuButton: 'Leave',
   },
   learningPanel: {
     toggleLabel: 'Learning mode',
