@@ -1,5 +1,9 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {};
+const isCapacitorBuild = process.env.BUILD_TARGET === 'capacitor';
+
+const nextConfig: NextConfig = {
+  ...(isCapacitorBuild ? { output: 'export' } : {}),
+};
 
 export default nextConfig;
