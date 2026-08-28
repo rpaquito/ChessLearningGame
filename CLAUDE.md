@@ -918,20 +918,19 @@ A app foi envolvida num shell nativo iOS via Capacitor (package `@capacitor/cli`
 + `@capacitor/core` + `@capacitor/haptics`) e rebranded de "Xadrez — aprenda
 jogando" para "Chess Sensei" a pedido explícito do utilizador, com toda a
 infra necessária para submissão futura à App Store — ver plano em
-`docs/superpowers/plans/2026-08-28-native-ios-app-capacitor-plan.md`.
+`docs/superpowers/plans/2026-08-28-native-ios-app-capacitor.md`.
 
 #### Arquitetura: `BUILD_TARGET=capacitor` e `next.config.ts` condicional
 
 `next.config.ts` lê a variável de ambiente `BUILD_TARGET`: quando é
 `'capacitor'`, activa `output: 'export'`, gerando HTML/JS estático no
 diretório `out/` em vez de um servidor Next.js. O fluxo normal de build do
-Next.js (que vai para Vercel, onde o build fica sempre
-`output: 'standalone'` por omissão — ver "Deploy" em `CLAUDE.md`) continua
+Next.js (que vai para Vercel, sem nenhuma override de `output`) continua
 completamente intacto:
 
 ```bash
-npm run build          # BUILD_TARGET não definida → standalone (Vercel)
-npm run build:capacitor    # BUILD_TARGET=capacitor → export (iOS)
+npm run build          # BUILD_TARGET não definida → Next.js server build (Vercel)
+npm run build:capacitor    # BUILD_TARGET=capacitor → output: 'export' (iOS)
 ```
 
 A chave é que **Vercel nunca vê `BUILD_TARGET=capacitor`** — a integração
@@ -989,7 +988,7 @@ O nome da app mudou em dois sítios permanentes:
 
 O mesmo rebrand também cobriu uma correção de incidente: `background_color`
 e `theme_color` em `manifest.json` ficaram com `#FFD600` (âmbar de antes do
-redesenho "anime", ver "Identidade visual anime" em `CLAUDE.md`) — o commit
+redesenho "anime", ver secção "Identidade visual anime" acima) — o commit
 de rebrand corrigiu ambos para `#1A0B33` (ink, a cor de fundo base do
 redesenho), sincronizando-os com a paleta atual.
 
@@ -1015,32 +1014,43 @@ na silhueta correcta: pawn liso e ornamento único, mero nó/fita dourada).
 
 Pipeline de produção (após aceitar o PNG do Draw Things):
 
-1. **Redimensionar** a imagens para os tamanhos-alvo (192×192, 512×512):
+1. **Redimensionar** com `sips -z <width> <height>` para os tamanhos-alvo
+   (192×192 para web, 512×512 para web, 1024×1024 para iOS catalog):
    ```bash
-   sips -Z 192 source.png -o icon-192.png
-   sips -Z 512 source.png -o icon-512.png
+   sips -z 192 192 /tmp/icon_final.png --out public/icons/icon-192.png
+   sips -z 512 512 /tmp/icon_final.png --out public/icons/icon-512.png
+   sips -z 180 180 /tmp/icon_final.png --out public/icons/apple-touch-icon.png
+   sips -z 1024 1024 /tmp/icon_final.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png
    ```
-2. **Comprimir** para WebP com qualidade 85:
-   ```bash
-   cwebp -q 85 icon-192.png -o icon-192.png
-   cwebp -q 85 icon-512.png -o icon-512.png
-   ```
-3. **Gerar maskable** (safe zone 80%, fundo neutro, sem vinheta): o PNG
-   maskable precisa de uma zona de segurança de 80% — a silhueta visível
-   em diversos recortes de dispositivos Android (não é necessário para iOS,
-   mas `purpose: 'maskable'` no `manifest.json` garante que qualquer browser
-   o use corretamente). Toda a imagem foi regenerada para caber nessa zona
-   com margem.
-4. **Comit para `public/icons/`**: `icon-192.png`, `icon-512.png`,
-   `icon-512-maskable.png` — lido por `app/layout.tsx` e `public/manifest.json`
+   Todos os ficheiros final ficam como PNG (não WebP).
 
-Os mesmos ficheiros também foram copiados para o asset catalog do Xcode
-(`ios/App/App/Assets.xcassets/AppIcon.appiconset/`) — feito automaticamente
-pela primeira execução de `cap add ios` e sincronizado depois por `cap sync ios`.
-**Atenção**: se alguém alterar o ícone depois disto, tem de correr `cap copy ios`
-manualmente para copiar os novos ficheiros para o asset catalog — `cap sync ios`
-só sincroniza configuração e dependências Cocoapods, não assets geridos pelo
-Xcode.
+2. **Gerar maskable com safe zone de 80%** (Python + Pillow): redimensionar
+   a fonte para 410×410 pixels (80% de 512), amostrar a cor de fill do próprio
+   perímetro exterior da silhueta redimensionada (não uma cor hardcoded),
+   preencher um canvas 512×512 com essa cor, e colar a silhueta centrada:
+   ```python
+   # (pseudocódigo; ver Task 7 para script completo)
+   resized_img = Image.open('/tmp/icon_final.png').resize((410, 410))
+   fill_color = resized_img.crop((0, 0, 2, 2)).getpixel((0, 0))  # perimeter sample
+   canvas = Image.new('RGB', (512, 512), fill_color)
+   canvas.paste(resized_img, (51, 51))  # centrado: (512-410)//2
+   canvas.save('public/icons/icon-512-maskable.png')
+   ```
+   A zona de segurança de 80% garante que a silhueta seja visível em diversos
+   recortes de dispositivos Android (não é necessário para iOS, mas
+   `purpose: 'maskable'` no `manifest.json` garante que qualquer browser
+   o use corretamente).
+
+3. **Comit para `public/icons/`**: `icon-192.png`, `icon-512.png`,
+   `icon-512-maskable.png`, `apple-touch-icon.png` — lidos por `app/layout.tsx`,
+   `public/manifest.json`, e navegadores compatíveis com PWA. Nenhuma
+   compressão WebP; todos permanecem PNG.
+
+O ficheiro iOS (`AppIcon-512@2x.png`) foi copiado diretamente no asset
+catalog (`ios/App/App/Assets.xcassets/AppIcon.appiconset/`) — feito via `sips`
+direto, sem envolvimento de `cap add ios` ou `cap sync ios` no processo de
+icon. Se o ícone precisar de ser alterado no futuro, sobre escrever o ficheiro
+diretamente na pasta Xcode com a mesma sequência de `sips -z 1024 ...`.
 
 #### Armadilha: `out/` fica stale após `git pull`
 
