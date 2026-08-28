@@ -1,7 +1,7 @@
 'use client';
 
 import { ChipButton } from '@/components/ChipButton/ChipButton';
-import { PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageHeader } from '@/components/PageChrome/PageChrome';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import type { Opening } from '@/lib/openings/types';
 
@@ -18,7 +18,7 @@ export function OpeningPageHeader({ opening, variant }: { opening: Opening; vari
 
   return (
     <div>
-      <PageTitle>{title}</PageTitle>
+      <PageHeader>{title}</PageHeader>
       {variant === 'study' ? (
         <>
           <p className="mt-2 text-lilac/80">{opening.description[locale]}</p>

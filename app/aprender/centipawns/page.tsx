@@ -1,7 +1,7 @@
 'use client';
 
 import { ChipButton } from '@/components/ChipButton/ChipButton';
-import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageGlow, PageHeader } from '@/components/PageChrome/PageChrome';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 // Cores dos badges espelham exatamente QUALITY_BADGE_CLASS em
@@ -25,7 +25,7 @@ export default function CentipawnsPage() {
     <main className="relative min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6 overflow-hidden bg-ink">
       <PageGlow position="fixed" pinkOpacity={0.2} />
       <div>
-        <PageTitle>{t.centipawnsPage.title}</PageTitle>
+        <PageHeader>{t.centipawnsPage.title}</PageHeader>
         <p className="mt-3">
           <ChipButton color="purple" href="/aprender">
             {t.common.backToTutorial}

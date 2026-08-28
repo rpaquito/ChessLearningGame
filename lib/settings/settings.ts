@@ -7,7 +7,7 @@ import { detectLocale } from '@/lib/i18n/detectLocale';
 export type { Locale }; // re-exportado para quem já importa tipos daqui
 
 export type BoardTheme = 'sakura' | 'nebulosa' | 'neon';
-export type BackgroundTheme = 'classico' | 'noturno';
+export type BackgroundTheme = 'classico' | 'noturno' | 'templo' | 'dojo' | 'cosmico';
 export type PieceStyle = 'classico' | 'moderno' | 'anime';
 
 export interface Settings {
@@ -23,7 +23,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultDifficulty: 'facil',
   defaultColor: 'white',
   boardTheme: 'nebulosa',
-  backgroundTheme: 'classico',
+  backgroundTheme: 'templo',
   pieceStyle: 'anime',
   language: 'pt',
 };
@@ -33,7 +33,13 @@ const STORAGE_KEY = 'xadrez-settings';
 const VALID_DIFFICULTIES: readonly Difficulty[] = ['facil', 'medio', 'dificil'];
 const VALID_COLORS: readonly PlayerColor[] = ['white', 'black', 'random'];
 const VALID_BOARD_THEMES: readonly BoardTheme[] = ['sakura', 'nebulosa', 'neon'];
-const VALID_BACKGROUND_THEMES: readonly BackgroundTheme[] = ['classico', 'noturno'];
+const VALID_BACKGROUND_THEMES: readonly BackgroundTheme[] = [
+  'classico',
+  'noturno',
+  'templo',
+  'dojo',
+  'cosmico',
+];
 const VALID_PIECE_STYLES: readonly PieceStyle[] = ['classico', 'moderno', 'anime'];
 
 /** Valida um valor guardado contra a lista de valores válidos de um campo,

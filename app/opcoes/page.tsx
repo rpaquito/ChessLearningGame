@@ -11,7 +11,7 @@ import { DICTIONARIES } from '@/lib/i18n/dictionaries';
 import type { Locale } from '@/lib/i18n/types';
 import { PieceIcon } from '@/components/ChessBoard/PieceIcon';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
-import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageGlow, PageHeader } from '@/components/PageChrome/PageChrome';
 import { ToggleGroup } from '@/components/ToggleGroup/ToggleGroup';
 import { useToast } from '@/components/Toast/ToastProvider';
 
@@ -116,7 +116,7 @@ export default function OpcoesPage() {
   return (
     <main className="relative min-h-dvh flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
-      <PageTitle className="relative">{t.opcoes.title}</PageTitle>
+      <PageHeader wrapperClassName="w-full max-w-sm">{t.opcoes.title}</PageHeader>
       <div className="relative flex flex-col gap-6 max-w-sm w-full">
         <ToggleGroup
           legend={t.opcoes.defaultDifficultyLegend}

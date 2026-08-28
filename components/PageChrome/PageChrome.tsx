@@ -51,6 +51,47 @@ export function PageTitle({
   );
 }
 
+export interface PageHeaderProps extends PageTitleProps {
+  /** 'lg' para o logo maior do menu inicial (56px); 'md' (omissão) para o
+   * resto das páginas (40px). */
+  logoSize?: 'md' | 'lg';
+  /**
+   * Classes extra para o `<div>` que envolve logo+título. Necessário nas
+   * páginas cujo `<main>` usa `items-center`: sem largura própria, este
+   * wrapper esticaria para a largura do `<main>` sob `align-items:
+   * stretch` (o comportamento por omissão do flex, que já é suficiente
+   * nas páginas sem `items-center`) — mas `items-center` substitui isso
+   * por "encolher ao conteúdo e centrar", o que faria o header aparecer
+   * centrado em vez de alinhado à esquerda com o resto da página. Nesses
+   * casos, passar `w-full max-w-*` a bater com a largura da coluna de
+   * conteúdo por baixo (ex.: `w-full max-w-sm`).
+   */
+  wrapperClassName?: string;
+}
+
+const LOGO_SIZE_CLASS: Record<'md' | 'lg', string> = {
+  md: 'h-10 w-10',
+  lg: 'h-14 w-14',
+};
+
+/**
+ * Logo (`public/icons/icon-192.png`) + `PageTitle`, sempre alinhados à
+ * esquerda — ver CLAUDE.md, rebrand "Chess Sensei". Substitui um
+ * `<PageTitle>` sozinho em qualquer topo de página da app.
+ */
+export function PageHeader({ logoSize = 'md', wrapperClassName = '', ...titleProps }: PageHeaderProps) {
+  return (
+    <div className={`relative flex items-center gap-3 ${wrapperClassName}`.trim()}>
+      <div
+        aria-hidden="true"
+        className={`${LOGO_SIZE_CLASS[logoSize]} shrink-0 rounded-2xl bg-cover bg-center shadow-[3px_3px_0_rgba(0,0,0,0.35)]`}
+        style={{ backgroundImage: 'url(/icons/icon-192.png)' }}
+      />
+      <PageTitle {...titleProps} />
+    </div>
+  );
+}
+
 export interface PageGlowProps {
   /**
    * "fixed" para páginas com conteúdo scrollável (não pode entrar no

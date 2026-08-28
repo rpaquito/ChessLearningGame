@@ -2,7 +2,7 @@
 
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { NavCard } from '@/components/NavCard/NavCard';
-import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageGlow, PageHeader } from '@/components/PageChrome/PageChrome';
 import { OPENINGS } from '@/lib/openings/data';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
@@ -22,14 +22,7 @@ export default function AprenderPage() {
     <main className="relative min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6 overflow-hidden bg-ink">
       <PageGlow position="fixed" pinkOpacity={0.2} />
       <div>
-        <div className="flex items-center gap-3">
-          <div
-            aria-hidden="true"
-            className="h-10 w-10 shrink-0 rounded-xl bg-cover bg-center shadow-[2px_2px_0_rgba(0,0,0,0.35)]"
-            style={{ backgroundImage: 'url(/icons/icon-192.png)' }}
-          />
-          <PageTitle>{t.aprenderHub.title}</PageTitle>
-        </div>
+        <PageHeader>{t.aprenderHub.title}</PageHeader>
         <p className="mt-3">
           <ChipButton color="purple" href="/">
             {t.aprenderHub.backToHome}

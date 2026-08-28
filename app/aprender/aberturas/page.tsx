@@ -2,7 +2,7 @@
 
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { NavCard } from '@/components/NavCard/NavCard';
-import { PageGlow, PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageGlow, PageHeader } from '@/components/PageChrome/PageChrome';
 import { OPENINGS } from '@/lib/openings/data';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
@@ -12,7 +12,7 @@ export default function AberturasPage() {
     <main className="relative min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6 overflow-hidden bg-ink">
       <PageGlow position="fixed" pinkOpacity={0.2} />
       <div>
-        <PageTitle>{t.openings.hubTitle}</PageTitle>
+        <PageHeader>{t.openings.hubTitle}</PageHeader>
         <p className="mt-3">
           <ChipButton color="purple" href="/aprender">
             {t.common.backToTutorial}

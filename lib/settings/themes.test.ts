@@ -3,7 +3,7 @@ import { BOARD_THEMES, BACKGROUND_THEMES } from './themes';
 import type { BoardTheme, BackgroundTheme } from './settings';
 
 const ALL_BOARD_THEMES: BoardTheme[] = ['sakura', 'nebulosa', 'neon'];
-const ALL_BACKGROUND_THEMES: BackgroundTheme[] = ['classico', 'noturno'];
+const ALL_BACKGROUND_THEMES: BackgroundTheme[] = ['classico', 'noturno', 'templo', 'dojo', 'cosmico'];
 
 describe('BOARD_THEMES', () => {
   it('has a registry entry for every BoardTheme value', () => {

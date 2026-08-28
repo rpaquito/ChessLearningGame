@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { clearSavedGame } from '@/lib/chess/useChessGame';
-import { PageGlow, PageTitle, titleStroke } from '@/components/PageChrome/PageChrome';
+import { PageGlow, PageHeader, titleStroke } from '@/components/PageChrome/PageChrome';
 import { BACKGROUND_THEMES } from '@/lib/settings/themes';
 import { useSettings } from '@/lib/settings/useSettings';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -100,16 +100,9 @@ export default function HomePage() {
           seguinte do redesenho). */}
       <PageGlow pinkOpacity={0.35} darken={[0.55, 0.85]} />
 
-      <div className="relative flex items-center gap-3">
-        <div
-          aria-hidden="true"
-          className="h-14 w-14 shrink-0 rounded-2xl bg-cover bg-center shadow-[3px_3px_0_rgba(0,0,0,0.35)]"
-          style={{ backgroundImage: 'url(/icons/icon-192.png)' }}
-        />
-        <PageTitle size="text-5xl" softDrop={5}>
-          {t.menu.title}
-        </PageTitle>
-      </div>
+      <PageHeader size="text-5xl" softDrop={5} logoSize="lg" wrapperClassName="w-full max-w-sm">
+        {t.menu.title}
+      </PageHeader>
 
       <div className="relative flex flex-col gap-4 w-full max-w-sm">
         {TILES.map((tile) => (
