@@ -5,8 +5,8 @@ import type { Opening } from '@/lib/openings/types';
 
 const opening: Opening = {
   id: 'italiana',
-  name: 'Abertura Italiana',
-  description: 'Uma abertura clássica.',
+  name: { pt: 'Abertura Italiana', en: 'Italian Game' },
+  description: { pt: 'Uma abertura clássica.', en: 'A classic opening.' },
   lines: [],
 };
 

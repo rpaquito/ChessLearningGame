@@ -1,10 +1,13 @@
+import type { Locale } from '@/lib/i18n/types';
+
 /**
- * Um lance de uma linha de abertura: a notação e a explicação em PT-PT
- * escrita à mão para esse lance específico nessa linha específica.
+ * Um lance de uma linha de abertura: a notação e a explicação, escrita à
+ * mão para esse lance específico nessa linha específica, em PT-PT e em
+ * inglês.
  */
 export interface OpeningMove {
   san: string;
-  explanation: string;
+  explanation: Record<Locale, string>;
 }
 
 /**
@@ -16,7 +19,7 @@ export interface OpeningMove {
  * simples do que uma árvore de variações).
  */
 export interface OpeningLine {
-  name: string;
+  name: Record<Locale, string>;
   /** Código ECO, informativo — não validado por nenhuma lógica. */
   eco?: string;
   moves: OpeningMove[];
@@ -25,9 +28,9 @@ export interface OpeningLine {
 export interface Opening {
   /** Slug kebab-case, estável — vai ser usado como segmento de rota. */
   id: string;
-  name: string;
+  name: Record<Locale, string>;
   /** 1-2 frases para uma futura lista/hub de aberturas. */
-  description: string;
+  description: Record<Locale, string>;
   /** Linha principal + 1-2 variações nomeadas. */
   lines: OpeningLine[];
 }

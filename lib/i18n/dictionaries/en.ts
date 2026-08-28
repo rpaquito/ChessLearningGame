@@ -139,7 +139,7 @@ export const en: Dictionary = {
     centipawnsTitle: 'Evaluation and centipawns',
     centipawnsDesc: 'What centipawns are and how to interpret "Good move", "Inaccuracy" and "Mistake".',
     openingsTitle: 'Openings',
-    openingsDesc: (count: number) => `Study ${count} popular openings, move by move.`,
+    openingsDesc: (count: number) => `Study ${count} popular openings, move by move, with explanations in English.`,
   },
   pecas: {
     title: 'HOW THE PIECES MOVE',

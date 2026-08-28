@@ -15,14 +15,14 @@ const siciliana = OPENINGS.find((o) => o.id === 'defesa-siciliana')!;
 // escrever os 9 lances reais da Italiana à mão.
 const shortOpening: Opening = {
   id: 'abertura-teste',
-  name: 'Abertura de Teste',
-  description: 'Linha curta só para testes.',
+  name: { pt: 'Abertura de Teste', en: 'Test Opening' },
+  description: { pt: 'Linha curta só para testes.', en: 'Short line for tests only.' },
   lines: [
     {
-      name: 'Linha única',
+      name: { pt: 'Linha única', en: 'Single line' },
       moves: [
-        { san: 'e4', explanation: 'Ocupa o centro.' },
-        { san: 'e5', explanation: 'Resposta simétrica.' },
+        { san: 'e4', explanation: { pt: 'Ocupa o centro.', en: 'Occupies the center.' } },
+        { san: 'e5', explanation: { pt: 'Resposta simétrica.', en: 'Symmetric response.' } },
       ],
     },
   ],

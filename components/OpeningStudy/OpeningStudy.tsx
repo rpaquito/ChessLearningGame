@@ -23,7 +23,8 @@ function moveLabel(stepIndex: number): string {
 
 export function OpeningStudy({ opening }: { opening: Opening }) {
   const { settings } = useSettings();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
+  const tabLines = useMemo(() => opening.lines.map((line) => ({ name: line.name[locale] })), [opening, locale]);
   const replayedLines = useMemo(() => opening.lines.map((line) => replayLine(line)), [opening]);
   const [lineIndex, setLineIndex] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
@@ -56,7 +57,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <LineTabs lines={opening.lines} activeIndex={lineIndex} onSelect={selectLine}>
+      <LineTabs lines={tabLines} activeIndex={lineIndex} onSelect={selectLine}>
         <div className="w-[min(98vw,62dvh,560px)] sm:w-[min(92vw,62dvh,560px)] flex flex-col items-center gap-3">
           <ChessBoard
             fen={fen}
@@ -98,7 +99,7 @@ export function OpeningStudy({ opening }: { opening: Opening }) {
                 <p className="font-semibold text-cyan">
                   {moveLabel(stepIndex)}{current.san}
                 </p>
-                <p className="text-lilac/80 mt-1">{current.explanation}</p>
+                <p className="text-lilac/80 mt-1">{current.explanation[locale]}</p>
               </>
             ) : (
               <p className="text-lilac/80">{t.openings.startPosition}</p>

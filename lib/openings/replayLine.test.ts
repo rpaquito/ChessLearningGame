@@ -6,10 +6,10 @@ import type { OpeningLine } from './types';
 describe('replayLine', () => {
   it('replays a short line move by move, returning fen/from/to/san/explanation', () => {
     const line: OpeningLine = {
-      name: 'Linha de teste',
+      name: { pt: 'Linha de teste', en: 'Test line' },
       moves: [
-        { san: 'e4', explanation: 'Ocupa o centro.' },
-        { san: 'e5', explanation: 'Resposta simétrica.' },
+        { san: 'e4', explanation: { pt: 'Ocupa o centro.', en: 'Occupies the center.' } },
+        { san: 'e5', explanation: { pt: 'Resposta simétrica.', en: 'Symmetric response.' } },
       ],
     };
 
@@ -22,20 +22,25 @@ describe('replayLine', () => {
       to: 'e4',
       promotion: undefined,
       san: 'e4',
-      explanation: 'Ocupa o centro.',
+      explanation: { pt: 'Ocupa o centro.', en: 'Occupies the center.' },
     });
     expect(result[1].fen).toBe(
       'rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2'
     );
     expect(result[1].from).toBe('e7');
     expect(result[1].to).toBe('e5');
-    expect(result[1].explanation).toBe('Resposta simétrica.');
+    expect(result[1].explanation).toEqual({ pt: 'Resposta simétrica.', en: 'Symmetric response.' });
   });
 
   it('throws a descriptive error for an illegal move', () => {
     const line: OpeningLine = {
-      name: 'Linha inválida',
-      moves: [{ san: 'e5', explanation: 'Não é um lance legal de abertura.' }],
+      name: { pt: 'Linha inválida', en: 'Invalid line' },
+      moves: [
+        {
+          san: 'e5',
+          explanation: { pt: 'Não é um lance legal de abertura.', en: 'Not a legal opening move.' },
+        },
+      ],
     };
 
     expect(() => replayLine(line)).toThrow(/Lance ilegal/);
@@ -46,17 +51,23 @@ describe('replayLine', () => {
     // abertura) — linha sintética só para exercitar o campo, que nunca
     // tinha teste próprio (ver backlog).
     const line: OpeningLine = {
-      name: 'Linha de promoção (teste)',
+      name: { pt: 'Linha de promoção (teste)', en: 'Promotion line (test)' },
       moves: [
-        { san: 'a4', explanation: '' },
-        { san: 'e6', explanation: '' },
-        { san: 'a5', explanation: '' },
-        { san: 'e5', explanation: '' },
-        { san: 'a6', explanation: '' },
-        { san: 'e4', explanation: '' },
-        { san: 'axb7', explanation: '' },
-        { san: 'e3', explanation: '' },
-        { san: 'bxa8=Q', explanation: 'Promove o peão a dama, capturando a torre.' },
+        { san: 'a4', explanation: { pt: '', en: '' } },
+        { san: 'e6', explanation: { pt: '', en: '' } },
+        { san: 'a5', explanation: { pt: '', en: '' } },
+        { san: 'e5', explanation: { pt: '', en: '' } },
+        { san: 'a6', explanation: { pt: '', en: '' } },
+        { san: 'e4', explanation: { pt: '', en: '' } },
+        { san: 'axb7', explanation: { pt: '', en: '' } },
+        { san: 'e3', explanation: { pt: '', en: '' } },
+        {
+          san: 'bxa8=Q',
+          explanation: {
+            pt: 'Promove o peão a dama, capturando a torre.',
+            en: 'Promotes the pawn to a queen, capturing the rook.',
+          },
+        },
       ],
     };
 
@@ -71,15 +82,15 @@ describe('replayLine', () => {
 
   it('gives the king its own from/to on castling, with no separate rook field', () => {
     const line: OpeningLine = {
-      name: 'Linha de roque (teste)',
+      name: { pt: 'Linha de roque (teste)', en: 'Castling line (test)' },
       moves: [
-        { san: 'e4', explanation: '' },
-        { san: 'e5', explanation: '' },
-        { san: 'Nf3', explanation: '' },
-        { san: 'Nc6', explanation: '' },
-        { san: 'Bc4', explanation: '' },
-        { san: 'Bc5', explanation: '' },
-        { san: 'O-O', explanation: 'Roca.' },
+        { san: 'e4', explanation: { pt: '', en: '' } },
+        { san: 'e5', explanation: { pt: '', en: '' } },
+        { san: 'Nf3', explanation: { pt: '', en: '' } },
+        { san: 'Nc6', explanation: { pt: '', en: '' } },
+        { san: 'Bc4', explanation: { pt: '', en: '' } },
+        { san: 'Bc5', explanation: { pt: '', en: '' } },
+        { san: 'O-O', explanation: { pt: 'Roca.', en: 'Castles.' } },
       ],
     };
 

@@ -8,19 +8,20 @@ import type { Opening } from '@/lib/openings/types';
 /**
  * Extraído do próprio page.tsx porque esse ficheiro exporta
  * generateStaticParams e por isso não pode ganhar 'use client' — este
- * componente é que consome useTranslation(). opening.name/description
- * continuam strings PT-only até à Fase 3 (lib/openings/data.ts bilingue).
+ * componente é que consome useTranslation(). Desde a Fase 3,
+ * opening.name/description já são bilingues (lib/openings/data.ts).
  */
 export function OpeningPageHeader({ opening, variant }: { opening: Opening; variant: 'study' | 'practice' }) {
-  const { t } = useTranslation();
-  const title = variant === 'practice' ? `${t.openings.practicePrefix}${opening.name.toUpperCase()}` : opening.name.toUpperCase();
+  const { t, locale } = useTranslation();
+  const name = opening.name[locale].toUpperCase();
+  const title = variant === 'practice' ? `${t.openings.practicePrefix}${name}` : name;
 
   return (
     <div>
       <PageTitle>{title}</PageTitle>
       {variant === 'study' ? (
         <>
-          <p className="mt-2 text-lilac/80">{opening.description}</p>
+          <p className="mt-2 text-lilac/80">{opening.description[locale]}</p>
           <div className="mt-3 flex flex-wrap gap-3">
             <ChipButton color="purple" href="/aprender/aberturas">
               {t.openings.backToOpenings}

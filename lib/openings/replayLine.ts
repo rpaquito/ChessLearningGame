@@ -1,4 +1,5 @@
 import { Chess, type PieceSymbol, type Square } from 'chess.js';
+import type { Locale } from '@/lib/i18n/types';
 import type { OpeningLine } from './types';
 
 export interface ReplayedMove {
@@ -7,7 +8,7 @@ export interface ReplayedMove {
   to: Square;
   promotion?: PieceSymbol;
   san: string;
-  explanation: string;
+  explanation: Record<Locale, string>;
 }
 
 /**
@@ -36,7 +37,7 @@ export function replayLine(line: OpeningLine): ReplayedMove[] {
 
     if (!move) {
       throw new Error(
-        `Lance ilegal "${san}" na linha "${line.name}" a partir de ${chess.fen()}`
+        `Lance ilegal "${san}" na linha "${line.name.pt}" a partir de ${chess.fen()}`
       );
     }
 

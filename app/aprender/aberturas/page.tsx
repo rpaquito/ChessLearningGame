@@ -7,7 +7,7 @@ import { OPENINGS } from '@/lib/openings/data';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
 export default function AberturasPage() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   return (
     <main className="relative min-h-screen max-w-2xl mx-auto p-8 flex flex-col gap-6 overflow-hidden bg-ink">
       <PageGlow position="fixed" pinkOpacity={0.2} />
@@ -24,9 +24,9 @@ export default function AberturasPage() {
           <li key={opening.id}>
             <NavCard
               href={`/aprender/aberturas/${opening.id}`}
-              title={opening.name}
-              description={opening.description}
-              meta={opening.lines.map((line) => line.name).join(' · ')}
+              title={opening.name[locale]}
+              description={opening.description[locale]}
+              meta={opening.lines.map((line) => line.name[locale]).join(' · ')}
             />
           </li>
         ))}

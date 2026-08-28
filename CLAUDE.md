@@ -804,17 +804,16 @@ para o desenho completo.
   recebe `locale` como parâmetro explícito em vez de chamar
   `useTranslation()` (não é um componente React), indexando
   diretamente em `DICTIONARIES[locale].gameEnd`.
-- **Limitação conhecida, intencional nesta fase**: conteúdo que vem de
-  *dados* em vez de *strings de UI* continua só em português —
-  `opening.name`/`opening.description`/`OpeningMove.explanation` (`lib/
-  openings/data.ts`, ~220 explicações escritas à mão) e as frases de
+- **Limitação conhecida nesta fase, resolvida nas Fases 2 e 3 (ver
+  parágrafos abaixo)**: conteúdo que vem de *dados* em vez de *strings
+  de UI* continuava só em português — `opening.name`/
+  `opening.description`/`OpeningMove.explanation` (`lib/openings/
+  data.ts`, ~220 explicações escritas à mão) e as frases de
   `lib/chess/moveExplanation.ts` (`suggestionExplanation`/
-  `lastMoveExplanation`) não mudam com o idioma escolhido, mesmo com a
-  UI à volta toda traduzida — traduzir esse conteúdo é trabalho das
-  Fases 2/3 do plano, fora do âmbito desta fase. Confirmado
-  manualmente: com o idioma em inglês, o nome/descrição de cada
-  abertura e as explicações de lances continuam em PT-PT, tal como
-  esperado.
+  `lastMoveExplanation`) não mudavam com o idioma escolhido, mesmo com
+  a UI à volta toda traduzida. Confirmado manualmente nesta fase: com o
+  idioma em inglês, o nome/descrição de cada abertura e as explicações
+  de lances continuavam em PT-PT.
 
 **Armadilha já apanhada:** dentro de um `onChange` que também muda o
 próprio idioma (o toggle de "Idioma" em `/opções`), `t` continua a
@@ -854,13 +853,43 @@ simplifica para `"the <peça>"` fixo do lado inglês. Único consumidor,
 `app/jogar/page.tsx`, já lia `locale` de `useTranslation()` desde a Fase
 1 (só não o usava ainda) — passou a repassá-lo aos dois call sites.
 `lib/openings/data.ts` (as explicações das aberturas) continua PT-only —
-essa é a Fase 3, ainda não construída. Ao contrário de
-`gameEndMessage.ts` (que resolve frases inteiras via
-`DICTIONARIES[locale].gameEnd.*`), aqui os fragmentos ficam inline
-(`locale === 'en' ? ... : ...`) porque cada um interpola `move.to`/
-nomes de peças e está indissociável da condição que o desencadeia —
-uma tabela `Record<Locale, ...>` à parte duplicaria essa lógica
-condicional sem ganhar nada.
+essa é a Fase 3. Ao contrário de `gameEndMessage.ts` (que resolve
+frases inteiras via `DICTIONARIES[locale].gameEnd.*`), aqui os
+fragmentos ficam inline (`locale === 'en' ? ... : ...`) porque cada um
+interpola `move.to`/nomes de peças e está indissociável da condição que
+o desencadeia — uma tabela `Record<Locale, ...>` à parte duplicaria
+essa lógica condicional sem ganhar nada.
+
+**Fase 3 (2026-08-28) — `lib/openings/data.ts` bilingue, fecha o plano
+de 3 fases:** `OpeningMove.explanation`, `OpeningLine.name`,
+`Opening.name`/`description` (`lib/openings/types.ts`) passaram de
+`string` a `Record<Locale, string>` — as 233 explicações de lances das
+12 aberturas, mais os 12 nomes/descrições e as 25 linhas nomeadas,
+ganharam tradução inglesa escrita à mão, ao mesmo nível de cuidado do
+PT-PT original (não é tradução automática). `ReplayedMove.explanation`
+(`lib/openings/replayLine.ts`) segue o mesmo tipo; a única outra
+mudança nesse ficheiro é a mensagem de erro de lance ilegal passar a
+usar `line.name.pt` explicitamente (é só para debugging, nunca
+mostrada ao utilizador, por isso fica fixa num idioma). Consumidores
+(`OpeningStudy`, `OpeningPractice`, `OpeningPageHeader`,
+`/aprender/aberturas`) já liam `locale` de `useTranslation()` desde
+fases anteriores — só faltava indexar `[locale]` nos campos que antes
+eram string simples, e mapear `opening.lines` para o formato `{name:
+string}[]` que `LineTabs` espera (esse componente em si não muda — só
+passou a receber o nome já resolvido para o idioma certo, em vez do
+objeto `Record<Locale,string>` inteiro). `t.aprenderHub.openingsDesc`
+(`lib/i18n/dictionaries/en.ts`) voltou a prometer "with explanations in
+English" — agora é verdade.
+
+Nomes de aberturas/linhas usam a terminologia inglesa estabelecida, não
+tradução literal: "Ruy Lopez" (não "Spanish Opening"), "Evans Gambit"
+(não "Evans' Gambit" nem a ordem PT "Gambit Evans"), "Queen's Gambit",
+etc. — `line.name` tem pelo menos um caso legítimo de valor **igual**
+nos dois idiomas ("Najdorf", o apelido do enxadrista, um termo
+emprestado tal como acontece em português) — por isso o teste que
+garante tradução genuína (`data.test.ts`) cobre só `move.explanation`
+(frases completas, nunca devem coincidir) e não `name`/`description`,
+onde uma coincidência pode ser correta.
 
 ### Service worker / PWA: estratégia de cache e atualização
 
