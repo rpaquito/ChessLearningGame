@@ -683,38 +683,59 @@ tabuleiro crescer para preencher todo o espaço da linha, empurrando o
 `LearningPanel` para a margem direita em vez de ficarem juntos e
 centrados como grupo.
 
-### Toasts e modal de fim de jogo (feedback de eventos, 2026-08-27)
+### Toasts e modal de fim de jogo (feedback de eventos, 2026-08-27; política de auto-dismiss e popup de confirmação revistas 2026-08-28)
 
 `components/Toast/` (`Toast.tsx`, cartão de apresentação puro; `ToastProvider.tsx`,
 que expõe `useToast()`) é o **primeiro e único `React.Context` da app**,
 montado uma vez em `app/layout.tsx` a envolver `{children}`. É
-deliberadamente estreito — só guarda o toast atual (`show`/`dismiss`) —
-e não é precedente para mover mais estado para Context: `useChessGame`
-e `useSettings` continuam hooks por página, de propósito.
+deliberadamente estreito — guarda o toast atual e expõe `toast`/`show`/
+`dismiss` — e não é precedente para mover mais estado para Context:
+`useChessGame` e `useSettings` continuam hooks por página, de propósito.
 
-Sem auto-dismiss em lado nenhum, por decisão de design: todo o toast e
-o `GameEndModal` fecham só por ação explícita do utilizador (botão ✕,
-Escape, ou — só no modal — clique no backdrop). Não há nenhum
-temporizador a procurar se um toast "desaparecer sozinho" parecer
-estranho.
+**Auto-dismiss depende do tom do toast** (revisto 2026-08-28, a pedido
+explícito do utilizador — "quero rever o desaparecimento automático dos
+popups"): por omissão, um toast desaparece sozinho ao fim de 4s
+(`AUTO_DISMISS_MS` em `ToastProvider.tsx`) — cobre os toasts de
+confirmação leve de `/opções` (mudança de dificuldade/cor/tema/etc.). A
+**única exceção é o tom `'check'`** (o "Xeque!" em `/jogar`) — sem
+temporizador, fica visível até o jogador o fechar explicitamente (botão
+✕) ou até `handleReset`/a próxima transição de estado o limpar. Enquanto
+o toast de xeque está visível, o tabuleiro fica **não-interativo**:
+`app/jogar/page.tsx` acrescenta `toast?.tone !== 'check'` à condição
+`interactive` do `ChessBoard`, para o jogador ter de reconhecer o xeque
+antes de continuar a jogar. `RulesModal`/`GameEndModal` mantêm-se sem
+auto-dismiss (decisão deliberada, revista e reconfirmada 2026-08-28) —
+os dois já bloqueiam e exigem reconhecimento explícito, não há "toast
+leve" para desaparecer sozinho.
 
 `components/GameEndModal/` (xeque-mate/afogamento/empate em `/jogar`)
 **não** passa pelo Context do toast — segue o mesmo padrão autocontido
 do `RulesModal` (só `/jogar` precisa dele, e precisa de callbacks
 próprios da página, como `onPlayAgain` a chamar `handleReset`).
 
+`components/ConfirmModal/` (novo 2026-08-28) é um terceiro popup
+autocontido, mesmo padrão de `RulesModal`/`GameEndModal` (backdrop,
+`role="dialog"`, `useFocusTrap`, fecho por Escape) mas **sem botão ✕** —
+com só confirmar/cancelar, um terceiro sítio para dizer "não" seria
+redundante; Escape e o clique no backdrop contam como cancelar. Usado em
+`/jogar` para "Reiniciar partida"/"Menu inicial", mas só quando há
+progresso real a perder (`state.lastMove !== null && !state.isGameOver`)
+— numa partida ainda na posição inicial, as duas ações continuam
+imediatas, sem popup. Genérico o suficiente para outros sítios
+precisarem no futuro.
+
 Contrato de camadas: o `Toast` renderiza a `z-[60]`, acima do `z-50`
-do backdrop do `RulesModal`/`GameEndModal` — um toast fica sempre
-visível mesmo com um modal aberto por cima. `handleReset` em
-`app/jogar/page.tsx` chama `toast.dismiss()` (além de limpar
-`gameEndOpen`/`prevStatus`) para um toast de xeque não sobreviver a um
-"Jogar de novo" nem seguir o utilizador para fora da partida.
+partilhado pelo backdrop de `RulesModal`/`GameEndModal`/`ConfirmModal` —
+um toast fica sempre visível mesmo com um modal aberto por cima.
+`handleReset` em `app/jogar/page.tsx` chama `dismissToast()` (além de
+limpar `gameEndOpen`/`prevStatus`) para um toast de xeque não sobreviver
+a um "Jogar de novo" nem seguir o utilizador para fora da partida.
 
 A app tem agora três idiomas de feedback — texto inline (estado
 sempre visível, contextual, embutido na página, como `STATUS_LABEL`
-em `/jogar`), toast (confirmação leve, não bloqueia) e modal
-(bloqueia, exige reconhecimento explícito) — usar o mais leve que
-resolva o caso antes de subir para o próximo.
+em `/jogar`), toast (confirmação leve, auto-dismiss por omissão) e
+modal (bloqueia, exige reconhecimento explícito, nunca auto-dismiss) —
+usar o mais leve que resolva o caso antes de subir para o próximo.
 
 ### Múltiplos idiomas (`lib/i18n/`, PT-PT/English, Fase 1 — 2026-08-27)
 
