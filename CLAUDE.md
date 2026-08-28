@@ -912,6 +912,204 @@ garante tradução genuína (`data.test.ts`) cobre só `move.explanation`
 (frases completas, nunca devem coincidir) e não `name`/`description`,
 onde uma coincidência pode ser correta.
 
+### App nativa iOS e rebrand para "Chess Sensei" (Capacitor, 2026-08-28)
+
+A app foi envolvida num shell nativo iOS via Capacitor (package `@capacitor/cli`
++ `@capacitor/core` + `@capacitor/haptics`) e rebranded de "Xadrez — aprenda
+jogando" para "Chess Sensei" a pedido explícito do utilizador, com toda a
+infra necessária para submissão futura à App Store — ver plano em
+`docs/superpowers/plans/2026-08-28-native-ios-app-capacitor-plan.md`.
+
+#### Arquitetura: `BUILD_TARGET=capacitor` e `next.config.ts` condicional
+
+`next.config.ts` lê a variável de ambiente `BUILD_TARGET`: quando é
+`'capacitor'`, activa `output: 'export'`, gerando HTML/JS estático no
+diretório `out/` em vez de um servidor Next.js. O fluxo normal de build do
+Next.js (que vai para Vercel, onde o build fica sempre
+`output: 'standalone'` por omissão — ver "Deploy" em `CLAUDE.md`) continua
+completamente intacto:
+
+```bash
+npm run build          # BUILD_TARGET não definida → standalone (Vercel)
+npm run build:capacitor    # BUILD_TARGET=capacitor → export (iOS)
+```
+
+A chave é que **Vercel nunca vê `BUILD_TARGET=capacitor`** — a integração
+do GitHub dispara `npm run build` sem nenhuma variável de ambiente extra,
+produzindo o servidor, exatamente como era antes. Isto significa que o build
+em Vercel não mudou nada com a adição do Capacitor — é um add-on isolado
+que não afeta o deploy web público.
+
+#### Haptics nativa: feedback tátil do utilizador
+
+`lib/native/haptics.ts` exporta três funções (`hapticMove()`, `hapticCapture()`,
+`hapticCheck()`), cada uma disparando via a API `@capacitor/haptics`: Light
+impact para movimento normal, Medium impact para captura, Warning notification
+para xeque. Todas são no-op no navegador — checam `Capacitor.isNativePlatform()`
+na entrada e retornam cedo se não estiverem no shell nativo:
+
+```typescript
+export async function hapticMove(): Promise<void> {
+  if (!isNative()) return;
+  await Haptics.impact({ style: ImpactStyle.Light });
+}
+```
+
+As funções são `async` por consistência com a API de Haptics (que é baseada
+em Promise), mas em prática no dispositivo resolvem-se de forma síncrona
+(a vibração já aconteceu quando retornam). Chamadas de `app/jogar/page.tsx`:
+
+- `hapticCheck()` é disparada imediatamente depois de `showToast({tone: 'check'})`,
+  no handler de fim de transição de estado que deteta xeque.
+- `hapticCapture()` e `hapticMove()` são disparadas no `handleSquareClick`
+  que processa o clique do utilizador, baseado em `previewMove.isCapture()`.
+- **Deliberadamente NÃO são disparadas** para o lance automático do Stockfish
+  (IA) ou para o botão "Sugerir jogada" — são só para as ações do jogador
+  humano, aumentando o feedback sem desculpabilizar o utilizador pela IA
+  ou pistas.
+
+#### Service worker desativado em shell nativo
+
+`components/ServiceWorkerRegistration.tsx` checa `Capacitor.isNativePlatform()`
+antes de registar o service worker. Dentro da shell Capacitor, o bundle
+inteiro (`webDir: 'out'` em `capacitor.config.ts`) já vem embutido no app
+— não há nada para o service worker fazer (sem rede, sem atualização OTA
+remota), e registá-lo seria risco desnecessário dentro de um WKWebView. A
+lógica de cache-first / network-first do `public/sw.js` não se aplica aqui.
+
+#### Rebrand para "Chess Sensei"
+
+O nome da app mudou em dois sítios permanentes:
+
+- **`app/layout.tsx`, `metadata.title`**: `'Chess Sensei — aprenda jogando'`
+  (antes: `'Xadrez — aprenda jogando'`)
+- **`public/manifest.json`, `name`/`short_name`**: `"Chess Sensei"`
+- **`capacitor.config.ts`, `appName`**: `'Chess Sensei'` (lido pelo sistema
+  iOS ao instalar a app — é este o nome que aparece na home screen)
+
+O mesmo rebrand também cobriu uma correção de incidente: `background_color`
+e `theme_color` em `manifest.json` ficaram com `#FFD600` (âmbar de antes do
+redesenho "anime", ver "Identidade visual anime" em `CLAUDE.md`) — o commit
+de rebrand corrigiu ambos para `#1A0B33` (ink, a cor de fundo base do
+redesenho), sincronizando-os com a paleta atual.
+
+#### Bundle ID: `pt.rpaquito.chesssensei` — efetivamente permanente
+
+`capacitor.config.ts` define `appId: 'pt.rpaquito.chesssensei'`, que Capacitor
+passa aos ficheiros Xcode nativos como `PRODUCT_BUNDLE_IDENTIFIER`. Uma vez
+que uma app seja submetida à App Store, o bundle ID torna-se parte da
+assinatura digital — mudar depois viola a identidade da app lá publicada.
+Documentar aqui: este ID é deliberado e deve-se manter fixo de futuro.
+
+#### Geração de ícone e pipeline
+
+O ícone foi desenhado em Draw Things (local, modelo `z_image_turbo`) a partir
+do prompt: "*ivory pawn with golden headband and ornamental knot/ribbon,
+wispy beard, cyan aura, dark background*" — conceito: a peça (pawn) como
+mestre/sábio ("Sensei" em japonês, o patrono didático da app). Draw Things
+gerou uma imagem à qual foi necessário iterar (primeira versão tinha uma
+seam visível no ícone maskable — canvas fill color não batia com a
+perimetral da pasta foreground — e um finial tipo coroa que sugeria rei em
+vez de peão; ambos foram corrigidos iterando o prompt 5 vezes até landing
+na silhueta correcta: pawn liso e ornamento único, mero nó/fita dourada).
+
+Pipeline de produção (após aceitar o PNG do Draw Things):
+
+1. **Redimensionar** a imagens para os tamanhos-alvo (192×192, 512×512):
+   ```bash
+   sips -Z 192 source.png -o icon-192.png
+   sips -Z 512 source.png -o icon-512.png
+   ```
+2. **Comprimir** para WebP com qualidade 85:
+   ```bash
+   cwebp -q 85 icon-192.png -o icon-192.png
+   cwebp -q 85 icon-512.png -o icon-512.png
+   ```
+3. **Gerar maskable** (safe zone 80%, fundo neutro, sem vinheta): o PNG
+   maskable precisa de uma zona de segurança de 80% — a silhueta visível
+   em diversos recortes de dispositivos Android (não é necessário para iOS,
+   mas `purpose: 'maskable'` no `manifest.json` garante que qualquer browser
+   o use corretamente). Toda a imagem foi regenerada para caber nessa zona
+   com margem.
+4. **Comit para `public/icons/`**: `icon-192.png`, `icon-512.png`,
+   `icon-512-maskable.png` — lido por `app/layout.tsx` e `public/manifest.json`
+
+Os mesmos ficheiros também foram copiados para o asset catalog do Xcode
+(`ios/App/App/Assets.xcassets/AppIcon.appiconset/`) — feito automaticamente
+pela primeira execução de `cap add ios` e sincronizado depois por `cap sync ios`.
+**Atenção**: se alguém alterar o ícone depois disto, tem de correr `cap copy ios`
+manualmente para copiar os novos ficheiros para o asset catalog — `cap sync ios`
+só sincroniza configuração e dependências Cocoapods, não assets geridos pelo
+Xcode.
+
+#### Armadilha: `out/` fica stale após `git pull`
+
+`out/` (o resultado do build estático) é gerado por `npm run build:capacitor`
+e ignorado no controlo de versão (`.gitignore`). Quando se faz `git pull`,
+o repositório continua com a versão antiga de `out/`, não a nova — por isso é
+**obrigatório** correr `npm run build:capacitor` **antes** de `npm run cap:sync:ios`,
+caso contrário o Xcode abre-se com o código antigo embutido:
+
+```bash
+npm run build:capacitor    # DEVE correr ANTES de cap:sync!
+npm run cap:sync:ios       # Copia `out/` para ios/App/App/public
+npm run cap:open:ios       # Abre Xcode
+```
+
+Esta é a ordem documentada nos scripts do `package.json`. Se alguém pular
+`npm run build:capacitor` e correr `cap sync` direto, a app no Xcode vai
+estar semanas-velha. Nenhum erro grita isto — o build acaba silenciosamente,
+Xcode abre-se, mas a app renderizada é a stale.
+
+**Nota técnica**: `cap sync ios` corre `pod install` (Cocoapods), que é
+necessário mesmo que nada de iOS tenha mudado, porque a cache local de
+Cocoapods pode estar desatualizada. Usar sempre `cap sync`, não `cap copy`.
+
+#### Dependência de Cocoapods — nunca usar SPM sem `--packagemanager`
+
+`capacitor.config.ts` não especifica qual package manager usar — a flag
+`--packagemanager CocoaPods` foi adicionada ao comando `npx cap add ios`
+aquando da setup inicial (Task 2). Isto é importante: um `npx cap add ios`
+futuro **sem** essa flag vai silenciosamente trocar para Swift Package
+Manager (SPM) em vez de Cocoapods, quebrando o projeto:
+
+- **Com CocoaPods** (atual): `.xcworkspace` (onde Xcode se abre via
+  `npm run cap:open:ios`), `Podfile` + `Podfile.lock`, gerenciamento de
+  dependências via `pod install` em `cap sync`. ✓ Isto é o correto.
+- **Com SPM** (acidental, sem a flag): `.xcodeproj` sozinho, sem
+  `.xcworkspace`, sem `Podfile.lock`. O `xcodebuild` falharia com
+  "workspace not found". ✗ Quebrado.
+
+Se alguém tiver de voltar a correr `cap add ios` (ex.: remover iOS e readd
+da scratch), **tem de cumprir**:
+
+```bash
+npx cap add ios --packagemanager CocoaPods
+```
+
+Sem isto, o workflow de deploy quebra.
+
+#### Sign/build/submit: fora do escopo do codebase
+
+A assinatura de código, certificate management, e submissão à App Store
+são processos manuais, user-driven, fora deste repositório:
+
+- **`ios/App/App.xcodeproj`** é aberto no Xcode com `npm run cap:open:ios`.
+- **Signing**: em Xcode, Team ID + Provisioning Profile são configurados
+  manualmente no painel "Signing & Capabilities" — não há scripts aqui que
+  os preencham. Xcode lê `Bundle Identifier` (que vem de `capacitor.config.ts`
+  → `PRODUCT_BUNDLE_IDENTIFIER`) e trata o resto.
+- **Build**: `xcodebuild` pode compilar (Tasks 2 e 7 fizeram isto como
+  validação), mas o build-for-distribution (archive + export) é manual no
+  Xcode.
+- **App Store Connect**: upload do `.ipa` (app binary), screenshots, metadata,
+  classificação etária, preço, etc. — tudo manual lá. O `bundle ID` tem de
+  bater entre o Xcode, a app binária, e o App Store Connect — sincronizam
+  via PRODUCT_BUNDLE_IDENTIFIER.
+
+Este repo não toca em nenhum desses passos — apenas fornece o código
+compilável e uma shell Capacitor pronta para assinar.
+
 ### Service worker / PWA: estratégia de cache e atualização
 
 `public/sw.js` tem duas estratégias, por tipo de pedido:
