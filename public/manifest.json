@@ -1,13 +1,13 @@
 {
-  "name": "Xadrez — aprenda jogando",
-  "short_name": "Xadrez",
+  "name": "Chess Sensei — aprenda jogando",
+  "short_name": "Chess Sensei",
   "description": "Jogue xadrez contra o computador ou com um amigo, com dicas para aprender a jogar melhor.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#fafaf9",
-  "theme_color": "#b45309",
+  "background_color": "#1A0B33",
+  "theme_color": "#1A0B33",
   "lang": "pt-PT",
   "icons": [
     {

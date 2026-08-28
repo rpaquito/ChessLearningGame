@@ -24,14 +24,14 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Xadrez — aprenda jogando',
+  title: 'Chess Sensei — aprenda jogando',
   description:
     'Jogue xadrez contra o computador ou com um amigo, com dicas para aprender a jogar melhor.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Xadrez',
+    title: 'Chess Sensei',
   },
   icons: {
     icon: [
