@@ -13,7 +13,7 @@ describe('useTranslation', () => {
   it('devolve o dicionário pt por omissão', () => {
     window.localStorage.setItem('xadrez-settings', JSON.stringify({ language: 'pt' }));
     const { result } = renderHook(() => useTranslation());
-    expect(result.current.t.menu.title).toBe('XADREZ');
+    expect(result.current.t.menu.title).toBe('CHESS SENSEI');
     expect(result.current.locale).toBe('pt');
   });
 
@@ -25,14 +25,14 @@ describe('useTranslation', () => {
       return { translation, updateSettings };
     }
     const { result } = renderHook(() => Wrapper());
-    expect(result.current.translation.t.menu.title).toBe('XADREZ');
+    expect(result.current.translation.t.menu.title).toBe('CHESS SENSEI');
 
     act(() => {
       result.current.updateSettings({ language: 'en' });
     });
 
     const { result: result2 } = renderHook(() => useTranslation());
-    expect(result2.current.t.menu.title).toBe('CHESS');
+    expect(result2.current.t.menu.title).toBe('CHESS SENSEI');
     expect(result2.current.locale).toBe('en');
   });
 });

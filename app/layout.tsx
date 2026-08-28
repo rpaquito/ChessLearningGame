@@ -24,7 +24,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: 'Chess Sensei — aprenda jogando',
+  title: 'Chess Sensei',
   description:
     'Jogue xadrez contra o computador ou com um amigo, com dicas para aprender a jogar melhor.',
   manifest: '/manifest.json',

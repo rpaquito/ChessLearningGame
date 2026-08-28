@@ -13,7 +13,7 @@ export const pt: Dictionary = {
     cancel: 'Cancelar',
   },
   menu: {
-    title: 'XADREZ',
+    title: 'CHESS SENSEI',
     playVsComputer: 'Jogar contra o computador',
     twoPlayers: 'Dois jogadores',
     learnToPlay: 'Aprender a jogar',

@@ -10,7 +10,7 @@ export const en: Dictionary = {
     cancel: 'Cancel',
   },
   menu: {
-    title: 'CHESS',
+    title: 'CHESS SENSEI',
     playVsComputer: 'Play against the computer',
     twoPlayers: 'Two players',
     learnToPlay: 'Learn to play',
