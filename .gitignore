@@ -53,3 +53,11 @@ next-env.d.ts
 # git worktrees created by this development workflow — never sweep these
 # into a commit from this or any other checkout
 .claude/worktrees/
+
+# Capacitor iOS — generated/build artifacts, never hand-edited
+ios/App/App/public
+ios/App/Pods
+ios/App/build
+ios/App/DerivedData
+ios/**/xcuserdata/
+ios/**/*.xcuserstate
