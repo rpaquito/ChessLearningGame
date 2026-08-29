@@ -78,7 +78,7 @@ describe('GameEndModal', () => {
       />
     );
     expect(
-      screen.getByRole('dialog', { name: 'Xeque-mate! Vencem as pretas.' })
+      screen.getByRole('dialog', { name: 'Xeque-mate! Venceu o Jogador 2!' })
     ).toBeInTheDocument();
   });
 
@@ -210,6 +210,77 @@ describe('GameEndModal', () => {
       />
     );
     expect(screen.getByRole('link', { name: 'Menu inicial' })).toHaveAttribute('href', '/');
+  });
+
+  it('shows the win mascot illustration and confetti when the human wins', () => {
+    render(
+      <GameEndModal
+        open
+        status="checkmate"
+        mode="ai"
+        humanColor="w"
+        turn="b"
+        onClose={noop}
+        onPlayAgain={noop}
+      />
+    );
+    expect(screen.getByTestId('game-end-mascot')).toHaveStyle({
+      backgroundImage: 'url(/gameend/win.webp)',
+    });
+    expect(document.querySelectorAll('.animate-confetti-pop')).toHaveLength(12);
+  });
+
+  it('shows the lose mascot illustration without confetti when the human loses', () => {
+    render(
+      <GameEndModal
+        open
+        status="checkmate"
+        mode="ai"
+        humanColor="w"
+        turn="w"
+        onClose={noop}
+        onPlayAgain={noop}
+      />
+    );
+    expect(screen.getByTestId('game-end-mascot')).toHaveStyle({
+      backgroundImage: 'url(/gameend/lose.webp)',
+    });
+    expect(document.querySelectorAll('.animate-confetti-pop')).toHaveLength(0);
+  });
+
+  it('shows the win mascot (not lose) for a local-mode checkmate', () => {
+    render(
+      <GameEndModal
+        open
+        status="checkmate"
+        mode="local"
+        humanColor="w"
+        turn="w"
+        onClose={noop}
+        onPlayAgain={noop}
+      />
+    );
+    expect(screen.getByTestId('game-end-mascot')).toHaveStyle({
+      backgroundImage: 'url(/gameend/win.webp)',
+    });
+  });
+
+  it('shows the draw mascot illustration without confetti for a draw', () => {
+    render(
+      <GameEndModal
+        open
+        status="draw"
+        mode="ai"
+        humanColor="w"
+        turn="w"
+        onClose={noop}
+        onPlayAgain={noop}
+      />
+    );
+    expect(screen.getByTestId('game-end-mascot')).toHaveStyle({
+      backgroundImage: 'url(/gameend/draw.webp)',
+    });
+    expect(document.querySelectorAll('.animate-confetti-pop')).toHaveLength(0);
   });
 
   it('moves focus into the dialog when it opens, keeping keyboard users off the board behind it', () => {

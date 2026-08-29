@@ -128,8 +128,8 @@ export const pt: Dictionary = {
   gameEnd: {
     lostCheckmate: 'Perdeste. Xeque-mate.',
     wonCheckmate: 'Ganhaste! Xeque-mate.',
-    checkmateBlackWins: 'Xeque-mate! Vencem as pretas.',
-    checkmateWhiteWins: 'Xeque-mate! Vencem as brancas.',
+    checkmateBlackWins: 'Xeque-mate! Venceu o Jogador 2!',
+    checkmateWhiteWins: 'Xeque-mate! Venceu o Jogador 1!',
     stalemateDraw: 'Empate por afogamento.',
     draw: 'Empate.',
     playAgain: 'Jogar de novo',

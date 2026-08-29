@@ -35,10 +35,27 @@
   --color-lilac: var(--color-lilac);
   --font-sans: var(--font-poppins);
   --font-display: var(--font-bangers);
+  --animate-confetti-pop: confetti-pop 700ms ease-out forwards;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), system-ui, sans-serif;
+}
+
+/* Rebentamento de confettis do GameEndModal em vitória — ver
+   components/GameEndModal/GameEndModal.tsx. Cada partícula define
+   --confetti-x/--confetti-y/--confetti-r (posição final + rotação),
+   a keyframe só anima até lá. */
+@keyframes confetti-pop {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(calc(-50% + var(--confetti-x, 0px)), calc(-50% + var(--confetti-y, 0px)))
+      rotate(var(--confetti-r, 0deg)) scale(0.3);
+    opacity: 0;
+  }
 }
