@@ -44,6 +44,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: '#1A0B33',
+  // 'cover' faz o WKWebView da app nativa (ver secção "App nativa iOS" em
+  // CLAUDE.md) preencher o ecrã todo até por baixo do notch/Dynamic
+  // Island — sem isto, env(safe-area-inset-*) usado em globals.css devolve
+  // sempre 0 e o cabeçalho fica tapado pela câmara. No browser/PWA normal
+  // (sem notch) não muda nada visualmente.
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

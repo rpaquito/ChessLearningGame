@@ -38,10 +38,18 @@
   --animate-confetti-pop: confetti-pop 700ms ease-out forwards;
 }
 
+/* Margem para a "safe area" do dispositivo (notch/Dynamic Island no
+   topo, home indicator no fundo) — sem isto, a app nativa iOS
+   (Capacitor, ver CLAUDE.md) desenha o cabeçalho por baixo da câmara,
+   porque o WKWebView preenche o ecrã todo por omissão. Zero em qualquer
+   dispositivo sem notch e no browser normal — só tem efeito visível
+   graças a `viewportFit: 'cover'` em app/layout.tsx. */
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-poppins), system-ui, sans-serif;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Rebentamento de confettis do GameEndModal em vitória — ver
