@@ -49,11 +49,11 @@ describe('loadSettings', () => {
   });
 
   it('returns previously saved theme choices', () => {
-    saveSettings({ ...DEFAULT_SETTINGS, boardTheme: 'neon', backgroundTheme: 'noturno' });
+    saveSettings({ ...DEFAULT_SETTINGS, boardTheme: 'neon', backgroundTheme: 'dojo' });
     expect(loadSettings()).toEqual({
       ...DEFAULT_SETTINGS,
       boardTheme: 'neon',
-      backgroundTheme: 'noturno',
+      backgroundTheme: 'dojo',
     });
   });
 
@@ -61,6 +61,18 @@ describe('loadSettings', () => {
     window.localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({ ...DEFAULT_SETTINGS, boardTheme: 'nao-existe', backgroundTheme: 42 })
+    );
+    expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('falls back to the default background when a saved value was retired ("classico"/"noturno")', () => {
+    // Regressão: Clássico/Noturno existiram como backgroundTheme válidos e
+    // foram removidos (poucas opções cabiam sem scroll lateral em
+    // /opções) — alguém com um destes já guardado não pode ficar com um
+    // valor "fantasma" que rebenta BACKGROUND_THEMES[...].
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...DEFAULT_SETTINGS, backgroundTheme: 'classico' })
     );
     expect(loadSettings()).toEqual(DEFAULT_SETTINGS);
   });

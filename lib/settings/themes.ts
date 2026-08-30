@@ -35,8 +35,6 @@ export const BOARD_THEMES: Record<BoardTheme, BoardThemeInfo> = {
 };
 
 export const BACKGROUND_THEMES: Record<BackgroundTheme, BackgroundThemeInfo> = {
-  classico: { label: 'Clássico', image: '/menu/background.webp' },
-  noturno: { label: 'Noturno', image: '/menu/background-noturno.webp' },
   templo: { label: 'Templo', image: '/menu/background-templo.webp' },
   dojo: { label: 'Dojo', image: '/menu/background-dojo.webp' },
   cosmico: { label: 'Cósmico', image: '/menu/background-cosmico.webp' },

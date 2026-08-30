@@ -113,8 +113,18 @@ export default function OpcoesPage() {
     { value: 'en', label: t.opcoes.english },
   ];
 
+  // Sem min-h-dvh de propósito (ao contrário de /jogar e do menu inicial):
+  // esta página só mostra bg-ink liso, sem imagem de fundo a cobrir o
+  // ecrã, e bg-ink é exatamente a mesma cor que <body> já pinta por trás
+  // de tudo (ver globals.css) — min-h-dvh aqui não tinha nenhum efeito
+  // visual, só deixava este <main> ficar mais alto do que o próprio
+  // conteúdo, o que nalguns iPhones (dvh a recalcular ao colapsar a barra
+  // do Safari) abria um vazio gigante entre "Idioma" e "Menu inicial" no
+  // primeiro layout. Sem min-h-dvh, a altura de <main> é sempre
+  // exatamente a do seu conteúdo — não há espaço livre para nenhum
+  // recálculo de dvh esticar.
   return (
-    <main className="relative min-h-dvh flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
+    <main className="relative flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
       <PageHeader wrapperClassName="w-full max-w-sm">{t.opcoes.title}</PageHeader>
       <div className="relative flex flex-col gap-6 max-w-sm w-full">
