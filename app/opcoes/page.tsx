@@ -118,16 +118,29 @@ export default function OpcoesPage() {
   // ecrã, e bg-ink é exatamente a mesma cor que <body> já pinta por trás
   // de tudo (ver globals.css) — min-h-dvh aqui não tinha nenhum efeito
   // visual, só deixava este <main> ficar mais alto do que o próprio
-  // conteúdo, o que nalguns iPhones (dvh a recalcular ao colapsar a barra
-  // do Safari) abria um vazio gigante entre "Idioma" e "Menu inicial" no
-  // primeiro layout. Sem min-h-dvh, a altura de <main> é sempre
-  // exatamente a do seu conteúdo — não há espaço livre para nenhum
-  // recálculo de dvh esticar.
+  // conteúdo à toa.
+  //
+  // O espaçamento entre PageHeader / o bloco de definições / "Menu
+  // inicial" usa mt-8 em cada um (não gap-8 no <main>) por uma razão
+  // concreta, não estética: um vazio real e reprodutível apareceu entre
+  // "Idioma" e "Menu inicial", só no Safari/WKWebView do iOS, e só ao
+  // navegar para /opções via <Link> (client-side) — nunca num full
+  // reload, nunca no browser do computador. Isolado com um WebKit
+  // headless (Playwright): o layout media sempre correto (sem gap
+  // nenhum) tanto no load como depois de qualquer interação — ou seja,
+  // não é um bug de CSS/React, é o WebKit real do iOS a falhar o
+  // recálculo de `gap` num flex container cujo conteúdo chega via JS
+  // (navegação client-side) em vez de fazer parte do parse inicial do
+  // HTML — corrige-se sozinho ao forçar qualquer reflow (por isso "muda
+  // alguma coisa" "arranjava"). `margin` não tem esta categoria de bug,
+  // por isso troca-se `gap-8` por `mt-8` nos elementos que o
+  // precisavam — evita depender de o WebKit recalcular `gap`
+  // corretamente fora do parse inicial.
   return (
-    <main className="relative flex flex-col items-center justify-start gap-8 p-8 overflow-hidden bg-ink">
+    <main className="relative flex flex-col items-center justify-start p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
       <PageHeader wrapperClassName="w-full max-w-sm">{t.opcoes.title}</PageHeader>
-      <div className="relative flex flex-col gap-6 max-w-sm w-full">
+      <div className="relative flex flex-col gap-6 max-w-sm w-full mt-8">
         <ToggleGroup
           legend={t.opcoes.defaultDifficultyLegend}
           options={DIFFICULTY_OPTIONS}
@@ -201,7 +214,7 @@ export default function OpcoesPage() {
         />
       </div>
 
-      <ChipButton color="purple" href="/" className="relative">
+      <ChipButton color="purple" href="/" className="relative mt-8">
         {t.common.mainMenu}
       </ChipButton>
     </main>
