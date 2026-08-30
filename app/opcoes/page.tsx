@@ -120,27 +120,45 @@ export default function OpcoesPage() {
   // visual, só deixava este <main> ficar mais alto do que o próprio
   // conteúdo à toa.
   //
-  // O espaçamento entre PageHeader / o bloco de definições / "Menu
-  // inicial" usa mt-8 em cada um (não gap-8 no <main>) por uma razão
-  // concreta, não estética: um vazio real e reprodutível apareceu entre
-  // "Idioma" e "Menu inicial", só no Safari/WKWebView do iOS, e só ao
-  // navegar para /opções via <Link> (client-side) — nunca num full
-  // reload, nunca no browser do computador. Isolado com um WebKit
-  // headless (Playwright): o layout media sempre correto (sem gap
-  // nenhum) tanto no load como depois de qualquer interação — ou seja,
-  // não é um bug de CSS/React, é o WebKit real do iOS a falhar o
-  // recálculo de `gap` num flex container cujo conteúdo chega via JS
-  // (navegação client-side) em vez de fazer parte do parse inicial do
-  // HTML — corrige-se sozinho ao forçar qualquer reflow (por isso "muda
-  // alguma coisa" "arranjava"). `margin` não tem esta categoria de bug,
-  // por isso troca-se `gap-8` por `mt-8` nos elementos que o
-  // precisavam — evita depender de o WebKit recalcular `gap`
-  // corretamente fora do parse inicial.
+  // mt-8 em vez de gap-8 no <main>: gap num flex container cujo conteúdo
+  // chega via navegação client-side (não o parse inicial do HTML) tem um
+  // bug real, reproduzido, só no WebKit do iOS (Safari/WKWebView) — nunca
+  // num full reload, nunca no browser do computador. margin não tem essa
+  // categoria de bug.
+  //
+  // O botão "Menu inicial" já não fica preso ao fundo da página (era o
+  // sítio onde esse vazio aparecia) — passou para o topo, junto ao
+  // PageHeader, no mesmo padrão de /aprender ("Voltar para o início"), a
+  // pedido explícito do utilizador depois de vários fixes ao vazio no
+  // fundo não terem resolvido para todos os casos.
   return (
     <main className="relative flex flex-col items-center justify-start p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
-      <PageHeader wrapperClassName="w-full max-w-sm">{t.opcoes.title}</PageHeader>
+      <div className="relative w-full max-w-sm">
+        <PageHeader>{t.opcoes.title}</PageHeader>
+        <p className="mt-3">
+          <ChipButton color="purple" href="/">
+            {t.common.mainMenu}
+          </ChipButton>
+        </p>
+      </div>
       <div className="relative flex flex-col gap-6 max-w-sm w-full mt-8">
+        {/* Idioma primeiro — uma das definições mais importantes,
+            a pedido explícito do utilizador. */}
+        <ToggleGroup
+          legend={t.opcoes.language}
+          options={LANGUAGE_OPTIONS}
+          value={settings.language}
+          onChange={(language) => {
+            updateSettings({ language });
+            // `t` continua a apontar para o dicionário ANTIGO aqui — updateSettings
+            // agenda um re-render (useSyncExternalStore) que só acontece depois
+            // deste handler síncrono terminar. `language` já é o valor novo, por
+            // isso lê-se o dicionário certo diretamente em vez de esperar por `t`.
+            toast.show(DICTIONARIES[language].opcoes.toastLanguageChanged);
+          }}
+        />
+
         <ToggleGroup
           legend={t.opcoes.defaultDifficultyLegend}
           options={DIFFICULTY_OPTIONS}
@@ -199,24 +217,7 @@ export default function OpcoesPage() {
           }}
           renderPreview={(opt) => <ThemeSwatch previewImage={opt.previewImage} />}
         />
-        <ToggleGroup
-          legend={t.opcoes.language}
-          options={LANGUAGE_OPTIONS}
-          value={settings.language}
-          onChange={(language) => {
-            updateSettings({ language });
-            // `t` continua a apontar para o dicionário ANTIGO aqui — updateSettings
-            // agenda um re-render (useSyncExternalStore) que só acontece depois
-            // deste handler síncrono terminar. `language` já é o valor novo, por
-            // isso lê-se o dicionário certo diretamente em vez de esperar por `t`.
-            toast.show(DICTIONARIES[language].opcoes.toastLanguageChanged);
-          }}
-        />
       </div>
-
-      <ChipButton color="purple" href="/" className="relative mt-8">
-        {t.common.mainMenu}
-      </ChipButton>
     </main>
   );
 }

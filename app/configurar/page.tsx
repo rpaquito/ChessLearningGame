@@ -13,18 +13,25 @@ export default function ConfigurarPage() {
   // conteúdo chega via navegação client-side (não o parse inicial do
   // HTML) tem um bug real, reproduzido, só no WebKit do iOS — margin não
   // tem essa categoria de bug.
+  //
+  // "Menu inicial" passou do fundo da página para o topo, junto ao
+  // PageHeader (padrão de /aprender) — mesma mudança e mesma razão de
+  // /opções: era o sítio onde esse vazio no WebKit do iOS aparecia, e
+  // este ecrã partilha exatamente a mesma estrutura.
   return (
     <main className="relative flex flex-col items-center justify-start p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
-      <PageHeader size="text-3xl" wrapperClassName="w-full max-w-sm">
-        {t.configurar.title}
-      </PageHeader>
+      <div className="relative w-full max-w-sm">
+        <PageHeader size="text-3xl">{t.configurar.title}</PageHeader>
+        <p className="mt-3">
+          <ChipButton color="purple" href="/">
+            {t.common.mainMenu}
+          </ChipButton>
+        </p>
+      </div>
       <div className="relative w-full max-w-sm mt-8">
         <GameSetup />
       </div>
-      <ChipButton color="purple" href="/" className="relative mt-8">
-        {t.common.mainMenu}
-      </ChipButton>
     </main>
   );
 }
