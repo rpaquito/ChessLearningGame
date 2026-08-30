@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import type { GameStatus } from '@/lib/chess/useChessGame';
 import { describeGameEnd, type GameEndKind } from '@/lib/chess/gameEndMessage';
-import { PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageTitle, MODAL_BACKDROP_CLASS } from '@/components/PageChrome/PageChrome';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { useFocusTrap } from '@/lib/ui/useFocusTrap';
 import { useTranslation } from '@/lib/i18n/useTranslation';
@@ -102,7 +102,7 @@ export function GameEndModal({
     <div
       data-testid="game-end-modal-backdrop"
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className={MODAL_BACKDROP_CLASS}
     >
       <div
         ref={panelRef}

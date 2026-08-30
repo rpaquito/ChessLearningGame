@@ -1,6 +1,5 @@
 'use client';
 
-import type { MoveQuality } from '@/lib/chess/moveClassification';
 import { ACTIVE_TOGGLE_STYLE } from '@/lib/ui/activeToggleStyle';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 
@@ -11,20 +10,16 @@ export interface LearningPanelProps {
   suggestionLoading?: boolean;
   hasSuggestion?: boolean;
   suggestionExplanation?: string | null;
-  lastMoveQuality?: MoveQuality | null;
-  lastMoveExplanation?: string | null;
 }
 
-// Pílulas translúcidas — mantêm a cor semântica (verde/âmbar/vermelho)
-// de propósito, para não se confundirem com as cores de marca
-// (cyan/rosa/dourado/roxo) usadas no resto da identidade nova: aqui a
-// cor comunica correção do lance, não estilo.
-const QUALITY_CLASS: Record<MoveQuality, string> = {
-  boa: 'bg-emerald-900/60 text-emerald-200',
-  imprecisao: 'bg-amber-900/60 text-amber-200',
-  erro: 'bg-red-900/60 text-red-200',
-};
-
+/**
+ * Painel do modo de aprendizagem — só o toggle e a sugestão de jogada
+ * (com a explicação da própria sugestão, quando existe). O feedback do
+ * último lance (bom/impreciso/erro) deixou de viver aqui — passou a
+ * toast (ver app/jogar/page.tsx, tons 'boa'/'imprecisao'/'erro' em
+ * components/Toast/Toast.tsx), para o painel ocupar menos espaço no
+ * ecrã.
+ */
 export function LearningPanel({
   enabled,
   onToggle,
@@ -32,11 +27,8 @@ export function LearningPanel({
   suggestionLoading = false,
   hasSuggestion = false,
   suggestionExplanation = null,
-  lastMoveQuality = null,
-  lastMoveExplanation = null,
 }: LearningPanelProps) {
   const { t } = useTranslation();
-  const QUALITY_LABEL: Record<MoveQuality, string> = t.learningPanel.quality;
 
   return (
     <aside className="flex flex-col gap-4 w-full max-w-xs border-2 border-cyan rounded-2xl p-4 bg-ink-soft text-lilac">
@@ -52,7 +44,6 @@ export function LearningPanel({
 
       {enabled && (
         <>
-          <p className="text-sm text-lilac/80">{t.learningPanel.description}</p>
           <button
             type="button"
             onClick={onRequestSuggestion}
@@ -66,13 +57,6 @@ export function LearningPanel({
             <p className="text-sm text-lilac/80">
               {t.learningPanel.suggestionHint}
               {suggestionExplanation && ` ${suggestionExplanation}`}
-            </p>
-          )}
-          {lastMoveQuality && (
-            <p className={`text-sm rounded-full px-3 py-2 ${QUALITY_CLASS[lastMoveQuality]}`}>
-              {t.learningPanel.lastMoveLabel}
-              {QUALITY_LABEL[lastMoveQuality]}
-              {lastMoveExplanation && ` — ${lastMoveExplanation}`}
             </p>
           )}
         </>

@@ -27,6 +27,21 @@ describe('Toast', () => {
     expect(screen.getByTestId('toast-card').className).toContain('border-cyan');
   });
 
+  it('applies the move-quality accents (boa/imprecisao/erro)', () => {
+    const { rerender } = render(
+      <Toast toast={{ id: 1, message: 'O teu último lance: Boa jogada', tone: 'boa' }} onDismiss={() => {}} />
+    );
+    expect(screen.getByTestId('toast-card').className).toContain('border-emerald-400');
+
+    rerender(
+      <Toast toast={{ id: 2, message: 'O teu último lance: Imprecisão', tone: 'imprecisao' }} onDismiss={() => {}} />
+    );
+    expect(screen.getByTestId('toast-card').className).toContain('border-amber-400');
+
+    rerender(<Toast toast={{ id: 3, message: 'O teu último lance: Erro', tone: 'erro' }} onDismiss={() => {}} />);
+    expect(screen.getByTestId('toast-card').className).toContain('border-red-400');
+  });
+
   it('calls onDismiss when the close button is clicked', () => {
     const onDismiss = vi.fn();
     render(<Toast toast={{ id: 1, message: 'Xeque!', tone: 'check' }} onDismiss={onDismiss} />);

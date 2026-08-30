@@ -1,8 +1,13 @@
 'use client';
 
 import { useTranslation } from '@/lib/i18n/useTranslation';
+import type { MoveQuality } from '@/lib/chess/moveClassification';
 
-export type ToastTone = 'info' | 'check';
+// 'boa'/'imprecisao'/'erro' (MoveQuality) reaproveitados como tons —
+// o toast que substitui o antigo bloco "O teu último lance" do
+// LearningPanel (ver app/jogar/page.tsx), com a mesma cor semântica
+// que o badge já usava lá.
+export type ToastTone = 'info' | 'check' | MoveQuality;
 
 export interface ToastState {
   id: number;
@@ -18,6 +23,9 @@ export interface ToastProps {
 const TONE_ACCENT: Record<ToastTone, string> = {
   info: 'border-cyan',
   check: 'border-gold',
+  boa: 'border-emerald-400',
+  imprecisao: 'border-amber-400',
+  erro: 'border-red-400',
 };
 
 /**
@@ -25,7 +33,11 @@ const TONE_ACCENT: Record<ToastTone, string> = {
  * decisão do brainstorming em
  * docs/superpowers/specs/2026-08-27-popup-toast-feedback-design.md).
  * z-[60], acima do z-50 do backdrop do RulesModal/GameEndModal, para
- * nunca ficar escondido atrás de um modal aberto.
+ * nunca ficar escondido atrás de um modal aberto. `top-` usa a mesma
+ * fórmula `max(1rem, …)` que `MODAL_BACKDROP_CLASS` (PageChrome.tsx)
+ * — mantém a app nativa iOS por baixo do notch/Dynamic Island (ver
+ * CLAUDE.md, "App nativa iOS"), sem mudar nada em dispositivos sem
+ * notch/no browser normal.
  *
  * O wrapper `role="status"`/`aria-live="polite"` fica sempre montado,
  * mesmo sem nenhum toast — só o cartão lá dentro entra/sai, com
@@ -42,7 +54,7 @@ export function Toast({ toast, onDismiss }: ToastProps) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-4 left-1/2 -translate-x-1/2 z-[60]"
+      className="fixed top-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] left-1/2 -translate-x-1/2 z-[60]"
     >
       {toast && (
         <div

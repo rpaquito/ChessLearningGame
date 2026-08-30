@@ -64,7 +64,6 @@ export const pt: Dictionary = {
   },
   learningPanel: {
     toggleLabel: 'Modo de aprendizagem',
-    description: 'Lances legais e peças ameaçadas aparecem destacados no tabuleiro.',
     suggestMove: 'Sugerir jogada',
     suggestionHint: 'Jogada sugerida destacada em verde no tabuleiro.',
     lastMoveLabel: 'O teu último lance: ',

@@ -92,6 +92,21 @@ export function PageHeader({ logoSize = 'md', wrapperClassName = '', ...titlePro
   );
 }
 
+/**
+ * Backdrop `fixed inset-0` partilhado por GameEndModal/RulesModal/
+ * ConfirmModal — era texto duplicado byte-a-byte nos 3 (candidato a
+ * extração assim que aparece um 3º sítio, ver CLAUDE.md). `pt-`/`pb-`
+ * (em vez de `p-4` liso) garantem que o painel nunca fica por baixo do
+ * notch/Dynamic Island na app nativa iOS (ver secção "App nativa iOS"
+ * em CLAUDE.md — o WKWebView preenche o ecrã todo, `env(safe-area-
+ * inset-*)` só existe graças a `viewportFit: 'cover'` em
+ * app/layout.tsx) — `max(1rem, …)` mantém a mesma margem de sempre
+ * (1rem) em qualquer dispositivo sem notch/no browser normal.
+ */
+export const MODAL_BACKDROP_CLASS =
+  'fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 ' +
+  'pt-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] pb-[max(1rem,env(safe-area-inset-bottom))]';
+
 export interface PageGlowProps {
   /**
    * "fixed" para páginas com conteúdo scrollável (não pode entrar no

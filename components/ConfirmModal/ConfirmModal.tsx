@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageTitle, MODAL_BACKDROP_CLASS } from '@/components/PageChrome/PageChrome';
 import { ChipButton } from '@/components/ChipButton/ChipButton';
 import { useFocusTrap } from '@/lib/ui/useFocusTrap';
 
@@ -51,7 +51,7 @@ export function ConfirmModal({
     <div
       data-testid="confirm-modal-backdrop"
       onClick={onCancel}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className={MODAL_BACKDROP_CLASS}
     >
       <div
         ref={panelRef}

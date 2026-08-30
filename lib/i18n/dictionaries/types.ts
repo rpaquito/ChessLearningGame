@@ -52,7 +52,6 @@ export interface Dictionary {
   };
   learningPanel: {
     toggleLabel: string;
-    description: string;
     suggestMove: string;
     suggestionHint: string;
     lastMoveLabel: string;

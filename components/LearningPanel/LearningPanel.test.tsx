@@ -18,21 +18,6 @@ describe('LearningPanel', () => {
     expect(screen.getByText(/Captura o cavalo e dá xeque\./)).toBeInTheDocument();
   });
 
-  it('shows the move-quality explanation', () => {
-    render(
-      <LearningPanel
-        enabled
-        onToggle={noop}
-        onRequestSuggestion={noop}
-        lastMoveQuality="erro"
-        lastMoveExplanation="Foi um erro: perdeste cerca de 250 centipawns de vantagem."
-      />
-    );
-    expect(
-      screen.getByText(/Foi um erro: perdeste cerca de 250 centipawns de vantagem\./)
-    ).toBeInTheDocument();
-  });
-
   it('shows nothing extra when there is no explanation yet', () => {
     render(
       <LearningPanel

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { PageTitle } from '@/components/PageChrome/PageChrome';
+import { PageTitle, MODAL_BACKDROP_CLASS } from '@/components/PageChrome/PageChrome';
 import { useFocusTrap } from '@/lib/ui/useFocusTrap';
 import { useTranslation } from '@/lib/i18n/useTranslation';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
@@ -52,7 +52,7 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
     <div
       data-testid="rules-modal-backdrop"
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      className={MODAL_BACKDROP_CLASS}
     >
       {/* text-lilac explícito no próprio painel (não só nos elementos
           individuais) — protege qualquer texto futuro que se esqueça de

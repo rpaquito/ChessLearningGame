@@ -16,7 +16,7 @@ import { useToast } from '@/components/Toast/ToastProvider';
 import { GameEndModal } from '@/components/GameEndModal/GameEndModal';
 import { ConfirmModal } from '@/components/ConfirmModal/ConfirmModal';
 import { difficultyToEngineOptions, type Difficulty } from '@/lib/chess/difficulty';
-import { classifyMove, centipawnLoss, type MoveQuality } from '@/lib/chess/moveClassification';
+import { classifyMove, centipawnLoss } from '@/lib/chess/moveClassification';
 import { describeMove, explainMoveQuality } from '@/lib/chess/moveExplanation';
 import { findThreatenedSquares } from '@/lib/chess/threats';
 import { createStockfishClient, type StockfishClient } from '@/lib/chess/stockfishClient';
@@ -61,14 +61,24 @@ function JogarContent() {
   const [suggestion, setSuggestion] = useState<{ from: Square; to: Square } | null>(null);
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [suggestionExplanation, setSuggestionExplanation] = useState<string | null>(null);
-  const [lastMoveQuality, setLastMoveQuality] = useState<MoveQuality | null>(null);
-  const [lastMoveExplanation, setLastMoveExplanation] = useState<string | null>(null);
   const [engineUnavailable, setEngineUnavailable] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const { toast: currentToast, show: showToast, dismiss: dismissToast } = useToast();
   const [gameEndOpen, setGameEndOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'restart' | 'menu' | null>(null);
   const prevStatus = useRef<typeof state.status>('playing');
+  // Lido dentro do .then() da avaliação assíncrona do lance (abaixo) em
+  // vez de currentToast diretamente — a promise pode resolver bem depois
+  // de handleSquareClick ter sido definido, e um valor de closure ficaria
+  // parado no toast que estava visível nesse momento. Sem isto, um lance
+  // que também dá xeque arriscava o toast de qualidade substituir o de
+  // xeque assim que a avaliação terminasse, desbloqueando o tabuleiro sem
+  // o jogador ter reconhecido o xeque (ver o comentário sobre isto em
+  // ToastProvider.tsx).
+  const currentToastToneRef = useRef<string | null>(null);
+  useEffect(() => {
+    currentToastToneRef.current = currentToast?.tone ?? null;
+  }, [currentToast]);
   // Só pede confirmação quando há de facto progresso a perder — uma
   // partida ainda na posição inicial não tem nada para "Reiniciar"/"Menu
   // inicial" deitarem fora.
@@ -171,17 +181,23 @@ function JogarContent() {
               const playedEval = -replyEval;
               const loss = centipawnLoss(bestEval, playedEval);
               const quality = classifyMove(loss);
-              setLastMoveQuality(quality);
+              // Deixa o toast de xeque ganhar se as duas coisas coincidirem
+              // (este lance também deu xeque) — ver o comentário junto de
+              // currentToastToneRef acima.
+              if (currentToastToneRef.current === 'check') return;
+              let explanation: string | null;
               try {
                 const tagSentence = describeMove(fenBefore, {
                   from: selectedSquare,
                   to: square,
                   promotion: 'q',
                 }, locale);
-                setLastMoveExplanation(explainMoveQuality(quality, tagSentence, loss, locale));
+                explanation = explainMoveQuality(quality, tagSentence, loss, locale);
               } catch {
-                setLastMoveExplanation(null);
+                explanation = null;
               }
+              const message = `${t.learningPanel.lastMoveLabel}${t.learningPanel.quality[quality]}${explanation ? ` — ${explanation}` : ''}`;
+              showToast(message, quality);
             })
             .catch(() => {
               setEngineUnavailable(true);
@@ -191,7 +207,19 @@ function JogarContent() {
       }
       setSelectedSquare(square);
     },
-    [isHumanTurn, state.isGameOver, state.fen, selectedSquare, legalMovesFrom, makeMove, mode, learningEnabled, locale]
+    [
+      isHumanTurn,
+      state.isGameOver,
+      state.fen,
+      selectedSquare,
+      legalMovesFrom,
+      makeMove,
+      mode,
+      learningEnabled,
+      locale,
+      t,
+      showToast,
+    ]
   );
 
   // IA joga automaticamente quando é a vez dela
@@ -247,8 +275,6 @@ function JogarContent() {
     setSelectedSquare(null);
     setSuggestion(null);
     setSuggestionExplanation(null);
-    setLastMoveQuality(null);
-    setLastMoveExplanation(null);
     setGameEndOpen(false);
     prevStatus.current = 'playing';
     dismissToast();
@@ -333,8 +359,6 @@ function JogarContent() {
           suggestionLoading={suggestionLoading}
           hasSuggestion={Boolean(suggestion)}
           suggestionExplanation={suggestionExplanation}
-          lastMoveQuality={lastMoveQuality}
-          lastMoveExplanation={lastMoveExplanation}
         />
       )}
 

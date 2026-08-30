@@ -61,7 +61,6 @@ export const en: Dictionary = {
   },
   learningPanel: {
     toggleLabel: 'Learning mode',
-    description: 'Legal moves and threatened pieces are highlighted on the board.',
     suggestMove: 'Suggest a move',
     suggestionHint: 'Suggested move highlighted in green on the board.',
     lastMoveLabel: 'Your last move: ',
