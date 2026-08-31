@@ -533,24 +533,6 @@ um erro de hidratação sempre que o utilizador já tiver definições não-
 render inicial (igual em servidor e cliente) e só lendo o
 `localStorage` real dentro de um `useEffect`, depois de montar.
 
-### Sem autenticação (Clerk removido em 2026-08-25)
-
-O projeto teve login via Clerk (`@clerk/nextjs`) — usado só para gate
-das frases de explicação de lances (`lib/chess/moveExplanation.ts`)
-atrás de uma flag `premium`, sem pagamentos nem base de dados a
-proteger de facto. Foi removido por completo a pedido do utilizador
-("estava a confundir o projeto"): `proxy.ts` (só existia para
-`clerkMiddleware()`), `ClerkProvider` em `app/layout.tsx`, as rotas
-`/entrar` e `/criar-conta`, `lib/auth/isPremiumUser.ts`, o botão
-"Entrar"/`<UserButton/>` no menu inicial, a dependência
-`@clerk/nextjs`, e as variáveis `CLERK_SECRET_KEY`/
-`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (de `.env.local` — continuam
-provisionadas na Vercel pela integração do Marketplace até essa
-integração ser desinstalada manualmente lá, passo que fica fora do
-alcance do agente). As explicações de lances passaram a ser sempre
-gratuitas — `LearningPanel` já não recebe nenhuma prop `isPremium`,
-mostra a explicação sempre que existe.
-
 ### Identidade visual "anime" (redesenho 2026-08-25)
 
 A app inteira foi redesenhada a pedido explícito do utilizador — a
@@ -1166,11 +1148,8 @@ automático a cada push para `main` via integração com o GitHub
 (`rpaquito/ChessLearningGame`) — não é preciso correr `vercel deploy` à mão.
 Vercel é o único alvo de deploy suportado: o self-host via Docker (e o
 `output: "standalone"` em `next.config.ts` que existia só para isso) foi
-descontinuado quando a autenticação (Clerk) foi introduzida, e não foi
-restaurado ao remover o Clerk (ver "Sem autenticação" acima) — ficou
-fora do âmbito dessa remoção. Não há nenhuma variável de ambiente
-própria da app a configurar para um novo deploy (as únicas que existiam
-eram do Clerk).
+descontinuado. Não há nenhuma variável de ambiente própria da app a
+configurar para um novo deploy.
 
 ## Ficheiros de contexto de agentes
 
