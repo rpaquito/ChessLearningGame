@@ -89,7 +89,6 @@ export interface Dictionary {
   };
   aprenderHub: {
     title: string;
-    backToHome: string;
     piecesTitle: string;
     piecesDesc: string;
     specialRulesTitle: string;

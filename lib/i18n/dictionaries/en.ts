@@ -4,7 +4,7 @@ export const en: Dictionary = {
   common: {
     mainMenu: 'Main menu',
     close: 'Close',
-    backToTutorial: 'Back to tutorial',
+    backToTutorial: 'Back',
     thinking: 'Thinking…',
     chessBoard: 'Chess board',
     cancel: 'Cancel',
@@ -133,7 +133,6 @@ export const en: Dictionary = {
   },
   aprenderHub: {
     title: 'LEARN TO PLAY CHESS',
-    backToHome: 'Back to home',
     piecesTitle: 'How the pieces move',
     piecesDesc: 'The movement of each piece, from pawn to king.',
     specialRulesTitle: 'Special rules',

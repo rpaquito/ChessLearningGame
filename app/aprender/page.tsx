@@ -25,7 +25,7 @@ export default function AprenderPage() {
         <PageHeader>{t.aprenderHub.title}</PageHeader>
         <p className="mt-3">
           <ChipButton color="purple" href="/">
-            {t.aprenderHub.backToHome}
+            {t.common.mainMenu}
           </ChipButton>
         </p>
       </div>

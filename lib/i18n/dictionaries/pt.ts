@@ -7,7 +7,7 @@ export const pt: Dictionary = {
   common: {
     mainMenu: 'Menu inicial',
     close: 'Fechar',
-    backToTutorial: 'Voltar ao tutorial',
+    backToTutorial: 'Voltar',
     thinking: 'A pensar…',
     chessBoard: 'Tabuleiro de xadrez',
     cancel: 'Cancelar',
@@ -135,7 +135,6 @@ export const pt: Dictionary = {
   },
   aprenderHub: {
     title: 'APRENDA A JOGAR XADREZ',
-    backToHome: 'Voltar para o início',
     piecesTitle: 'Como as peças se movem',
     piecesDesc: 'O movimento de cada peça, do peão ao rei.',
     specialRulesTitle: 'Regras especiais',

@@ -128,9 +128,9 @@ export default function OpcoesPage() {
   //
   // O botão "Menu inicial" já não fica preso ao fundo da página (era o
   // sítio onde esse vazio aparecia) — passou para o topo, junto ao
-  // PageHeader, no mesmo padrão de /aprender ("Voltar para o início"), a
-  // pedido explícito do utilizador depois de vários fixes ao vazio no
-  // fundo não terem resolvido para todos os casos.
+  // PageHeader, no mesmo padrão de /aprender, a pedido explícito do
+  // utilizador depois de vários fixes ao vazio no fundo não terem
+  // resolvido para todos os casos.
   return (
     <main className="relative flex flex-col items-center justify-start p-8 overflow-hidden bg-ink">
       <PageGlow pinkOpacity={0.25} />
