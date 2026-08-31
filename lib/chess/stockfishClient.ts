@@ -1,5 +1,6 @@
 import type { EngineOptions } from './difficulty';
-import { parseBestMove, parseScoreCp, parseScoreMate, isReadyLine } from './uciParser';
+import { parseBestMove, parseScoreCp, parseScoreMate, parseMultiPvInfo, isReadyLine } from './uciParser';
+import { selectWeightedMove, type MoveCandidate } from './selectMove';
 
 export interface StockfishClient {
   getBestMove: (fen: string, options: EngineOptions) => Promise<string>;
@@ -16,6 +17,31 @@ const READY_TIMEOUT_MS = 10_000;
 // Large enough to dominate any real centipawn-scale comparison, while still
 // preferring a faster mate over a slower one (mate in 1 > mate in 5).
 const MATE_SENTINEL = 100_000;
+
+// Converts a MultiPV info line's score (cp or mate) to the same comparable
+// centipawn-scale number evaluate() uses for its own score reporting.
+function scoreOf(info: { scoreCp: number | null; scoreMate: number | null }): number {
+  if (info.scoreMate !== null) {
+    return info.scoreMate > 0 ? MATE_SENTINEL - info.scoreMate : -MATE_SENTINEL - info.scoreMate;
+  }
+  return info.scoreCp ?? 0;
+}
+
+// Falls back to the engine's own bestmove whenever randomness is off, or the
+// search never produced more than one ranked candidate (e.g. a forced move,
+// or movetime cutting the search off before the lower MultiPV ranks reported
+// anything) — see selectWeightedMove() for the weighted pick itself.
+function pickMove(
+  bestMove: string,
+  candidatesByRank: Map<number, MoveCandidate>,
+  options: EngineOptions
+): string {
+  if (options.randomness <= 0 || candidatesByRank.size <= 1) return bestMove;
+  const candidates = Array.from(candidatesByRank.keys())
+    .sort((a, b) => a - b)
+    .map((rank) => candidatesByRank.get(rank)!);
+  return selectWeightedMove(candidates, options.randomness);
+}
 
 export function createStockfishClient(): StockfishClient {
   const worker = new Worker('/stockfish/stockfish-18-lite-single.js');
@@ -85,15 +111,25 @@ export function createStockfishClient(): StockfishClient {
     return enqueue(async () => {
       await waitForReady();
       return new Promise<string>((resolve) => {
+        // Tracks the latest candidate seen for each MultiPV rank (1 = best
+        // line) as 'info' lines stream in during the search. Only used when
+        // options.randomness > 0 — see pickMove() below.
+        const candidatesByRank = new Map<number, MoveCandidate>();
         const onMessage = (event: MessageEvent<string>) => {
-          const move = parseBestMove(event.data);
-          if (move) {
+          const info = parseMultiPvInfo(event.data);
+          if (info) {
+            candidatesByRank.set(info.multipv, { move: info.move, score: scoreOf(info) });
+          }
+          const bestMove = parseBestMove(event.data);
+          if (bestMove) {
             worker.removeEventListener('message', onMessage);
-            resolve(move);
+            resolve(pickMove(bestMove, candidatesByRank, options));
           }
         };
         worker.addEventListener('message', onMessage);
-        worker.postMessage(`setoption name Skill Level value ${options.skillLevel}`);
+        worker.postMessage(`setoption name UCI_LimitStrength value ${options.limitStrength}`);
+        worker.postMessage(`setoption name UCI_Elo value ${options.elo}`);
+        worker.postMessage(`setoption name MultiPV value ${options.multiPv}`);
         worker.postMessage('ucinewgame');
         worker.postMessage(`position fen ${fen}`);
         worker.postMessage(`go depth ${options.depth} movetime ${options.moveTimeMs}`);
@@ -119,6 +155,13 @@ export function createStockfishClient(): StockfishClient {
           }
         };
         worker.addEventListener('message', onMessage);
+        // getBestMove() may have left UCI_LimitStrength/UCI_Elo/MultiPV set
+        // for a weaker difficulty — engine options persist on the worker
+        // across calls. This evaluation feeds the learning panel's move-
+        // quality grading, so it must always run at full strength with a
+        // single PV line, regardless of what the AI opponent is set to.
+        worker.postMessage('setoption name UCI_LimitStrength value false');
+        worker.postMessage('setoption name MultiPV value 1');
         worker.postMessage('ucinewgame');
         worker.postMessage(`position fen ${fen}`);
         worker.postMessage(`go depth ${depth}`);

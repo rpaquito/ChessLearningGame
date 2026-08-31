@@ -13,6 +13,25 @@ export function parseScoreMate(line: string): number | null {
   return match ? parseInt(match[1], 10) : null;
 }
 
+export interface MultiPvInfo {
+  multipv: number;
+  move: string;
+  scoreCp: number | null;
+  scoreMate: number | null;
+}
+
+export function parseMultiPvInfo(line: string): MultiPvInfo | null {
+  const multipvMatch = /\bmultipv (\d+)\b/.exec(line);
+  const pvMatch = /\bpv (\S+)/.exec(line);
+  if (!multipvMatch || !pvMatch) return null;
+  return {
+    multipv: parseInt(multipvMatch[1], 10),
+    move: pvMatch[1],
+    scoreCp: parseScoreCp(line),
+    scoreMate: parseScoreMate(line),
+  };
+}
+
 export function isReadyLine(line: string): boolean {
   return line === 'readyok';
 }
