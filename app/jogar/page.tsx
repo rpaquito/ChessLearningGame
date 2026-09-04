@@ -58,12 +58,35 @@ function JogarContent() {
   const { settings } = useSettings();
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [learningEnabled, setLearningEnabled] = useState(true);
+  // Modo de aprendizagem só existe em 'facil'/'medio' — em 'dificil' o
+  // painel nem sequer é montado (ver JSX abaixo), mas `learningEnabled`
+  // continua a existir como estado (default true) para essas duas
+  // dificuldades; `learningActive` é o valor real a usar em qualquer
+  // lógica de jogo (ameaças, sugestão, feedback de qualidade), para nunca
+  // depender só de `learningEnabled` sozinho e arriscar o modo continuar
+  // "ligado" de facto quando a dificuldade não o permite.
+  const learningAvailable = difficulty !== 'dificil';
+  const learningActive = learningEnabled && learningAvailable;
   const [suggestion, setSuggestion] = useState<{ from: Square; to: Square } | null>(null);
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [suggestionExplanation, setSuggestionExplanation] = useState<string | null>(null);
   const [engineUnavailable, setEngineUnavailable] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
   const { toast: currentToast, show: showToast, dismiss: dismissToast } = useToast();
+  // Verdadeiro entre o momento em que um lance do jogador dispara a
+  // avaliação assíncrona de qualidade (dois engine.evaluate()) e o
+  // momento em que essa avaliação termina — impede a IA de jogar
+  // enquanto o veredito do lance ainda está a ser calculado, mesmo antes
+  // de o toast em si aparecer (ver handleSquareClick e o efeito do lance
+  // da IA mais abaixo). Sem isto, a IA podia começar a pensar (e até
+  // jogar) antes de o toast "boa jogada"/"imprecisão"/"erro" chegar a
+  // aparecer.
+  const [pendingMoveFeedback, setPendingMoveFeedback] = useState(false);
+  // Um toast "bloqueante" (qualquer tom exceto 'info' — xeque e os três
+  // tons de qualidade de lance, ver Toast.tsx/ToastProvider.tsx) exige
+  // reconhecimento explícito antes de o jogo continuar: o tabuleiro deixa
+  // de ser clicável e a IA não joga enquanto ele estiver visível.
+  const blockingToastOpen = currentToast !== null && currentToast.tone !== 'info';
   const [gameEndOpen, setGameEndOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'restart' | 'menu' | null>(null);
   const prevStatus = useRef<typeof state.status>('playing');
@@ -144,8 +167,8 @@ function JogarContent() {
   // posição/adversário/estado do modo de aprendizagem de facto mudam, não em
   // qualquer re-render (ex.: abrir/fechar as regras, clicar numa casa vazia).
   const threatenedSquares = useMemo(
-    () => (learningEnabled && mode === 'ai' ? findThreatenedSquares(state.fen, humanColor) : []),
-    [learningEnabled, mode, state.fen, humanColor]
+    () => (learningActive && mode === 'ai' ? findThreatenedSquares(state.fen, humanColor) : []),
+    [learningActive, mode, state.fen, humanColor]
   );
 
   const handleSquareClick = useCallback(
@@ -173,9 +196,13 @@ function JogarContent() {
           }
         }
 
-        if (moved && previewMove && mode === 'ai' && learningEnabled && engineRef.current) {
+        if (moved && previewMove && mode === 'ai' && learningActive && engineRef.current) {
           const engine = engineRef.current;
           const fenAfter = preview.fen();
+          // Bloqueia o lance da IA já a partir daqui — antes mesmo de o
+          // toast aparecer — ver comentário junto de pendingMoveFeedback
+          // acima.
+          setPendingMoveFeedback(true);
           Promise.all([engine.evaluate(fenBefore, 10), engine.evaluate(fenAfter, 10)])
             .then(([bestEval, replyEval]) => {
               const playedEval = -replyEval;
@@ -184,7 +211,10 @@ function JogarContent() {
               // Deixa o toast de xeque ganhar se as duas coisas coincidirem
               // (este lance também deu xeque) — ver o comentário junto de
               // currentToastToneRef acima.
-              if (currentToastToneRef.current === 'check') return;
+              if (currentToastToneRef.current === 'check') {
+                setPendingMoveFeedback(false);
+                return;
+              }
               let explanation: string | null;
               try {
                 const tagSentence = describeMove(fenBefore, {
@@ -198,9 +228,11 @@ function JogarContent() {
               }
               const message = `${t.learningPanel.lastMoveLabel}${t.learningPanel.quality[quality]}${explanation ? ` — ${explanation}` : ''}`;
               showToast(message, quality);
+              setPendingMoveFeedback(false);
             })
             .catch(() => {
               setEngineUnavailable(true);
+              setPendingMoveFeedback(false);
             });
         }
         return;
@@ -215,16 +247,22 @@ function JogarContent() {
       legalMovesFrom,
       makeMove,
       mode,
-      learningEnabled,
+      learningActive,
       locale,
       t,
       showToast,
     ]
   );
 
-  // IA joga automaticamente quando é a vez dela
+  // IA joga automaticamente quando é a vez dela — mas só depois de
+  // qualquer popup bloqueante (xeque, ou o feedback de qualidade do
+  // lance do jogador, incluindo a avaliação ainda em curso) estar
+  // resolvido; ver pendingMoveFeedback/blockingToastOpen acima. Ambos
+  // entram nas dependências para o efeito voltar a correr assim que
+  // deixarem de bloquear (ex.: o jogador fecha o toast).
   useEffect(() => {
     if (mode !== 'ai' || state.isGameOver || state.turn === humanColor) return;
+    if (pendingMoveFeedback || blockingToastOpen) return;
     const engine = engineRef.current;
     if (!engine) return;
 
@@ -243,7 +281,17 @@ function JogarContent() {
     return () => {
       cancelled = true;
     };
-  }, [mode, state.turn, state.isGameOver, state.fen, humanColor, difficulty, makeMove]);
+  }, [
+    mode,
+    state.turn,
+    state.isGameOver,
+    state.fen,
+    humanColor,
+    difficulty,
+    makeMove,
+    pendingMoveFeedback,
+    blockingToastOpen,
+  ]);
 
   const handleRequestSuggestion = useCallback(() => {
     const engine = engineRef.current;
@@ -276,6 +324,7 @@ function JogarContent() {
     setSuggestion(null);
     setSuggestionExplanation(null);
     setGameEndOpen(false);
+    setPendingMoveFeedback(false);
     prevStatus.current = 'playing';
     dismissToast();
   }
@@ -340,8 +389,8 @@ function JogarContent() {
           lastMove={state.lastMove}
           checkSquare={state.checkSquare}
           threatenedSquares={threatenedSquares}
-          suggestedMove={learningEnabled ? suggestion : null}
-          interactive={isHumanTurn && !state.isGameOver && currentToast?.tone !== 'check'}
+          suggestedMove={learningActive ? suggestion : null}
+          interactive={isHumanTurn && !state.isGameOver && !blockingToastOpen}
           onSquareClick={handleSquareClick}
         />
         {mode === 'ai' && engineUnavailable && (
@@ -351,7 +400,7 @@ function JogarContent() {
         )}
       </div>
 
-      {mode === 'ai' && !engineUnavailable && (
+      {mode === 'ai' && !engineUnavailable && learningAvailable && (
         <LearningPanel
           enabled={learningEnabled}
           onToggle={setLearningEnabled}

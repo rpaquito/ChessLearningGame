@@ -6,7 +6,13 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-function Trigger({ message, tone }: { message: string; tone?: 'info' | 'check' }) {
+function Trigger({
+  message,
+  tone,
+}: {
+  message: string;
+  tone?: 'info' | 'check' | 'boa' | 'imprecisao' | 'erro';
+}) {
   const { show } = useToast();
   return (
     <button type="button" onClick={() => show(message, tone)}>
@@ -166,6 +172,27 @@ describe('ToastProvider / useToast', () => {
       vi.advanceTimersByTime(60000);
     });
     expect(screen.getByTestId('toast-card')).toBeInTheDocument();
+  });
+
+  it('never auto-dismisses a move-quality toast ("boa"/"imprecisao"/"erro"), even long after it appears', () => {
+    vi.useFakeTimers();
+    render(
+      <ToastProvider>
+        <Trigger message="Lance bom." tone="boa" />
+        <Trigger message="Lance impreciso." tone="imprecisao" />
+        <Trigger message="Erro." tone="erro" />
+      </ToastProvider>
+    );
+
+    for (const label of ['Lance bom.', 'Lance impreciso.', 'Erro.']) {
+      act(() => {
+        fireEvent.click(screen.getByText(`trigger: ${label}`));
+      });
+      act(() => {
+        vi.advanceTimersByTime(60000);
+      });
+      expect(screen.getByTestId('toast-card')).toHaveTextContent(label);
+    }
   });
 
   it('resets the auto-dismiss timer when a new toast replaces the current one', () => {

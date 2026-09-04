@@ -24,12 +24,15 @@ let nextToastId = 0;
 // decisão explícita revista em 2026-08-28 (a versão original do
 // popup/toast tinha "sem auto-dismiss em nada" como decisão deliberada;
 // esta revisão distingue por tom). Toasts "check" (aviso de xeque em
-// /jogar) ficam de fora de propósito: bloqueiam o tabuleiro até serem
-// fechados manualmente (ver app/jogar/page.tsx, que lê `toast.tone` para
-// decidir `interactive`), por isso nunca podem desaparecer sozinhos —
-// desaparecer sozinhos desbloquearia o tabuleiro sem o jogador ter
-// reconhecido o xeque.
+// /jogar) e os três tons de qualidade de lance ("boa"/"imprecisao"/
+// "erro", ver Toast.tsx) ficam de fora de propósito: bloqueiam o
+// tabuleiro até serem fechados manualmente (ver app/jogar/page.tsx, que
+// lê `toast.tone` para decidir `interactive` e para atrasar o lance da
+// IA), por isso nunca podem desaparecer sozinhos — desaparecer sozinhos
+// desbloquearia o tabuleiro (ou deixaria a IA jogar) antes de o jogador
+// ter reconhecido o xeque/feedback do lance.
 const AUTO_DISMISS_MS = 4000;
+const NO_AUTO_DISMISS_TONES: readonly ToastTone[] = ['check', 'boa', 'imprecisao', 'erro'];
 
 /**
  * Único Context da app (decisão explícita do brainstorming — ver
@@ -60,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       // toast que estava a ser mostrado antes dele.
       clearAutoDismissTimer();
       setToast({ id: nextToastId++, message, tone });
-      if (tone !== 'check') {
+      if (!NO_AUTO_DISMISS_TONES.includes(tone)) {
         autoDismissTimer.current = setTimeout(() => {
           autoDismissTimer.current = null;
           setToast(null);

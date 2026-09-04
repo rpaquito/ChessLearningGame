@@ -54,20 +54,20 @@ export function Toast({ toast, onDismiss }: ToastProps) {
     <div
       role="status"
       aria-live="polite"
-      className="fixed top-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] left-1/2 -translate-x-1/2 z-[60]"
+      className="fixed top-[max(1rem,calc(env(safe-area-inset-top)+0.5rem))] left-1/2 -translate-x-1/2 z-[60] w-[min(94vw,32rem)]"
     >
       {toast && (
         <div
           key={toast.id}
           data-testid="toast-card"
-          className={`flex items-center gap-3 rounded-xl border-2 ${TONE_ACCENT[toast.tone]} bg-ink-soft px-4 py-2 text-lilac shadow-[3px_3px_0_rgba(0,0,0,0.35)]`}
+          className={`flex items-center gap-4 rounded-xl border-2 ${TONE_ACCENT[toast.tone]} bg-ink-soft px-5 py-4 text-lilac shadow-[3px_3px_0_rgba(0,0,0,0.35)]`}
         >
-          <p className="text-sm font-medium">{toast.message}</p>
+          <p className="text-base font-medium leading-snug">{toast.message}</p>
           <button
             type="button"
             onClick={onDismiss}
             aria-label={t.common.close}
-            className="rounded-full h-6 w-6 shrink-0 bg-pink text-[#3A0B1F] font-bold hover:scale-110 transition-transform"
+            className="rounded-full h-8 w-8 shrink-0 bg-pink text-[#3A0B1F] font-bold hover:scale-110 transition-transform"
           >
             ✕
           </button>

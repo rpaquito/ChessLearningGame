@@ -190,9 +190,11 @@ Duas peças novas, ambas em `lib/chess/`, tal como os outros módulos puros:
   textura), mas as peças passaram a ser uma camada `absolute inset-0
   pointer-events-none` por cima, com uma `<div>` por peça posicionada por
   percentagem (`left`/`top`, 12.5% por coluna/linha) e `transition-all
-  duration-400 motion-reduce:transition-none` (400ms — era 200ms até
-  2026-08-26, aumentado a pedido explícito do utilizador, "mais lento").
-  Cada peça mantém uma
+  duration-600 motion-reduce:transition-none` (600ms — era 400ms até
+  2026-09-04, e 200ms antes disso até 2026-08-26; aumentado de novo a
+  pedido explícito do utilizador, "mais lento", para o jogador reparar
+  melhor no lance — `CAPTURE_FADE_MS`/`duration-300` da peça capturada
+  não mudou, só o deslize). Cada peça mantém uma
   identidade (`id`) estável entre posições — ao mudar `square` no estado
   interno em vez de desmontar/remontar a peça, é a mudança de `left`/`top`
   que a CSS anima, não um salto. No roque, a torre recebe a mesma
@@ -665,7 +667,7 @@ tabuleiro crescer para preencher todo o espaço da linha, empurrando o
 `LearningPanel` para a margem direita em vez de ficarem juntos e
 centrados como grupo.
 
-### Toasts e modal de fim de jogo (feedback de eventos, 2026-08-27; política de auto-dismiss e popup de confirmação revistas 2026-08-28)
+### Toasts e modal de fim de jogo (feedback de eventos, 2026-08-27; política de auto-dismiss e popup de confirmação revistas 2026-08-28; toast de qualidade de lance também passa a bloquear + larguras maiores, 2026-09-04)
 
 `components/Toast/` (`Toast.tsx`, cartão de apresentação puro; `ToastProvider.tsx`,
 que expõe `useToast()`) é o **primeiro e único `React.Context` da app**,
@@ -678,17 +680,48 @@ deliberadamente estreito — guarda o toast atual e expõe `toast`/`show`/
 explícito do utilizador — "quero rever o desaparecimento automático dos
 popups"): por omissão, um toast desaparece sozinho ao fim de 4s
 (`AUTO_DISMISS_MS` em `ToastProvider.tsx`) — cobre os toasts de
-confirmação leve de `/opções` (mudança de dificuldade/cor/tema/etc.). A
-**única exceção é o tom `'check'`** (o "Xeque!" em `/jogar`) — sem
-temporizador, fica visível até o jogador o fechar explicitamente (botão
-✕) ou até `handleReset`/a próxima transição de estado o limpar. Enquanto
-o toast de xeque está visível, o tabuleiro fica **não-interativo**:
-`app/jogar/page.tsx` acrescenta `toast?.tone !== 'check'` à condição
-`interactive` do `ChessBoard`, para o jogador ter de reconhecer o xeque
-antes de continuar a jogar. `RulesModal`/`GameEndModal` mantêm-se sem
-auto-dismiss (decisão deliberada, revista e reconfirmada 2026-08-28) —
-os dois já bloqueiam e exigem reconhecimento explícito, não há "toast
-leve" para desaparecer sozinho.
+confirmação leve de `/opções` (mudança de dificuldade/cor/tema/etc.). As
+**exceções são o tom `'check'`** (o "Xeque!" em `/jogar`) **e os três
+tons de qualidade de lance** (`'boa'`/`'imprecisao'`/`'erro'`, o feedback
+"o teu último lance" em `/jogar` — deixou de ter auto-dismiss em
+2026-09-04, a pedido explícito do utilizador) — nenhum destes tem
+temporizador, ficam visíveis até o jogador os fechar explicitamente
+(botão ✕) ou até `handleReset`/a próxima transição de estado os limpar.
+`NO_AUTO_DISMISS_TONES` em `ToastProvider.tsx` é a lista central desses
+tons — qualquer tom novo que também deva bloquear entra ali.
+
+Enquanto um destes toasts "bloqueantes" está visível, o tabuleiro fica
+**não-interativo** e, em modo `ai`, **a IA não joga**:
+`app/jogar/page.tsx` deriva `blockingToastOpen` (`currentToast !== null
+&& currentToast.tone !== 'info'` — mais simples que enumerar os tons
+bloqueantes outra vez, já que 'info' é o único tom com auto-dismiss) e
+usa-o tanto na condição `interactive` do `ChessBoard` como no efeito que
+faz a IA jogar automaticamente. Para o toast de qualidade especificamente,
+bloquear a IA só a partir do momento em que o toast aparece não chega —
+a avaliação em si (dois `engine.evaluate()`) é assíncrona e só termina
+*depois* de `state.turn` já ter passado para a IA, por isso havia uma
+janela em que a IA podia começar a pensar (ou até jogar) antes de o
+popup sequer aparecer. `pendingMoveFeedback` (estado próprio,
+`app/jogar/page.tsx`) fecha essa janela: fica `true` desde o instante em
+que `handleSquareClick` dispara a avaliação (mesmo commit que o lance do
+jogador, sem esperar por nenhum efeito) até ao `.then()`/`.catch()`
+terminar, e entra nas dependências do efeito da IA tal como
+`blockingToastOpen`. Se o lance também deu xeque, o toast de xeque ganha
+(mesma lógica de sempre, via `currentToastToneRef`) e
+`pendingMoveFeedback` volta a `false` sem chegar a mostrar o toast de
+qualidade — a IA fica então bloqueada só pelo toast de xeque, não pelos
+dois em simultâneo.
+
+`Toast.tsx` também ganhou mais largura/texto maior em 2026-09-04 (pedido
+explícito — "melhor uso do tamanho do ecrã"): o wrapper passou de
+shrink-to-content para `w-[min(94vw,32rem)]`, texto `text-base` (era
+`text-sm`) e mais padding — continua um toast fixo no topo, sem
+backdrop, não virou modal.
+
+`RulesModal`/`GameEndModal` mantêm-se sem auto-dismiss (decisão
+deliberada, revista e reconfirmada 2026-08-28) — os dois já bloqueiam e
+exigem reconhecimento explícito, não há "toast leve" para desaparecer
+sozinho.
 
 `components/GameEndModal/` (xeque-mate/afogamento/empate em `/jogar`)
 **não** passa pelo Context do toast — segue o mesmo padrão autocontido
@@ -718,6 +751,24 @@ sempre visível, contextual, embutido na página, como `STATUS_LABEL`
 em `/jogar`), toast (confirmação leve, auto-dismiss por omissão) e
 modal (bloqueia, exige reconhecimento explícito, nunca auto-dismiss) —
 usar o mais leve que resolva o caso antes de subir para o próximo.
+
+### Modo de aprendizagem só em "fácil"/"médio" (2026-09-04)
+
+A pedido explícito do utilizador, o modo de aprendizagem deixou de
+estar disponível em dificuldade "difícil" — faz sentido pedagogicamente
+(quem escolhe o nível mais forte já não está a aprender o básico) e
+evita a leitura estranha de sugestões/ameaças/feedback de qualidade
+lado a lado com um adversário a jogar sem limite de força.
+`app/jogar/page.tsx` deriva `learningAvailable = difficulty !==
+'dificil'` (a `difficulty` já vem fixa da querystring desde
+`/configurar`, não muda durante a partida) e `learningActive =
+learningEnabled && learningAvailable` — este último é o valor usado em
+qualquer lógica de jogo (`threatenedSquares`, o toast de qualidade em
+`handleSquareClick`, a sugestão mostrada no tabuleiro), nunca
+`learningEnabled` sozinho. O `LearningPanel` (toggle + botão "sugerir
+jogada") nem chega a ser montado quando `!learningAvailable` — mesmo
+padrão que já existia para `mode === 'ai'`/`engineUnavailable`, só mais
+uma condição na mesma linha.
 
 ### Múltiplos idiomas (`lib/i18n/`, PT-PT/English, Fase 1 — 2026-08-27)
 

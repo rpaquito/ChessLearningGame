@@ -127,7 +127,7 @@ describe('ChessBoard', () => {
     rerender(<ChessBoard fen={fenAfter(['e4'])} />);
 
     const moved = pieceEls(container).find((el) => el.dataset.square === 'e4');
-    expect(moved?.className).toContain('duration-400');
+    expect(moved?.className).toContain('duration-600');
     expect(moved?.className).not.toContain('duration-200');
   });
 
